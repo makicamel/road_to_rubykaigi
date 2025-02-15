@@ -16,8 +16,11 @@ module RoadToRubykaigi
     private
 
     def initialize
-      @player = Player.new
       @map = Map.new
+      @player = Player.new(
+        map_width: @map.width,
+        map_height: @map.height,
+      )
     end
 
     def process_input(input)
@@ -29,7 +32,9 @@ module RoadToRubykaigi
       }
 
       if moves[input]
-        @player.move(*moves[input], @map.width, @map.height)
+        @player.move(*moves[input])
+      elsif input == " "
+        @player.attack
       elsif input == "q"
         exit
       end
