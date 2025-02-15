@@ -12,10 +12,10 @@ module RoadToRubykaigi
 
   def self.start
     ANSI.cursor_off
-    at_exit {
+    at_exit do
       print "\e[#{END_POSITION};1H"
       ANSI.cursor_on
-    }
+    end
 
     OpeningScreen.new.display && Game.new.run
   end
