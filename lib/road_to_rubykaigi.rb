@@ -1,5 +1,6 @@
 require_relative "road_to_rubykaigi/version"
 require_relative "road_to_rubykaigi/ansi"
+require_relative "road_to_rubykaigi/bonus"
 require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"

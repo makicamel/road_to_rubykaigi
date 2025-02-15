@@ -6,6 +6,7 @@ module RoadToRubykaigi
           ANSI.clear
           ANSI.home
           @map.draw
+          @bonuses&.each(&:draw)
           @player.draw
           process_input(STDIN.read_nonblock(4, exception: false))
           sleep 1.0/36
@@ -21,6 +22,12 @@ module RoadToRubykaigi
         map_width: @map.width,
         map_height: @map.height,
       )
+      @bonuses = (0..2).map {
+        Bonus.random(
+          map_width: @map.width,
+          map_height: @map.height,
+        )
+      }
     end
 
     def process_input(input)
