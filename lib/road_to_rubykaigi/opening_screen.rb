@@ -3,7 +3,6 @@ module RoadToRubykaigi
     W = 10
     OFFSET = 50
     DELAY = 0.75
-    CLEAR = "\e[2J"
     AA = [
       "╭──────╮",
       "│｡・◡・│_◢◤",
@@ -15,8 +14,8 @@ module RoadToRubykaigi
       direction = 1
 
       loop do
+        ANSI.clear
         puts [
-          CLEAR,
           AA.map.with_index do |aa, i|
             "\e[#{i+1};#{position+OFFSET}H"+aa
           end.join("\n"),

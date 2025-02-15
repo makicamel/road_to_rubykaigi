@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "road_to_rubykaigi/version"
+require_relative "road_to_rubykaigi/ansi"
 require_relative "road_to_rubykaigi/opening_screen"
 require "io/console"
 
