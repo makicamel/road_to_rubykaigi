@@ -6,7 +6,6 @@ module RoadToRubykaigi
         ANSI.home
         @map.draw
         @player.draw
-        @player.update_frame
         STDIN.raw {
           process_input(STDIN.read_nonblock(4, exception: false))
         }

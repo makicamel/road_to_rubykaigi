@@ -22,17 +22,11 @@ module RoadToRubykaigi
     end
 
     def draw
+      update_frame
       str = FRAMES[@frame_index].map.with_index do |line, i|
         "\e[#{@y+i};#{@x}H" + line
       end.join("\n")
       print str
-    end
-
-    def update_frame
-      if (Time.now - @frame_last_update) >= DELAY
-        @frame_index = (@frame_index + 1) % FRAMES.size
-        @frame_last_update = Time.now
-      end
     end
 
     private
@@ -50,6 +44,13 @@ module RoadToRubykaigi
 
     def height
       @height ||= FRAMES.map(&:size).max
+    end
+
+    def update_frame
+      if (Time.now - @frame_last_update) >= DELAY
+        @frame_index = (@frame_index + 1) % FRAMES.size
+        @frame_last_update = Time.now
+      end
     end
 
     def clamp(v, min, max)
