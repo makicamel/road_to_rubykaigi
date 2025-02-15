@@ -3,11 +3,15 @@ module RoadToRubykaigi
     def run
       STDIN.raw do
         loop do
-          ANSI.clear
-          ANSI.home
-          @map.draw
-          @bonuses&.each(&:draw)
-          @player.draw
+          @player.update
+          puts [
+            ANSI::CLEAR,
+          ]+[
+            @map,
+            *@bonuses,
+            @player,
+            *@player.attacks,
+          ].map(&:render)
           process_input(STDIN.read_nonblock(4, exception: false))
           sleep 1.0/36
         end

@@ -30,11 +30,10 @@ module RoadToRubykaigi
       @bonus = bonus
     end
 
-    def draw
-      str = @bonus.map.with_index do |line, i|
+    def render
+      @bonus.map.with_index do |line, i|
         "\e[#{@y+i};#{@x}H" + line
       end.join
-      print str
     end
   end
 end

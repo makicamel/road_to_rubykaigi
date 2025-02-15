@@ -1,5 +1,7 @@
 module RoadToRubykaigi
   class Player
+    attr_reader :attacks
+
     DELAY = 0.6
     FRAMES = [
       [
@@ -21,13 +23,16 @@ module RoadToRubykaigi
       @y = clamp(new_y, 2, @map_height - height)
     end
 
-    def draw
+    def update
       update_frame
-      update_and_draw_attacks
-      str = FRAMES[@frame_index].map.with_index do |line, i|
+      @attacks.reject! { |attack| attack.reach_border?(@map_width) }
+      @attacks.each(&:update)
+    end
+
+    def render
+      FRAMES[@frame_index].map.with_index do |line, i|
         "\e[#{@y+i};#{@x}H" + line
-      end.join("\n")
-      print str
+      end.join
     end
 
     def attack
@@ -64,14 +69,6 @@ module RoadToRubykaigi
       end
     end
 
-    def update_and_draw_attacks
-      @attacks.each do |attack|
-        attack.update
-        attack.draw
-      end
-      @attacks.reject! { |attack| attack.off_screen?(@map_width) }
-    end
-
     def clamp(v, min, max)
       [[v, min].max, max].min
     end
@@ -84,11 +81,11 @@ module RoadToRubykaigi
       @x += 1
     end
 
-    def draw
-      print "\e[#{@y};#{@x}H" + SYMBOL
+    def render
+      "\e[#{@y};#{@x}H" + SYMBOL
     end
 
-    def off_screen?(max_width)
+    def reach_border?(max_width)
       (@x + SYMBOL.size + 1) > max_width
     end
 
