@@ -3,6 +3,8 @@ module RoadToRubykaigi
     def run
       STDIN.raw do
         loop do
+          RoadToRubykaigi.debug.clear
+
           @scroll_offset_x = [@player.x - (Map::VIEWPORT_WIDTH / 2), 0].max
           @update_manager.update(offset_x: @scroll_offset_x)
           @collision_manager.process
@@ -15,6 +17,7 @@ module RoadToRubykaigi
 
           process_input(STDIN.read_nonblock(4, exception: false))
 
+          puts RoadToRubykaigi.debug
           sleep 1.0/36
         end
       end

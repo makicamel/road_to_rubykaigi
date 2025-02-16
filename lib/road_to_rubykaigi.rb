@@ -24,4 +24,12 @@ module RoadToRubykaigi
 
     OpeningScreen.new.display && Game.new.run
   end
+
+  def self.debug
+    @debug ||= []
+  end
+
+  def self.debug_add(string)
+    @debug << "\e[#{END_POSITION+@debug.size};1H" + string
+  end
 end
