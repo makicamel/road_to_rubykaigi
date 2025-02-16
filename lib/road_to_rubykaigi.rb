@@ -1,5 +1,6 @@
 require_relative "road_to_rubykaigi/version"
 require_relative "road_to_rubykaigi/ansi"
+require_relative "road_to_rubykaigi/attack"
 require_relative "road_to_rubykaigi/bonus"
 require_relative "road_to_rubykaigi/collision_manager"
 require_relative "road_to_rubykaigi/effect"

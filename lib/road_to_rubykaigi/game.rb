@@ -6,9 +6,10 @@ module RoadToRubykaigi
         loop do
           @scroll_offset_x = [@player.x - (VIEWPORT_WIDTH / 2), 0].max
           @player.update
+          @attacks.update
           @effects.update
 
-          CollisionManager.new(@player, @bonuses, @player.attacks, @effects).process
+          CollisionManager.new(@player, @bonuses, @attacks, @effects).process
 
           puts [
             ANSI::CLEAR,
@@ -36,8 +37,11 @@ module RoadToRubykaigi
         map_width: @background.width,
         map_height: @background.height,
       )
+      @attacks = Attacks.new(
+        map_width: @background.width,
+      )
       @effects = Effects.new
-      [@player, @bonuses, @effects].each do |object|
+      [@player, @bonuses, @attacks, @effects].each do |object|
         @foreground.add(object)
       end
       @scroll_offset_x = 0
@@ -54,7 +58,10 @@ module RoadToRubykaigi
       if moves[input]
         @player.move(*moves[input])
       elsif input == " "
-        @player.attack
+        @attacks.add(
+          @player.x + @player.width,
+          @player.y + 1,
+        )
       elsif %W[q \x03].include?(input) # Ctrl+C
         exit
       end

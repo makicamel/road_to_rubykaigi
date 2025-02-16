@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Player
-    attr_reader :x, :y, :attacks
+    attr_reader :x, :y
 
     DELAY = 0.6
     FRAMES = [
@@ -24,22 +24,16 @@ module RoadToRubykaigi
     end
 
     def update
-      update_frame
-      @attacks.reject! { |attack| attack.reach_border?(@map_width) }
-      @attacks.each(&:update)
+      if (Time.now - @frame_last_update) >= DELAY
+        @frame_index = (@frame_index + 1) % FRAMES.size
+        @frame_last_update = Time.now
+      end
     end
 
     def render(offset_x:)
       FRAMES[@frame_index].map.with_index do |line, i|
         "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
-    end
-
-    def attack
-      @attacks << Attack.new(
-        @x + width,
-        @y + 1,
-      )
     end
 
     def bounding_box
@@ -63,45 +57,10 @@ module RoadToRubykaigi
       @map_height = map_height
       @frame_index = 0
       @frame_last_update = Time.now
-      @attacks = []
-    end
-
-    def update_frame
-      if (Time.now - @frame_last_update) >= DELAY
-        @frame_index = (@frame_index + 1) % FRAMES.size
-        @frame_last_update = Time.now
-      end
     end
 
     def clamp(v, min, max)
       [[v, min].max, max].min
-    end
-  end
-
-  class Attack
-    SYMBOL = ".˖"
-
-    def update
-      @x += 1
-    end
-
-    def render(offset_x:)
-      "\e[#{@y};#{@x-offset_x}H" + SYMBOL
-    end
-
-    def reach_border?(max_width)
-      (@x + SYMBOL.size + 1) > max_width
-    end
-
-    def bounding_box
-      { x: @x, y: @y, width: SYMBOL.size, height: 1 }
-    end
-
-    private
-
-    def initialize(x, y)
-      @x = x
-      @y = y
     end
   end
 end
