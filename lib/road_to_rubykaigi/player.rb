@@ -60,9 +60,5 @@ module RoadToRubykaigi
       @frame_index = 0
       @frame_last_update = Time.now
     end
-
-    def clamp(v, min, max)
-      [[v, min].max, max].min
-    end
   end
 end
