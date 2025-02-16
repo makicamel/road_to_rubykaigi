@@ -4,6 +4,7 @@ module RoadToRubykaigi
     CURSOR_OFF = "\e[?25l"
     CURSOR_ON = "\e[?25h"
     HOME = "\e[H"
+    RESET = "\e[0m"
 
     self.constants(false).each do |constant|
       ANSI.define_singleton_method(constant.to_s.downcase) {
