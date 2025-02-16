@@ -44,8 +44,12 @@ module RoadToRubykaigi
     end
 
     def render(offset_x:)
-      colored.map.with_index do |line, i|
-        "\e[#{@y+i};#{@x-offset_x}H" + line
+      screen_x = @x - offset_x
+      position_x = [screen_x, 1].max
+      self.class::CHARACTER.map.with_index do |line, i|
+        visible_charas = clip(line, screen_x)
+        next "" if visible_charas.empty?
+        "\e[#{@y+i};#{position_x}H" + color(visible_charas)
       end.join
     end
 
@@ -56,10 +60,17 @@ module RoadToRubykaigi
       @y = y
     end
 
-    def colored
-      self.class::CHARACTER.map do |line|
-        self.class::COLOR + line + ANSI::RESET
-      end
+    def clip(line, screen_x)
+      return "" if screen_x + line.size <= 1
+
+      available_width = Map::VIEWPORT_WIDTH - ([screen_x, 1].max - 1)
+      visible_start = screen_x >= 1 ? 0 : (1 - screen_x)
+      visible_size = [line.size - visible_start, available_width].min
+      line[visible_start, visible_size] || ""
+    end
+
+    def color(line)
+      self.class::COLOR + line + ANSI::RESET
     end
   end
 
