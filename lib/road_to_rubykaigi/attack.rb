@@ -8,8 +8,13 @@ module RoadToRubykaigi
     end
 
     def update
-      @attacks.reject! { |attack| attack.reach_border?(@map_width) }
-      @attacks.each(&:update)
+      @attacks.each(&:move)
+    end
+
+    def enforce_boundary(map, offset_x:)
+      @attacks.reject! do |attack|
+        attack.reach_border?(map, offset_x: offset_x)
+      end
     end
 
     def render(offset_x:)
@@ -20,8 +25,7 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(map_width:)
-      @map_width = map_width
+    def initialize
       @attacks = []
     end
   end
@@ -29,7 +33,7 @@ module RoadToRubykaigi
   class Attack
     SYMBOL = ".˖"
 
-    def update
+    def move
       @x += 1
     end
 
@@ -37,8 +41,11 @@ module RoadToRubykaigi
       "\e[#{@y};#{@x-offset_x}H" + SYMBOL
     end
 
-    def reach_border?(max_width)
-      (@x + SYMBOL.size + 1) > max_width
+    def reach_border?(map, offset_x:)
+      (
+        (@x - offset_x + SYMBOL.size - 1) > Map::VIEWPORT_WIDTH ||
+        (@x + SYMBOL.size) > map.width
+      )
     end
 
     def bounding_box

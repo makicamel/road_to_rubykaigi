@@ -17,10 +17,8 @@ module RoadToRubykaigi
     ]
 
     def move(dx, dy)
-      new_x = @x + dx
-      new_y = @y + dy
-      @x = clamp(new_x, 2, @map_width - width)
-      @y = clamp(new_y, 2, @map_height - height)
+      @x += dx
+      @y += dy
     end
 
     def update
@@ -34,6 +32,12 @@ module RoadToRubykaigi
       FRAMES[@frame_index].map.with_index do |line, i|
         "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
+    end
+
+    def enforce_boundary(map, offset_x:)
+      clamped_x, clamped_y = map.clamp_position(**bounding_box)
+      @x = clamped_x
+      @y = clamped_y
     end
 
     def bounding_box
@@ -50,11 +54,9 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(x = 10, y = 9, map_width:, map_height:)
+    def initialize(x = 10, y = 9)
       @x = x
       @y = y
-      @map_width = map_width
-      @map_height = map_height
       @frame_index = 0
       @frame_last_update = Time.now
     end

@@ -1,12 +1,20 @@
 module RoadToRubykaigi
   class Map
+    VIEWPORT_WIDTH  = 40
     attr_reader :width, :height
 
-    def render(offset_x: 0, view_width:)
+    def render(offset_x:)
       @tiles.map.with_index do |row, i|
-        visible_row = row[offset_x, view_width] || []
+        visible_row = row[offset_x, VIEWPORT_WIDTH] || []
         "\e[#{i+1};1H" + visible_row.map(&:render).join
       end.join
+    end
+
+    def clamp_position(x:, y:, width:, height:)
+      [
+        [[x, 2].max, VIEWPORT_WIDTH].min,
+        [[y, 2].max, @height - height].min,
+      ]
     end
 
     private

@@ -8,6 +8,7 @@ require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
 require_relative "road_to_rubykaigi/player"
+require_relative "road_to_rubykaigi/update_manager"
 require "io/console"
 
 module RoadToRubykaigi

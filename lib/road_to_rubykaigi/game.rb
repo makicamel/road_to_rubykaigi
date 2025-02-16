@@ -1,19 +1,15 @@
 module RoadToRubykaigi
   class Game
-    VIEWPORT_WIDTH  = 40
     def run
       STDIN.raw do
         loop do
-          @scroll_offset_x = [@player.x - (VIEWPORT_WIDTH / 2), 0].max
-          @player.update
-          @attacks.update
-          @effects.update
-
-          CollisionManager.new(@player, @bonuses, @attacks, @effects).process
+          @scroll_offset_x = [@player.x - (Map::VIEWPORT_WIDTH / 2), 0].max
+          @update_manager.update(offset_x: @scroll_offset_x)
+          @collision_manager.process
 
           puts [
             ANSI::CLEAR,
-            @background.render(offset_x: @scroll_offset_x, view_width: VIEWPORT_WIDTH),
+            @background.render(offset_x: @scroll_offset_x),
             @foreground.render(offset_x: @scroll_offset_x),
           ].join
 
@@ -29,21 +25,18 @@ module RoadToRubykaigi
     def initialize
       @background = Map.new
       @foreground = Layer.new
-      @player = Player.new(
-        map_width: @background.width,
-        map_height: @background.height,
-      )
+      @player = Player.new
       @bonuses = Bonuses.new(
         map_width: @background.width,
         map_height: @background.height,
       )
-      @attacks = Attacks.new(
-        map_width: @background.width,
-      )
+      @attacks = Attacks.new
       @effects = Effects.new
       [@player, @bonuses, @attacks, @effects].each do |object|
         @foreground.add(object)
       end
+      @update_manager = UpdateManager.new(@background, [@player, @attacks, @effects])
+      @collision_manager = CollisionManager.new(@player, @bonuses, @attacks, @effects)
       @scroll_offset_x = 0
     end
 
