@@ -1,11 +1,7 @@
 module RoadToRubykaigi
   class Bonuses
     extend Forwardable
-    def_delegators :@bonuses, :to_a, :index
-
-    def remove(index)
-      @bonuses.delete_at(index)
-    end
+    def_delegators :@bonuses, :to_a, :find, :delete
 
     private
 

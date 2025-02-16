@@ -93,6 +93,10 @@ module RoadToRubykaigi
       (@x + SYMBOL.size + 1) > max_width
     end
 
+    def bounding_box
+      { x: @x, y: @y, width: SYMBOL.size, height: 1 }
+    end
+
     private
 
     def initialize(x, y)

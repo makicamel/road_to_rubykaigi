@@ -5,13 +5,8 @@ module RoadToRubykaigi
         loop do
           @player.update
           @effects.update
-          if collided_index = collision_index
-            @effects.heart(
-              @player.x + @player.width - 1,
-              @player.y,
-            )
-            @bonuses.remove(collided_index)
-          end
+
+          CollisionManager.new(@player, @bonuses, @player.attacks, @effects).process
 
           puts [
             ANSI::CLEAR,
@@ -58,20 +53,6 @@ module RoadToRubykaigi
         @player.attack
       elsif %W[q \x03].include?(input) # Ctrl+C
         exit
-      end
-    end
-
-    # @return {Intger,Nil}
-    def collision_index
-      p = @player.bounding_box
-      @bonuses.index do |bonus|
-        b = bonus.bounding_box
-        !(
-          p[:x] + p[:width] <= b[:x] ||
-          p[:x] >= b[:x] + b[:width] ||
-          p[:y] + p[:height] <= b[:y] ||
-          p[:y] >= b[:y] + b[:height]
-        )
       end
     end
   end
