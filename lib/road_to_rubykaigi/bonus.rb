@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module RoadToRubykaigi
   class Bonuses
     extend Forwardable

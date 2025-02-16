@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module RoadToRubykaigi
   class Attacks
     extend Forwardable
