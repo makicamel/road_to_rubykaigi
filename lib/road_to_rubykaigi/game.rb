@@ -1,8 +1,10 @@
 module RoadToRubykaigi
   class Game
+    VIEWPORT_WIDTH  = 40
     def run
       STDIN.raw do
         loop do
+          @scroll_offset_x = [@player.x - (VIEWPORT_WIDTH / 2), 0].max
           @player.update
           @effects.update
 
@@ -10,13 +12,10 @@ module RoadToRubykaigi
 
           puts [
             ANSI::CLEAR,
-          ]+[
-            @map,
-            *@bonuses,
-            @player,
-            *@player.attacks,
-            *@effects,
-          ].map(&:render)
+            @background.render(offset_x: @scroll_offset_x, view_width: VIEWPORT_WIDTH),
+            @foreground.render(offset_x: @scroll_offset_x),
+          ].join
+
           process_input(STDIN.read_nonblock(4, exception: false))
 
           sleep 1.0/36
@@ -27,16 +26,21 @@ module RoadToRubykaigi
     private
 
     def initialize
-      @map = Map.new
+      @background = Map.new
+      @foreground = Layer.new
       @player = Player.new(
-        map_width: @map.width,
-        map_height: @map.height,
+        map_width: @background.width,
+        map_height: @background.height,
       )
       @bonuses = Bonuses.new(
-        map_width: @map.width,
-        map_height: @map.height,
+        map_width: @background.width,
+        map_height: @background.height,
       )
       @effects = Effects.new
+      [@player, @bonuses, @effects].each do |object|
+        @foreground.add(object)
+      end
+      @scroll_offset_x = 0
     end
 
     def process_input(input)

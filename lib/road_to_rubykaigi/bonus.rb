@@ -3,6 +3,12 @@ module RoadToRubykaigi
     extend Forwardable
     def_delegators :@bonuses, :to_a, :find, :delete
 
+    def render(offset_x:)
+      @bonuses.map do |bonus|
+        bonus.render(offset_x: offset_x)
+      end.join
+    end
+
     private
 
     def initialize(n = 3, map_width:, map_height:)
@@ -37,9 +43,9 @@ module RoadToRubykaigi
       { x: @x, y: @y, width: self.class.width, height: self.class.height }
     end
 
-    def render
+    def render(offset_x:)
       colored.map.with_index do |line, i|
-        "\e[#{@y+i};#{@x}H" + line
+        "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
     end
 

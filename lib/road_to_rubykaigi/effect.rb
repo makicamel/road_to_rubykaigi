@@ -8,6 +8,12 @@ module RoadToRubykaigi
       @effects << HeartEffect.new(x,y)
     end
 
+    def render(offset_x:)
+      @effects.map do |effect|
+        effect.render(offset_x: offset_x)
+      end.join
+    end
+
     def to_a
       @effects.to_a
     end
@@ -28,8 +34,8 @@ module RoadToRubykaigi
       @y = (@y - elapsed).to_i
     end
 
-    def render
-      "\e[#{@y};#{@x}H" + SYMBOL
+    def render(offset_x:)
+      "\e[#{@y};#{@x-offset_x}H" + SYMBOL
     end
 
     def expired?

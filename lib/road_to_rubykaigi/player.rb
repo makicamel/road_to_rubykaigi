@@ -29,9 +29,9 @@ module RoadToRubykaigi
       @attacks.each(&:update)
     end
 
-    def render
+    def render(offset_x:)
       FRAMES[@frame_index].map.with_index do |line, i|
-        "\e[#{@y+i};#{@x}H" + line
+        "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
     end
 
@@ -85,8 +85,8 @@ module RoadToRubykaigi
       @x += 1
     end
 
-    def render
-      "\e[#{@y};#{@x}H" + SYMBOL
+    def render(offset_x:)
+      "\e[#{@y};#{@x-offset_x}H" + SYMBOL
     end
 
     def reach_border?(max_width)
