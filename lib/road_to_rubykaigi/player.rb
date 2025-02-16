@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Player
-    attr_reader :attacks
+    attr_reader :x, :y, :attacks
 
     DELAY = 0.6
     FRAMES = [
@@ -46,6 +46,14 @@ module RoadToRubykaigi
       { x: @x, y: @y, width: width, height: height }
     end
 
+    def width
+      @width ||= FRAMES.first.map(&:size).max
+    end
+
+    def height
+      @height ||= FRAMES.first.size
+    end
+
     private
 
     def initialize(x = 10, y = 9, map_width:, map_height:)
@@ -56,14 +64,6 @@ module RoadToRubykaigi
       @frame_index = 0
       @frame_last_update = Time.now
       @attacks = []
-    end
-
-    def width
-      @width ||= FRAMES.first.map(&:size).max
-    end
-
-    def height
-      @height ||= FRAMES.first.size
     end
 
     def update_frame

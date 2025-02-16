@@ -4,7 +4,12 @@ module RoadToRubykaigi
       STDIN.raw do
         loop do
           @player.update
+          @effects.update
           if collided_index = collision_index
+            @effects.heart(
+              @player.x + @player.width - 1,
+              @player.y,
+            )
             @bonuses.remove(collided_index)
           end
 
@@ -15,6 +20,7 @@ module RoadToRubykaigi
             *@bonuses,
             @player,
             *@player.attacks,
+            *@effects,
           ].map(&:render)
           process_input(STDIN.read_nonblock(4, exception: false))
 
@@ -35,6 +41,7 @@ module RoadToRubykaigi
         map_width: @map.width,
         map_height: @map.height,
       )
+      @effects = Effects.new
     end
 
     def process_input(input)
