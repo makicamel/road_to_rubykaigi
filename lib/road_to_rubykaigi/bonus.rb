@@ -77,18 +77,61 @@ module RoadToRubykaigi
   class Ruby < Bonus
     CHARACTER = [
       "⣠⣤⣄",
-      "⠙⣿⠋"
+      "⠙⣿⠋",
     ]
     COLOR = "\e[31m" # red
   end
 
   class Beer < Bonus
     WHITE = "\e[37m"
-    CHARACTER = [
-      "#{WHITE}▂▂",
-      "▓▓#{WHITE}⠝",
+    YELLOW = "\e[33m"
+    CHARACTER_LINES = [
+      [ { text: "▂▂", color: WHITE } ],
+      [ { text: "▓▓", color: YELLOW }, { text: "⠝", color: WHITE } ],
     ]
-    COLOR = "\e[33m" # yellow
+
+    def self.width
+      CHARACTER_LINES.map do |line|
+        line.map { |segment| segment[:text].size }.sum
+      end.max
+    end
+
+    def self.height
+      CHARACTER_LINES.size
+    end
+
+    def render(offset_x:)
+      screen_x = @x - offset_x
+      position_x = [screen_x, 1].max
+      CHARACTER_LINES.map.with_index do |segments, i|
+        line = segments.map { |segment| segment[:text] }.join
+        next if screen_x + line.size <= 1
+
+        colored_line = clip_segments(segments, screen_x).map do |segment|
+          next if segment[:text].nil?
+          segment[:color] + segment[:text] + ANSI::RESET
+        end.join
+        "\e[#{@y+i};#{position_x}H" + colored_line
+      end.join
+    end
+
+    private
+
+    def clip_segments(segments, screen_x)
+      clipped = []
+      current_x = screen_x
+      segments.each do |segment|
+        next current_x += segment_size if current_x + segment[:text].size <= 1
+
+        available_width = Map::VIEWPORT_WIDTH - ([current_x, 1].max - 1)
+        visible_start = current_x >= 1 ? 0 : (1 - current_x)
+        visible_size = [segment[:text].size - visible_start, available_width].min
+        clipped << { text: segment[:text][visible_start, visible_size], color: segment[:color] }
+        current_x += segment[:text].size
+        break if current_x - screen_x >= Map::VIEWPORT_WIDTH
+      end
+      clipped
+    end
   end
 
   class Sake < Bonus
