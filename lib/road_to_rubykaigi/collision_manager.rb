@@ -15,7 +15,7 @@ module RoadToRubykaigi
     end
 
     def process_player_bonus_collisions
-      if collided_item = find_collision_item(@player, @bonuses)
+      if (collided_item = find_collision_item(@player, @bonuses))
         @effects.heart(
           @player.x + @player.width - 1,
           @player.y,
@@ -26,7 +26,7 @@ module RoadToRubykaigi
 
     def process_attack_bonus_collisions
       @attacks.dup.each do |attack|
-        if collided_item = find_collision_item(attack, @bonuses)
+        if (collided_item = find_collision_item(attack, @bonuses))
           @effects.heart(
             @player.x + @player.width - 1,
             @player.y,

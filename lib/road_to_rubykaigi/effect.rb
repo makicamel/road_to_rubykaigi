@@ -5,7 +5,7 @@ module RoadToRubykaigi
     end
 
     def heart(x, y)
-      @effects << HeartEffect.new(x,y)
+      @effects << HeartEffect.new(x, y)
     end
 
     def render(offset_x:)

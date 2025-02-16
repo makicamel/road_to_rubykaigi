@@ -1,4 +1,4 @@
-require 'forwardable'
+require "forwardable"
 
 module RoadToRubykaigi
   class Attacks
@@ -44,10 +44,8 @@ module RoadToRubykaigi
     end
 
     def reach_border?(map, offset_x:)
-      (
-        (@x - offset_x + SYMBOL.size - 1) > Map::VIEWPORT_WIDTH ||
+      (@x - offset_x + SYMBOL.size - 1) > Map::VIEWPORT_WIDTH ||
         (@x + SYMBOL.size) > map.width
-      )
     end
 
     def bounding_box

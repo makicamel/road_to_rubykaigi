@@ -22,7 +22,7 @@ module RoadToRubykaigi
           "\e[4;1H", # y;x
           "Press Space to start...",
         ]
-        if STDIN.raw { STDIN.read_nonblock(1, exception: false) == " " }
+        if $stdin.raw { $stdin.read_nonblock(1, exception: false) == " " }
           break true
         end
 

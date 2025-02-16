@@ -1,4 +1,4 @@
-require 'forwardable'
+require "forwardable"
 
 module RoadToRubykaigi
   class Bonuses
@@ -66,7 +66,7 @@ module RoadToRubykaigi
       return "" if screen_x + line.size <= 1
 
       available_width = Map::VIEWPORT_WIDTH - ([screen_x, 1].max - 1)
-      visible_start = screen_x >= 1 ? 0 : (1 - screen_x)
+      visible_start = (screen_x >= 1) ? 0 : (1 - screen_x)
       visible_size = [line.size - visible_start, available_width].min
       line[visible_start, visible_size] || ""
     end
@@ -88,8 +88,8 @@ module RoadToRubykaigi
     WHITE = "\e[37m"
     YELLOW = "\e[33m"
     CHARACTER_LINES = [
-      [ { text: "▂▂", color: WHITE } ],
-      [ { text: "▓▓", color: YELLOW }, { text: "⠝", color: WHITE } ],
+      [{ text: "▂▂", color: WHITE }],
+      [{ text: "▓▓", color: YELLOW }, { text: "⠝", color: WHITE }],
     ]
 
     def self.width
@@ -126,7 +126,7 @@ module RoadToRubykaigi
         next current_x += segment_size if current_x + segment[:text].size <= 1
 
         available_width = Map::VIEWPORT_WIDTH - ([current_x, 1].max - 1)
-        visible_start = current_x >= 1 ? 0 : (1 - current_x)
+        visible_start = (current_x >= 1) ? 0 : (1 - current_x)
         visible_size = [segment[:text].size - visible_start, available_width].min
         clipped << { text: segment[:text][visible_start, visible_size], color: segment[:color] }
         current_x += segment[:text].size

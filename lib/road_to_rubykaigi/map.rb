@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Map
-    VIEWPORT_WIDTH  = 40
+    VIEWPORT_WIDTH = 40
     attr_reader :width, :height
 
     def render(offset_x:)
@@ -40,7 +40,7 @@ module RoadToRubykaigi
         end
       end
       @height = @tiles.size
-      @width  = @tiles.first.size
+      @width = @tiles.first.size
     end
   end
 

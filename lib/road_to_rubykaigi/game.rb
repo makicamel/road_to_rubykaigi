@@ -1,7 +1,7 @@
 module RoadToRubykaigi
   class Game
     def run
-      STDIN.raw do
+      $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
 
@@ -15,7 +15,7 @@ module RoadToRubykaigi
             @foreground.render(offset_x: @scroll_offset_x),
           ].join
 
-          process_input(STDIN.read_nonblock(4, exception: false))
+          process_input($stdin.read_nonblock(4, exception: false))
 
           puts RoadToRubykaigi.debug
           sleep 1.0/36
