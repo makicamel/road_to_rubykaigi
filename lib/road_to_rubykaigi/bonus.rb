@@ -1,8 +1,13 @@
 module RoadToRubykaigi
   class Bonuses
-    def to_a
-      @bonuses.to_a
+    extend Forwardable
+    def_delegators :@bonuses, :to_a, :index
+
+    def remove(index)
+      @bonuses.delete_at(index)
     end
+
+    private
 
     def initialize(n = 3, map_width:, map_height:)
       @bonuses = (1..n).map do
@@ -32,18 +37,14 @@ module RoadToRubykaigi
       end
     end
 
+    def bounding_box
+      { x: @x, y: @y, width: self.class.width, height: self.class.height }
+    end
+
     def render
       colored.map.with_index do |line, i|
         "\e[#{@y+i};#{@x}H" + line
       end.join
-    end
-
-    def width
-      @width ||= self.class.width
-    end
-
-    def height
-      @height ||= self.class.height
     end
 
     private

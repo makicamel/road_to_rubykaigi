@@ -42,6 +42,10 @@ module RoadToRubykaigi
       )
     end
 
+    def bounding_box
+      { x: @x, y: @y, width: width, height: height }
+    end
+
     private
 
     def initialize(x = 10, y = 9, map_width:, map_height:)
@@ -59,7 +63,7 @@ module RoadToRubykaigi
     end
 
     def height
-      @height ||= FRAMES.map(&:size).max
+      @height ||= FRAMES.first.size
     end
 
     def update_frame

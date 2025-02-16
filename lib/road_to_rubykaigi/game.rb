@@ -4,6 +4,10 @@ module RoadToRubykaigi
       STDIN.raw do
         loop do
           @player.update
+          if collided_index = collision_index
+            @bonuses.remove(collided_index)
+          end
+
           puts [
             ANSI::CLEAR,
           ]+[
@@ -13,6 +17,7 @@ module RoadToRubykaigi
             *@player.attacks,
           ].map(&:render)
           process_input(STDIN.read_nonblock(4, exception: false))
+
           sleep 1.0/36
         end
       end
@@ -46,6 +51,20 @@ module RoadToRubykaigi
         @player.attack
       elsif %W[q \x03].include?(input) # Ctrl+C
         exit
+      end
+    end
+
+    # @return {Intger,Nil}
+    def collision_index
+      p = @player.bounding_box
+      @bonuses.index do |bonus|
+        b = bonus.bounding_box
+        !(
+          p[:x] + p[:width] <= b[:x] ||
+          p[:x] >= b[:x] + b[:width] ||
+          p[:y] + p[:height] <= b[:y] ||
+          p[:y] >= b[:y] + b[:height]
+        )
       end
     end
   end
