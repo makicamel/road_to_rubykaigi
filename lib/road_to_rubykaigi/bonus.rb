@@ -1,4 +1,19 @@
 module RoadToRubykaigi
+  class Bonuses
+    def to_a
+      @bonuses.to_a
+    end
+
+    def initialize(n = 3, map_width:, map_height:)
+      @bonuses = (1..n).map do
+        Bonus.random(
+          map_width: map_width,
+          map_height: map_height,
+        )
+      end
+    end
+  end
+
   class Bonus
     class << self
       def random(map_width:, map_height:)
@@ -21,6 +36,14 @@ module RoadToRubykaigi
       colored.map.with_index do |line, i|
         "\e[#{@y+i};#{@x}H" + line
       end.join
+    end
+
+    def width
+      @width ||= self.class.width
+    end
+
+    def height
+      @height ||= self.class.height
     end
 
     private

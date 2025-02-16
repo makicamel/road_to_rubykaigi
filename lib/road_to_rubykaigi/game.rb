@@ -26,12 +26,10 @@ module RoadToRubykaigi
         map_width: @map.width,
         map_height: @map.height,
       )
-      @bonuses = (0..2).map {
-        Bonus.random(
-          map_width: @map.width,
-          map_height: @map.height,
-        )
-      }
+      @bonuses = Bonuses.new(
+        map_width: @map.width,
+        map_height: @map.height,
+      )
     end
 
     def process_input(input)
