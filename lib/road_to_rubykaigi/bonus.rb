@@ -123,7 +123,7 @@ module RoadToRubykaigi
       clipped = []
       current_x = screen_x
       segments.each do |segment|
-        next current_x += segment_size if current_x + segment[:text].size <= 1
+        next current_x += segment[:text].size if current_x + segment[:text].size <= 1
 
         available_width = Map::VIEWPORT_WIDTH - ([current_x, 1].max - 1)
         visible_start = (current_x >= 1) ? 0 : (1 - current_x)
