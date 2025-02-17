@@ -5,7 +5,7 @@ module RoadToRubykaigi
         loop do
           RoadToRubykaigi.debug.clear
 
-          @scroll_offset_x = [@player.x - (Map::VIEWPORT_WIDTH / 2), 0].max
+          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH)
           @update_manager.update(offset_x: @scroll_offset_x)
           @collision_manager.process
 
