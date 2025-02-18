@@ -17,8 +17,8 @@ module RoadToRubykaigi
             last_auto_moved_time = now
           end
 
-          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
           @update_manager.update(offset_x: @scroll_offset_x)
+          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
           case @collision_manager.process
           when :game_over
             game_over
