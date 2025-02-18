@@ -22,6 +22,7 @@ module RoadToRubykaigi
       unless jumping?
         @x += dx
         @y += dy
+        @last_dx = dx
       end
     end
 
@@ -44,18 +45,18 @@ module RoadToRubykaigi
       if jumping?
         if (now - @jump_start_time) >= JUMP_DURATION_SECOND
           @jumping = false
-          @x = @jump_start_x + JUMP_DISTANCE_WIDTH
+          @x = @jump_start_x + JUMP_DISTANCE_WIDTH * jump_direction
           @y = @jump_start_y
         else
           f = (now - @jump_start_time) / JUMP_DURATION_SECOND
-          new_x = @jump_start_x + f * JUMP_DISTANCE_WIDTH
+          new_x = @jump_start_x + f * JUMP_DISTANCE_WIDTH * jump_direction
 
           # radius equation:
           #   (x - center_x)^2 + (y - center_y)^2 = radius^2
           # top half radius equation:
           #   y = center_y - sqrt(radius^2 - (x - center_x)^2)
           radius = JUMP_DISTANCE_WIDTH / 2
-          center_x = @jump_start_x + radius
+          center_x = @jump_start_x + radius * jump_direction
           new_y = @jump_start_y - Math.sqrt(radius**2 - (new_x - center_x)**2)
           @x = new_x.round.to_i
           @y = new_y.round.to_i
@@ -99,10 +100,15 @@ module RoadToRubykaigi
       @jump_start_time = nil
       @jump_start_x = nil
       @jump_start_y = nil
+      @last_dx = 1
     end
 
     def jumping?
       @jumping
+    end
+
+    def jump_direction
+      @last_dx > 0 ? 1 : -1
     end
   end
 end
