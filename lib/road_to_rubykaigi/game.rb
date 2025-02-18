@@ -19,14 +19,18 @@ module RoadToRubykaigi
 
           @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH)
           @update_manager.update(offset_x: @scroll_offset_x)
-          if @collision_manager.process == :game_over
+          case @collision_manager.process
+          when :game_over
             game_over
+          when :bonus
+            @score += 1
           end
 
           puts [
             ANSI::CLEAR,
             @background.render(offset_x: @scroll_offset_x),
             @foreground.render(offset_x: @scroll_offset_x),
+            "\e[1;#{Map::VIEWPORT_WIDTH+2}HScore: #{@score}"
           ].join
 
           puts RoadToRubykaigi.debug
@@ -54,6 +58,7 @@ module RoadToRubykaigi
       @update_manager = UpdateManager.new(@background, [@player, @attacks, @effects])
       @collision_manager = CollisionManager.new(@player, @bonuses, @attacks, @effects, @deadline)
       @scroll_offset_x = 0
+      @score = 0
     end
 
     def process_input(input)

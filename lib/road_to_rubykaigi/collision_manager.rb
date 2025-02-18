@@ -1,9 +1,13 @@
 module RoadToRubykaigi
   class CollisionManager
     def process
-      return :game_over if player_meet_deadline?
-      process_player_bonus_collisions
-      process_attack_bonus_collisions
+      if player_meet_deadline?
+        :game_over
+      elsif process_player_bonus_collisions || process_attack_bonus_collisions
+        RoadToRubykaigi.debug_add "process_player_bonus_collisions: #{process_player_bonus_collisions.inspect}"
+        RoadToRubykaigi.debug_add "process_attack_bonus_collisions: #{process_attack_bonus_collisions.inspect}"
+        :bonus
+      end
     end
 
     private
@@ -31,7 +35,7 @@ module RoadToRubykaigi
     end
 
     def process_attack_bonus_collisions
-      @attacks.dup.each do |attack|
+      collided = @attacks.dup.select do |attack|
         if (collided_item = find_collision_item(attack, @bonuses))
           @effects.heart(
             @player.x + @player.width - 1,
@@ -40,7 +44,8 @@ module RoadToRubykaigi
           @bonuses.delete(collided_item)
           @attacks.delete(attack)
         end
-      end
+      end.empty?
+      !collided
     end
 
     def find_collision_item(entity, others)

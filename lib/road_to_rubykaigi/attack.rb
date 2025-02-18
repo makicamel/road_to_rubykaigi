@@ -3,7 +3,7 @@ require "forwardable"
 module RoadToRubykaigi
   class Attacks
     extend Forwardable
-    def_delegators :@attacks, :each, :delete
+    def_delegators :@attacks, :each, :delete, :select
 
     def add(x, y)
       @attacks << Attack.new(x, y)
