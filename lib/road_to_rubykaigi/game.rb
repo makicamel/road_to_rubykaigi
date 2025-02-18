@@ -1,9 +1,21 @@
 module RoadToRubykaigi
   class Game
+    AUTO_MOVE_INTERVAL = 1
+
     def run
+      last_auto_moved_time = Time.now
+      last_moved_time = Time.now
       $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
+          now = Time.now
+          if process_input($stdin.read_nonblock(4, exception: false))
+            last_moved_time = now
+          end
+          if now - last_moved_time > AUTO_MOVE_INTERVAL && now - last_auto_moved_time > AUTO_MOVE_INTERVAL
+            @player.move(1, 0) # right
+            last_auto_moved_time = now
+          end
 
           @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH)
           @update_manager.update(offset_x: @scroll_offset_x)
@@ -14,8 +26,6 @@ module RoadToRubykaigi
             @background.render(offset_x: @scroll_offset_x),
             @foreground.render(offset_x: @scroll_offset_x),
           ].join
-
-          process_input($stdin.read_nonblock(4, exception: false))
 
           puts RoadToRubykaigi.debug
           sleep 1.0/36
