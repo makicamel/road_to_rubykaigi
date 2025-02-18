@@ -2,7 +2,7 @@ module RoadToRubykaigi
   class Player
     attr_reader :x, :y
 
-    WALKING_DELAY_SECOND = 0.6
+    WALKING_DELAY_SECOND = 0.5
     JUMP_DURATION_SECOND = 0.5
     JUMP_DISTANCE_WIDTH = 6
     FRAMES = [
