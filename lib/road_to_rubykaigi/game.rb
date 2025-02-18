@@ -17,7 +17,7 @@ module RoadToRubykaigi
             last_auto_moved_time = now
           end
 
-          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH)
+          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
           @update_manager.update(offset_x: @scroll_offset_x)
           case @collision_manager.process
           when :game_over
@@ -62,21 +62,24 @@ module RoadToRubykaigi
     end
 
     def process_input(input)
-      moves = {
-        "\e[A" => [0, -1], # up
-        "\e[B" => [0, 1], # down
-        "\e[D" => [-1, 0], # left
-        "\e[C" => [1, 0], # right
-      }
+      up = "\e[A"
+      right = "\e[C"
+      left = "\e[D"
+      attack = " "
+      stop = %W[q \x03]
 
-      if moves[input]
+      case input
+      when up
+        @player.jump
+      when left, right
+        moves = { right => [1, 0], left => [-1, 0] }
         @player.move(*moves[input])
-      elsif input == " "
+      when attack
         @attacks.add(
           @player.x + @player.width,
           @player.y + 1,
         )
-      elsif %W[q \x03].include?(input) # Ctrl+C
+      when *stop
         exit
       end
     end
