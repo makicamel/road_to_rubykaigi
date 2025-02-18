@@ -3,6 +3,7 @@ require_relative "road_to_rubykaigi/ansi"
 require_relative "road_to_rubykaigi/attack"
 require_relative "road_to_rubykaigi/bonus"
 require_relative "road_to_rubykaigi/collision_manager"
+require_relative "road_to_rubykaigi/deadline"
 require_relative "road_to_rubykaigi/effect"
 require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/game"
@@ -13,7 +14,7 @@ require "io/console"
 
 module RoadToRubykaigi
   class Error < StandardError; end
-  END_POSITION = Map.new.height + 1
+  END_POSITION = Map.new.height + 2
 
   def self.start
     ANSI.cursor_off

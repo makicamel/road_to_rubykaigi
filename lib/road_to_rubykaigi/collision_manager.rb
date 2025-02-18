@@ -1,17 +1,23 @@
 module RoadToRubykaigi
   class CollisionManager
     def process
+      return :game_over if player_meet_deadline?
       process_player_bonus_collisions
       process_attack_bonus_collisions
     end
 
     private
 
-    def initialize(player, bonuses, attacks, effects)
+    def initialize(player, bonuses, attacks, effects, deadline)
       @player = player
       @attacks = attacks
       @bonuses = bonuses
       @effects = effects
+      @deadline = deadline
+    end
+
+    def player_meet_deadline?
+      !!find_collision_item(@player, @deadline)
     end
 
     def process_player_bonus_collisions

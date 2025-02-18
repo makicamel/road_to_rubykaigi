@@ -19,7 +19,9 @@ module RoadToRubykaigi
 
           @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH)
           @update_manager.update(offset_x: @scroll_offset_x)
-          @collision_manager.process
+          if @collision_manager.process == :game_over
+            game_over
+          end
 
           puts [
             ANSI::CLEAR,
@@ -45,11 +47,12 @@ module RoadToRubykaigi
       )
       @attacks = Attacks.new
       @effects = Effects.new
-      [@player, @bonuses, @attacks, @effects].each do |object|
+      @deadline = Deadline.new(@background.height)
+      [@player, @bonuses, @attacks, @effects, @deadline].each do |object|
         @foreground.add(object)
       end
       @update_manager = UpdateManager.new(@background, [@player, @attacks, @effects])
-      @collision_manager = CollisionManager.new(@player, @bonuses, @attacks, @effects)
+      @collision_manager = CollisionManager.new(@player, @bonuses, @attacks, @effects, @deadline)
       @scroll_offset_x = 0
     end
 
@@ -71,6 +74,11 @@ module RoadToRubykaigi
       elsif %W[q \x03].include?(input) # Ctrl+C
         exit
       end
+    end
+
+    def game_over
+      puts ANSI::RED + "Game Over\e[0m"
+      exit
     end
   end
 end
