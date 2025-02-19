@@ -7,30 +7,32 @@ module RoadToRubykaigi
     JUMP_DISTANCE_WIDTH = 6
     RIGHT = 1
     LEFT = -1
-    CHARACTER_RIGHT = [
-      [
-        "╭──────╮",
-        "│｡・◡・│_◢◤",
-        "╰ᜊ───ᜊ─╯"
+    CHARACTERS = {
+      RIGHT => [
+        [
+          "╭──────╮",
+          "│｡・◡・│_◢◤",
+          "╰ᜊ───ᜊ─╯"
+        ],
+        [
+          "╭──────╮",
+          "│｡・◡・│_◢◤",
+          "╰─∪───∪╯ "
+        ],
       ],
-      [
-        "╭──────╮",
-        "│｡・◡・│_◢◤",
-        "╰─∪───∪╯ "
+      LEFT => [
+        [
+          "╭──────╮",
+          "│・◡・｡│_◢◤",
+          "╰─ᜊ───ᜊ╯"
+        ],
+        [
+          "╭──────╮",
+          "│・◡・｡│_◢◤",
+          "╰∪───∪─╯ "
+        ],
       ],
-    ]
-    CHARACTER_LEFT = [
-      [
-        "╭──────╮",
-        "│・◡・｡│_◢◤",
-        "╰─ᜊ───ᜊ╯"
-      ],
-      [
-        "╭──────╮",
-        "│・◡・｡│_◢◤",
-        "╰∪───∪─╯ "
-      ],
-    ]
+    }
 
     def move(dx, dy)
       if jumping?
@@ -59,7 +61,7 @@ module RoadToRubykaigi
     def update
       now = Time.now
       if (now - @last_walked_time) >= WALKING_DELAY_SECOND
-        @walking_frame = (@walking_frame + 1) % CHARACTER_RIGHT.size
+        @walking_frame = (@walking_frame + 1) % CHARACTERS[RIGHT].size
         @last_walked_time = now
       end
 
@@ -86,8 +88,7 @@ module RoadToRubykaigi
     end
 
     def render(offset_x:)
-      character = (current_direction == RIGHT) ? CHARACTER_RIGHT : CHARACTER_LEFT
-      character[@walking_frame].map.with_index do |line, i|
+      CHARACTERS[current_direction][@walking_frame].map.with_index do |line, i|
         "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
     end
@@ -103,11 +104,11 @@ module RoadToRubykaigi
     end
 
     def width
-      @width ||= CHARACTER_RIGHT.first.map(&:size).max
+      @width ||= CHARACTERS[RIGHT].first.map(&:size).max
     end
 
     def height
-      @height ||= CHARACTER_RIGHT.first.size
+      @height ||= CHARACTERS[RIGHT].first.size
     end
 
     private
