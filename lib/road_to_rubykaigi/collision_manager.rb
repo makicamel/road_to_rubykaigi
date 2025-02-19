@@ -4,8 +4,6 @@ module RoadToRubykaigi
       if player_meet_deadline?
         :game_over
       elsif process_player_bonus_collisions || process_attack_bonus_collisions
-        RoadToRubykaigi.debug_add "process_player_bonus_collisions: #{process_player_bonus_collisions.inspect}"
-        RoadToRubykaigi.debug_add "process_attack_bonus_collisions: #{process_attack_bonus_collisions.inspect}"
         :bonus
       end
     end
