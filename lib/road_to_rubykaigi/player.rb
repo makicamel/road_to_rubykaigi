@@ -33,19 +33,26 @@ module RoadToRubykaigi
     ]
 
     def move(dx, dy)
-      unless jumping?
+      if jumping?
+        new_direction = (dx > 0) ? RIGHT : LEFT
+        unless new_direction == @current_jump_direction
+          @jump_base_x = @x
+          @current_jump_direction = new_direction
+        end
+      else
         @x += dx
         @y += dy
-        @last_dx = dx
       end
+      @last_dx = dx
     end
 
     def jump
       unless jumping?
         @jumping = true
         @jump_start_time = Time.now
-        @jump_start_x = @x
-        @jump_start_y = @y
+        @jump_base_x = @x
+        @jump_base_y = @y
+        @current_jump_direction = direction
       end
     end
 
@@ -59,19 +66,19 @@ module RoadToRubykaigi
       if jumping?
         if (now - @jump_start_time) >= JUMP_DURATION_SECOND
           @jumping = false
-          @x = @jump_start_x + JUMP_DISTANCE_WIDTH * direction
-          @y = @jump_start_y
+          @x = @jump_base_x + JUMP_DISTANCE_WIDTH * @current_jump_direction
+          @y = @jump_base_y
+          @current_jump_direction = RIGHT
         else
           f = (now - @jump_start_time) / JUMP_DURATION_SECOND
-          new_x = @jump_start_x + f * JUMP_DISTANCE_WIDTH * direction
-
+          new_x = @jump_base_x + f * JUMP_DISTANCE_WIDTH * @current_jump_direction
           # radius equation:
           #   (x - center_x)^2 + (y - center_y)^2 = radius^2
           # top half radius equation:
           #   y = center_y - sqrt(radius^2 - (x - center_x)^2)
           radius = JUMP_DISTANCE_WIDTH / 2
-          center_x = @jump_start_x + radius * direction
-          new_y = @jump_start_y - Math.sqrt(radius**2 - (new_x - center_x)**2)
+          center_x = @jump_base_x + (JUMP_DISTANCE_WIDTH * @current_jump_direction) / 2.0
+          new_y = @jump_base_y - Math.sqrt(radius**2 - (new_x - center_x)**2)
           @x = new_x.round.to_i
           @y = new_y.round.to_i
         end
@@ -79,7 +86,7 @@ module RoadToRubykaigi
     end
 
     def render(offset_x:)
-      character = (direction == RIGHT) ? CHARACTER_RIGHT : CHARACTER_LEFT
+      character = (current_direction == RIGHT) ? CHARACTER_RIGHT : CHARACTER_LEFT
       character[@walking_frame].map.with_index do |line, i|
         "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
@@ -113,9 +120,14 @@ module RoadToRubykaigi
       @last_walked_time = Time.now
       @jumping = false
       @jump_start_time = nil
-      @jump_start_x = nil
-      @jump_start_y = nil
-      @last_dx = 1
+      @jump_base_x = nil
+      @jump_base_y = nil
+      @last_dx = RIGHT
+      @current_jump_direction = RIGHT
+    end
+
+    def current_direction
+      jumping? ? @current_jump_direction : direction
     end
 
     def jumping?
