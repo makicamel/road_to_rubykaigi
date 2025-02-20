@@ -49,19 +49,25 @@ module RoadToRubykaigi
         map_width: @background.width,
         map_height: @background.height,
       )
+      @enemies = Enemies.new(
+        map_width: @background.width,
+        map_height: @background.height,
+      )
       @attacks = Attacks.new
       @effects = Effects.new
       @deadline = Deadline.new(@background.height)
-      [@player, @bonuses, @attacks, @effects, @deadline].each do |object|
+      [@player, @bonuses, @enemies, @attacks, @effects, @deadline].each do |object|
         @foreground.add(object)
       end
       @update_manager = UpdateManager.new(@background, [@player, @attacks, @effects])
-      @collision_manager = CollisionManager.new(@player, @bonuses, @attacks, @effects, @deadline)
+      @collision_manager = CollisionManager.new(@player, @bonuses, @enemies, @attacks, @effects, @deadline)
       @scroll_offset_x = 0
       @score = 0
     end
 
     def process_input(input)
+      return if @player.stunned?
+
       up = "\e[A"
       right = "\e[C"
       left = "\e[D"

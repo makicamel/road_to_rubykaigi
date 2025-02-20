@@ -5,6 +5,7 @@ module RoadToRubykaigi
     WALKING_DELAY_SECOND = 0.5
     JUMP_DURATION_SECOND = 0.5
     JUMP_DISTANCE_WIDTH = 6
+    STUN_DURATION = 2.0
     RIGHT = 1
     LEFT = -1
     CHARACTERS = {
@@ -54,6 +55,14 @@ module RoadToRubykaigi
         @jump_base_y = @y
         @current_jump_direction = direction
       end
+    end
+
+    def stun
+      @stunned_until = Time.now + STUN_DURATION
+    end
+
+    def stunned?
+      Time.now < @stunned_until
     end
 
     def update
@@ -123,6 +132,7 @@ module RoadToRubykaigi
       @jump_base_y = nil
       @last_dx = RIGHT
       @current_jump_direction = RIGHT
+      @stunned_until = Time.now
     end
 
     def move(dx)

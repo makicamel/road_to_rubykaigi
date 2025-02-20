@@ -1,6 +1,7 @@
 module RoadToRubykaigi
   class CollisionManager
     def process
+      process_enemy_collisions
       if player_meet_deadline?
         :game_over
       elsif process_player_bonus_collisions || process_attack_bonus_collisions
@@ -10,10 +11,11 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(player, bonuses, attacks, effects, deadline)
+    def initialize(player, bonuses, enemies, attacks, effects, deadline)
       @player = player
       @attacks = attacks
       @bonuses = bonuses
+      @enemies = enemies
       @effects = effects
       @deadline = deadline
     end
@@ -44,6 +46,13 @@ module RoadToRubykaigi
         end
       end.empty?
       !collided
+    end
+
+    def process_enemy_collisions
+      if (collided_item = find_collision_item(@player, @enemies))
+        @enemies.delete(collided_item)
+        @player.stun
+      end
     end
 
     def find_collision_item(entity, others)
