@@ -9,30 +9,58 @@ module RoadToRubykaigi
     RIGHT = 1
     LEFT = -1
     CHARACTERS = {
-      RIGHT => [
-        [
-          "╭──────╮",
-          "│｡・◡・│_◢◤",
-          "╰ᜊ───ᜊ─╯"
+      normal: {
+        RIGHT => [
+          [
+            "╭──────╮",
+            "│｡・◡・│_◢◤",
+            "╰ᜊ───ᜊ─╯"
+          ],
+          [
+            "╭──────╮",
+            "│｡・◡・│_◢◤",
+            "╰─∪───∪╯ "
+          ],
         ],
-        [
-          "╭──────╮",
-          "│｡・◡・│_◢◤",
-          "╰─∪───∪╯ "
+        LEFT => [
+          [
+            "╭──────╮",
+            "│・◡・｡│_◢◤",
+            "╰─ᜊ───ᜊ╯"
+          ],
+          [
+            "╭──────╮",
+            "│・◡・｡│_◢◤",
+            "╰∪───∪─╯ "
+          ],
         ],
-      ],
-      LEFT => [
-        [
-          "╭──────╮",
-          "│・◡・｡│_◢◤",
-          "╰─ᜊ───ᜊ╯"
+      },
+      stunned: {
+        RIGHT => [
+          [
+            "╭──────╮",
+            "│ ´×⌓× │_◢◤",
+            "╰─ᜊ───ᜊ╯"
+          ],
+          [
+            "╭──────╮",
+            "│ ´×⌓× │_◢◤",
+            "╰─∪───∪╯ "
+          ],
         ],
-        [
-          "╭──────╮",
-          "│・◡・｡│_◢◤",
-          "╰∪───∪─╯ "
+        LEFT => [
+          [
+            "╭──────╮",
+            "│ ×⌓×` │_◢◤",
+            "╰─ᜊ───ᜊ╯"
+          ],
+          [
+            "╭──────╮",
+            "│ ×⌓×` │_◢◤",
+            "╰─∪───∪╯ "
+          ],
         ],
-      ],
+      },
     }
 
     def right
@@ -68,7 +96,7 @@ module RoadToRubykaigi
     def update
       now = Time.now
       if (now - @last_walked_time) >= WALKING_DELAY_SECOND
-        @walking_frame = (@walking_frame + 1) % CHARACTERS[RIGHT].size
+        @walking_frame = (@walking_frame + 1) % current_character.size
         @last_walked_time = now
       end
 
@@ -95,7 +123,7 @@ module RoadToRubykaigi
     end
 
     def render(offset_x:)
-      CHARACTERS[current_direction][@walking_frame].map.with_index do |line, i|
+      current_character[@walking_frame].map.with_index do |line, i|
         "\e[#{@y+i};#{@x-offset_x}H" + line
       end.join
     end
@@ -111,11 +139,11 @@ module RoadToRubykaigi
     end
 
     def width
-      @width ||= CHARACTERS[RIGHT].first.map(&:size).max
+      @width ||= current_character.first.map(&:size).max
     end
 
     def height
-      @height ||= CHARACTERS[RIGHT].first.size
+      @height ||= current_character.first.size
     end
 
     private
@@ -146,6 +174,11 @@ module RoadToRubykaigi
         @x += dx
       end
       @last_dx = dx
+    end
+
+    def current_character
+      status = stunned? ? :stunned : :normal
+      CHARACTERS[status][current_direction]
     end
 
     def current_direction
