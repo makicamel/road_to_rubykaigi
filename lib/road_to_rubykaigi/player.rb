@@ -94,7 +94,7 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(x = 10, y = 9)
+    def initialize(x = 10, y = 25)
       @x = x
       @y = y
       @attacks = []

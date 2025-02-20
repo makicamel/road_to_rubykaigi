@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Map
-    VIEWPORT_WIDTH = 40
+    VIEWPORT_WIDTH = 100
     attr_reader :width, :height
 
     def render(offset_x:)
@@ -20,20 +20,7 @@ module RoadToRubykaigi
     private
 
     def initialize
-      map_data = [
-        "1234567890123456789012345678901234567890123456789012",
-        "2                                                  2",
-        "3                                                  3",
-        "4                                                  4",
-        "5                                                  5",
-        "6                                                  6",
-        "7                                                  7",
-        "8                                                  8",
-        "9                                                  9",
-        "0                                                  0",
-        "#                                                  #",
-        "1234567890123456789012345678901234567890123456789012",
-      ]
+      map_data = RoadToRubykaigi::Graphics::Map.data
       @tiles = map_data.map do |line|
         line.chars.map do |ch|
           Tile.new(ch, passable: (ch != "#"))
