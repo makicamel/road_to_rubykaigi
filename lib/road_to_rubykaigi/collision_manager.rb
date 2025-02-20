@@ -50,6 +50,10 @@ module RoadToRubykaigi
 
     def process_enemy_collisions
       if (collided_item = find_collision_item(@player, @enemies))
+        @effects.lightning(
+          @player.x + @player.width - 1,
+          @player.y,
+        )
         @enemies.delete(collided_item)
         @player.stun
       end
