@@ -3,18 +3,18 @@ module RoadToRubykaigi
     AUTO_MOVE_INTERVAL = 1
 
     def run
-      last_auto_moved_time = Time.now
-      last_moved_time = Time.now
+      last_auto_walked_time = Time.now
+      last_acted_time = Time.now
       $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
           now = Time.now
           if process_input($stdin.read_nonblock(4, exception: false))
-            last_moved_time = now
+            last_acted_time = now
           end
-          if now - last_moved_time > AUTO_MOVE_INTERVAL && now - last_auto_moved_time > AUTO_MOVE_INTERVAL
+          if now - last_acted_time > AUTO_MOVE_INTERVAL && now - last_auto_walked_time > AUTO_MOVE_INTERVAL
             @player.walk
-            last_auto_moved_time = now
+            last_auto_walked_time = now
           end
 
           @update_manager.update(offset_x: @scroll_offset_x)
