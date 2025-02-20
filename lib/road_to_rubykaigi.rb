@@ -11,6 +11,7 @@ require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
 require_relative "road_to_rubykaigi/player"
 require_relative "road_to_rubykaigi/update_manager"
+require_relative "road_to_rubykaigi/graphics/player"
 require "io/console"
 
 module RoadToRubykaigi

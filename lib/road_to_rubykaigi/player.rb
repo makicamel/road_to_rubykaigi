@@ -8,60 +8,6 @@ module RoadToRubykaigi
     STUN_DURATION = 2.0
     RIGHT = 1
     LEFT = -1
-    CHARACTERS = {
-      normal: {
-        RIGHT => [
-          [
-            "╭──────╮",
-            "│｡・◡・│_◢◤",
-            "╰ᜊ───ᜊ─╯"
-          ],
-          [
-            "╭──────╮",
-            "│｡・◡・│_◢◤",
-            "╰─∪───∪╯ "
-          ],
-        ],
-        LEFT => [
-          [
-            "╭──────╮",
-            "│・◡・｡│_◢◤",
-            "╰─ᜊ───ᜊ╯"
-          ],
-          [
-            "╭──────╮",
-            "│・◡・｡│_◢◤",
-            "╰∪───∪─╯ "
-          ],
-        ],
-      },
-      stunned: {
-        RIGHT => [
-          [
-            "╭──────╮",
-            "│ ´×⌓× │_◢◤",
-            "╰─ᜊ───ᜊ╯"
-          ],
-          [
-            "╭──────╮",
-            "│ ´×⌓× │_◢◤",
-            "╰─∪───∪╯ "
-          ],
-        ],
-        LEFT => [
-          [
-            "╭──────╮",
-            "│ ×⌓×` │_◢◤",
-            "╰─ᜊ───ᜊ╯"
-          ],
-          [
-            "╭──────╮",
-            "│ ×⌓×` │_◢◤",
-            "╰─∪───∪╯ "
-          ],
-        ],
-      },
-    }
 
     def right
       move(RIGHT)
@@ -178,7 +124,7 @@ module RoadToRubykaigi
 
     def current_character
       status = stunned? ? :stunned : :normal
-      CHARACTERS[status][current_direction]
+      Graphics::Player.character(status, current_direction)
     end
 
     def current_direction
