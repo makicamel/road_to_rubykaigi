@@ -13,7 +13,7 @@ module RoadToRubykaigi
             last_moved_time = now
           end
           if now - last_moved_time > AUTO_MOVE_INTERVAL && now - last_auto_moved_time > AUTO_MOVE_INTERVAL
-            @player.move(1, 0) # right
+            @player.right
             last_auto_moved_time = now
           end
 
@@ -71,9 +71,10 @@ module RoadToRubykaigi
       case input
       when up
         @player.jump
-      when left, right
-        moves = { right => [1, 0], left => [-1, 0] }
-        @player.move(*moves[input])
+      when right
+        @player.right
+      when left
+        @player.left
       when attack
         @attacks.add(
           @player.x + @player.width,

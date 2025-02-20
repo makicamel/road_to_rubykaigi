@@ -34,18 +34,12 @@ module RoadToRubykaigi
       ],
     }
 
-    def move(dx, dy)
-      if jumping?
-        new_direction = (dx > 0) ? RIGHT : LEFT
-        unless new_direction == @current_jump_direction
-          @jump_base_x = @x
-          @current_jump_direction = new_direction
-        end
-      else
-        @x += dx
-        @y += dy
-      end
-      @last_dx = dx
+    def right
+      move(RIGHT)
+    end
+
+    def left
+      move(LEFT)
     end
 
     def jump
@@ -125,6 +119,19 @@ module RoadToRubykaigi
       @jump_base_y = nil
       @last_dx = RIGHT
       @current_jump_direction = RIGHT
+    end
+
+    def move(dx)
+      if jumping?
+        new_direction = (dx > 0) ? RIGHT : LEFT
+        unless new_direction == @current_jump_direction
+          @jump_base_x = @x
+          @current_jump_direction = new_direction
+        end
+      else
+        @x += dx
+      end
+      @last_dx = dx
     end
 
     def current_direction
