@@ -42,6 +42,10 @@ module RoadToRubykaigi
       move(LEFT)
     end
 
+    def walk
+      move(current_direction)
+    end
+
     def jump
       unless jumping?
         @jumping = true

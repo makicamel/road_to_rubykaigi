@@ -13,7 +13,7 @@ module RoadToRubykaigi
             last_moved_time = now
           end
           if now - last_moved_time > AUTO_MOVE_INTERVAL && now - last_auto_moved_time > AUTO_MOVE_INTERVAL
-            @player.right
+            @player.walk
             last_auto_moved_time = now
           end
 
