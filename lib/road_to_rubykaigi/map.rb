@@ -12,7 +12,7 @@ module RoadToRubykaigi
 
     def clamp_position(x:, y:, width:, height:)
       [
-        x.clamp(2, VIEWPORT_WIDTH),
+        x.clamp(2, @width - width),
         y.clamp(2, @height - height),
       ]
     end
