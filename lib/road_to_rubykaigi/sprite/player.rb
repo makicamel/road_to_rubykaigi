@@ -41,6 +41,8 @@ module RoadToRubykaigi
       end
 
       def update
+        return if stunned?
+
         now = Time.now
         if (now - @last_walked_time) >= WALKING_DELAY_SECOND
           @walking_frame = (@walking_frame + 1) % current_character.size
