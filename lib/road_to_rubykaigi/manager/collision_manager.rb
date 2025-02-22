@@ -5,7 +5,7 @@ module RoadToRubykaigi
         player_meet_enemy
         if player_meet_deadline?
           :game_over
-        elsif player_meet_bonus || attack_hit_bonus
+        elsif player_meet_bonus || attack_hit_bonus || attack_hit_enemy
           :bonus
         end
       end
@@ -38,6 +38,20 @@ module RoadToRubykaigi
               @player.y,
             )
             @bonuses.delete(collided_item)
+            @attacks.delete(attack)
+          end
+        end.empty?
+        !collided
+      end
+
+      def attack_hit_enemy
+        collided = @attacks.dup.select do |attack|
+          if (collided_item = find_collision_item(attack, @enemies))
+            @effects.heart(
+              @player.x + @player.width - 1,
+              @player.y,
+            )
+            @enemies.delete(collided_item)
             @attacks.delete(attack)
           end
         end.empty?
