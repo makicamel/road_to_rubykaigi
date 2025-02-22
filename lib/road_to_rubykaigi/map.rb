@@ -34,22 +34,14 @@ module RoadToRubykaigi
   class Layer
     attr_reader :layers
 
-    def add(layer)
-      @layers << layer
-    end
-
-    def remove(layer)
-      @layers.delete(layer)
-    end
-
     def build_buffer(offset_x:)
       @layers.map { |layer| layer.build_buffer(offset_x: offset_x) }
     end
 
     private
 
-    def initialize
-      @layers = []
+    def initialize(player:, deadline:, bonuses:, enemies:, attacks:, effects:)
+      @layers = [player, deadline, bonuses, enemies, attacks, effects]
     end
   end
 

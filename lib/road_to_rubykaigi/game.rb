@@ -37,22 +37,27 @@ module RoadToRubykaigi
 
     def initialize
       @background = Map.new
-      @foreground = Layer.new
       @player = Sprite::Player.new
-      @bonuses = Sprite::Bonuses.new(
+      bonuses = Sprite::Bonuses.new(
         map_width: @background.width,
         map_height: @background.height,
       )
-      @enemies = Sprite::Enemies.new(
+      enemies = Sprite::Enemies.new(
         map_width: @background.width,
         map_height: @background.height,
       )
       @attacks = Sprite::Attacks.new
-      @effects = Sprite::Effects.new
-      @deadline = Sprite::Deadline.new(@background.height)
-      [@player, @deadline, @bonuses, @enemies, @attacks, @effects].each do |object|
-        @foreground.add(object)
-      end
+      effects = Sprite::Effects.new
+      deadline = Sprite::Deadline.new(@background.height)
+
+      @foreground = Layer.new(
+        player: @player,
+        deadline: deadline,
+        bonuses: bonuses,
+        enemies: enemies,
+        attacks: @attacks,
+        effects: effects,
+      )
       @update_manager = Manager::UpdateManager.new(@background, @foreground)
       @collision_manager = Manager::CollisionManager.new(@foreground)
       @drawing_manager = Manager::DrawingManager.new(@background, @foreground)
