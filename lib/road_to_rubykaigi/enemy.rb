@@ -5,10 +5,17 @@ module RoadToRubykaigi
     extend Forwardable
     def_delegators :@enemies, :to_a, :find, :delete
 
-    def render(offset_x:)
-      @enemies.map do |enemy|
-        enemy.render(offset_x: offset_x)
-      end.join
+    def build_buffer(offset_x:)
+      buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
+      @enemies.each do |enemy|
+        bounding_box = enemy.bounding_box
+        relative_x = bounding_box[:x] - offset_x - 1
+        relative_y = bounding_box[:y] - 1
+        enemy.characters.each_with_index do |chara, j|
+          buffer[relative_y][relative_x+j] = chara
+        end
+      end
+      buffer
     end
 
     private
@@ -32,16 +39,12 @@ module RoadToRubykaigi
       Bug.new(x, y)
     end
 
-    def render(offset_x:)
-      "\e[#{@y};#{@x-offset_x}H" + character
-    end
-
     def bounding_box
       { x: @x, y: @y, width: width, height: height }
     end
 
-    def character
-      self.class::CHARACTER
+    def characters
+      (self.class::CHARACTER + "\0").chars
     end
 
     def width

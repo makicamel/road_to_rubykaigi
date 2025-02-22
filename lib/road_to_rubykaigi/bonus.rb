@@ -5,10 +5,17 @@ module RoadToRubykaigi
     extend Forwardable
     def_delegators :@bonuses, :to_a, :find, :delete
 
-    def render(offset_x:)
-      @bonuses.map do |bonus|
-        bonus.render(offset_x: offset_x)
-      end.join
+    def build_buffer(offset_x:)
+      buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
+      @bonuses.each do |bonus|
+        bounding_box = bonus.bounding_box
+        relative_x = bounding_box[:x] - offset_x - 1
+        relative_y = bounding_box[:y] - 1
+        bonus.characters.each_with_index do |chara, j|
+          buffer[relative_y][relative_x+j] = chara
+        end
+      end
+      buffer
     end
 
     private
@@ -37,11 +44,8 @@ module RoadToRubykaigi
       { x: @x, y: @y, width: width, height: height }
     end
 
-    def render(offset_x:)
-      screen_x = @x - offset_x
-      position_x = [screen_x, 1].max
-
-      "\e[#{@y};#{position_x}H" + self.class::CHARACTER
+    def characters
+      (self.class::CHARACTER + "\0").chars
     end
 
     def width
@@ -57,15 +61,6 @@ module RoadToRubykaigi
     def initialize(x, y)
       @x = x
       @y = y
-    end
-
-    def clip(line, screen_x)
-      return "" if screen_x + line.size <= 1
-
-      available_width = Map::VIEWPORT_WIDTH - ([screen_x, 1].max - 1)
-      visible_start = (screen_x >= 1) ? 0 : (1 - screen_x)
-      visible_size = [line.size - visible_start, available_width].min
-      line[visible_start, visible_size] || ""
     end
   end
 

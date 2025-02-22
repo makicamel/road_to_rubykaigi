@@ -19,10 +19,17 @@ module RoadToRubykaigi
       end
     end
 
-    def render(offset_x:)
-      @attacks.map do |attack|
-        attack.render(offset_x: offset_x)
-      end.join
+    def build_buffer(offset_x:)
+      buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
+      @attacks.each do |attack|
+        bounding_box = attack.bounding_box
+        relative_x = bounding_box[:x] - offset_x - 1
+        relative_y = bounding_box[:y] - 1
+        attack.characters.each_with_index do |chara, j|
+          buffer[relative_y][relative_x+j] = chara
+        end
+      end
+      buffer
     end
 
     private
@@ -41,6 +48,10 @@ module RoadToRubykaigi
 
     def render(offset_x:)
       "\e[#{@y};#{@x-offset_x}H" + SYMBOL
+    end
+
+    def characters
+      SYMBOL.chars
     end
 
     def reach_border?(map, offset_x:)

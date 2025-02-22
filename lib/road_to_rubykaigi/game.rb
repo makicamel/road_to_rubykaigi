@@ -25,13 +25,7 @@ module RoadToRubykaigi
           when :bonus
             @score += 1
           end
-
-          puts [
-            ANSI::CLEAR,
-            @background.render(offset_x: @scroll_offset_x),
-            @foreground.render(offset_x: @scroll_offset_x),
-            "\e[1;#{Map::VIEWPORT_WIDTH+2}HScore: #{@score}"
-          ].join
+          @drawing_manager.draw(offset_x: @scroll_offset_x)
 
           puts RoadToRubykaigi.debug
           sleep 1.0/36
@@ -56,11 +50,12 @@ module RoadToRubykaigi
       @attacks = Attacks.new
       @effects = Effects.new
       @deadline = Deadline.new(@background.height)
-      [@player, @bonuses, @enemies, @attacks, @effects, @deadline].each do |object|
+      [@player, @deadline, @bonuses, @enemies, @attacks, @effects].each do |object|
         @foreground.add(object)
       end
-      @update_manager = UpdateManager.new(@background, [@player, @attacks, @effects])
+      @update_manager = UpdateManager.new(@background, [@player, @deadline, @attacks, @effects])
       @collision_manager = CollisionManager.new(@player, @bonuses, @enemies, @attacks, @effects, @deadline)
+      @drawing_manager = DrawingManager.new(@background, @foreground)
       @scroll_offset_x = 0
       @score = 0
     end

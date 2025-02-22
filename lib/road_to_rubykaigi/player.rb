@@ -68,10 +68,16 @@ module RoadToRubykaigi
       end
     end
 
-    def render(offset_x:)
-      current_character[@walking_frame].map.with_index do |line, i|
-        "\e[#{@y+i};#{@x-offset_x}H" + line
-      end.join
+    def build_buffer(offset_x:)
+      buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
+      relative_x = @x - offset_x - 1
+      relative_y = @y - 1
+      current_character[@walking_frame].each_with_index do |line, i|
+        line.chars.each_with_index do |chara, j|
+          buffer[relative_y+i][relative_x+j] = chara
+        end
+      end
+      buffer
     end
 
     def enforce_boundary(map, offset_x:)

@@ -1,13 +1,13 @@
 module RoadToRubykaigi
   class Map
     VIEWPORT_WIDTH = 100
+    VIEWPORT_HEIGHT = 30
     attr_reader :width, :height
 
-    def render(offset_x:)
-      @tiles.map.with_index do |row, i|
-        visible_row = row[offset_x, VIEWPORT_WIDTH] || []
-        "\e[#{i+1};1H" + visible_row.map(&:render).join
-      end.join
+    def build_buffer(offset_x:)
+      (0...VIEWPORT_HEIGHT).map do |row|
+        @tiles[row][offset_x, VIEWPORT_WIDTH].map(&:character)
+      end
     end
 
     def clamp_position(x:, y:, width:, height:)
@@ -32,27 +32,29 @@ module RoadToRubykaigi
   end
 
   class Layer
-    def add(object)
-      @objects << object
+    attr_reader :layers
+
+    def add(layer)
+      @layers << layer
     end
 
-    def remove(object)
-      @objects.delete(object)
+    def remove(layer)
+      @layers.delete(layer)
     end
 
-    def render(offset_x: 0)
-      @objects.map { |object| object.render(offset_x: offset_x) }.join
+    def build_buffer(offset_x:)
+      @layers.map { |layer| layer.build_buffer(offset_x: offset_x) }
     end
 
     private
 
     def initialize
-      @objects = []
+      @layers = []
     end
   end
 
   class Tile
-    def render
+    def character
       @symbol
     end
 

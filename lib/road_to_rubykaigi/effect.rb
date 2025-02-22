@@ -12,10 +12,15 @@ module RoadToRubykaigi
       @effects << LightningEffect.new(x, y)
     end
 
-    def render(offset_x:)
-      @effects.map do |effect|
-        effect.render(offset_x: offset_x)
-      end.join
+    def build_buffer(offset_x:)
+      buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
+      @effects.each do |effect|
+        bounding_box = effect.bounding_box
+        relative_x = bounding_box[:x] - offset_x - 1
+        relative_y = bounding_box[:y] - 1
+        buffer[relative_y][relative_x] = effect.character
+      end
+      buffer
     end
 
     def to_a
@@ -35,12 +40,16 @@ module RoadToRubykaigi
       @y = (@y - elapsed).to_i
     end
 
-    def render(offset_x:)
-      "\e[#{@y};#{@x-offset_x}H" + self.class::SYMBOL
+    def character
+      self.class::SYMBOL
     end
 
     def expired?
       (Time.now - @start_time) >= self.class::DURATION
+    end
+
+    def bounding_box
+      { x: @x, y: @y, width: 1, height: 1 }
     end
 
     private
