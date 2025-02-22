@@ -18,6 +18,7 @@ module RoadToRubykaigi
         bounding_box = effect.bounding_box
         relative_x = bounding_box[:x] - offset_x - 1
         relative_y = bounding_box[:y] - 1
+        next if relative_x < 1
         buffer[relative_y][relative_x] = effect.character
       end
       buffer

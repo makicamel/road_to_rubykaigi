@@ -11,6 +11,7 @@ module RoadToRubykaigi
         bounding_box = enemy.bounding_box
         relative_x = bounding_box[:x] - offset_x - 1
         relative_y = bounding_box[:y] - 1
+        next if relative_x < 1
         enemy.characters.each_with_index do |chara, j|
           buffer[relative_y][relative_x+j] = chara
         end

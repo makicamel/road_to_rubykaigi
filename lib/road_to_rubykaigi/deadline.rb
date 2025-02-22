@@ -19,6 +19,7 @@ module RoadToRubykaigi
       relative_x = @x - offset_x - 1
       relative_y = @y - 1
       (0...@height).each_with_index do |i|
+        next if relative_x < 1
         buffer[relative_y+i][relative_x] = ANSI::RED + "#\e[0m"
       end
       buffer
