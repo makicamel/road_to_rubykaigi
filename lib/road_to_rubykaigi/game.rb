@@ -3,6 +3,7 @@ module RoadToRubykaigi
     AUTO_MOVE_INTERVAL = 1
 
     def run
+      ANSI.clear
       last_auto_walked_time = Time.now
       last_acted_time = Time.now
       $stdin.raw do
@@ -23,7 +24,7 @@ module RoadToRubykaigi
           when :game_over
             game_over
           when :bonus
-            @score += 1
+            @score_board.increment
           end
           @drawing_manager.draw(offset_x: @scroll_offset_x)
 
@@ -37,6 +38,7 @@ module RoadToRubykaigi
 
     def initialize
       @background = Map.new
+      @score_board = ScoreBoard.new
       @player = Sprite::Player.new
       bonuses = Sprite::Bonuses.new(
         map_width: @background.width,
@@ -60,9 +62,8 @@ module RoadToRubykaigi
       )
       @update_manager = Manager::UpdateManager.new(@background, @foreground)
       @collision_manager = Manager::CollisionManager.new(@foreground)
-      @drawing_manager = Manager::DrawingManager.new(@background, @foreground)
+      @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground)
       @scroll_offset_x = 0
-      @score = 0
     end
 
     def process_input(input)
