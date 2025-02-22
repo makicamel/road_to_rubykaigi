@@ -73,9 +73,9 @@ module RoadToRubykaigi
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
         relative_x = @x - offset_x - 1
         relative_y = @y - 1
-        current_character[@walking_frame].each_with_index do |line, i|
-          line.chars.each_with_index do |chara, j|
-            buffer[relative_y+i][relative_x+j] = chara
+        current_character[@walking_frame].each_with_index do |row, i|
+          row.each_with_index do |character, j|
+            buffer[relative_y+i][relative_x+j] = character
           end
         end
         buffer

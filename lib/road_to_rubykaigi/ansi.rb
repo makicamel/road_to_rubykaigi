@@ -6,6 +6,7 @@ module RoadToRubykaigi
     HOME = "\e[H"
     RESET = "\e[0m"
     RED = "\e[31m"
+    NULL = "\0"
 
     self.constants(false).each do |constant|
       ANSI.define_singleton_method(constant.to_s.downcase) {

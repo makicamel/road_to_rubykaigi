@@ -32,7 +32,7 @@ module RoadToRubykaigi
       end
     end
 
-    class Bonus
+    class Bonus < Sprite
       class << self
         def random(map_width:, map_height:)
           bonus = [Ruby, Beer, Sake].sample
@@ -47,7 +47,7 @@ module RoadToRubykaigi
       end
 
       def characters
-        (self.class::CHARACTER + "\0").chars
+        super { [self.class::CHARACTER] }
       end
 
       def width

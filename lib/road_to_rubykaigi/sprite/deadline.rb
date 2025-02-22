@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   module Sprite
-    class Deadline
+    class Deadline < Sprite
       attr_reader :x, :y, :width, :height
 
       def find
@@ -19,7 +19,7 @@ module RoadToRubykaigi
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
         relative_x = @x - offset_x - 1
         relative_y = @y - 1
-        (0...@height).each_with_index do |i|
+        @height.times do |i|
           next if relative_x < 1
           buffer[relative_y+i][relative_x] = ANSI::RED + "#\e[0m"
         end

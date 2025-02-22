@@ -41,19 +41,15 @@ module RoadToRubykaigi
       end
     end
 
-    class Attack
+    class Attack < Sprite
       SYMBOL = ".˖"
 
       def move
         @x += 1
       end
 
-      def render(offset_x:)
-        "\e[#{@y};#{@x-offset_x}H" + SYMBOL
-      end
-
       def characters
-        SYMBOL.chars
+        super { SYMBOL.chars }
       end
 
       def reach_border?(map, offset_x:)

@@ -59,8 +59,22 @@ module RoadToRubykaigi
         },
       }
 
-      def self.character(status, direction)
-        CHARACTERS[status][direction].map { |character| character.split("\n") }
+      class << self
+        def character(status, direction)
+          CHARACTERS[status][direction].map do |lines|
+            lines.split("\n").map do |line|
+              line.chars.map do |character|
+                fullwidth?(character) ? [character, ANSI::NULL] : character
+              end.flatten
+            end
+          end
+        end
+
+        private
+
+        def fullwidth?(character)
+          %w[・].include? character
+        end
       end
     end
   end

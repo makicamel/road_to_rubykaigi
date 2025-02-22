@@ -32,7 +32,7 @@ module RoadToRubykaigi
       end
     end
 
-    class Enemy
+    class Enemy < Sprite
       attr_reader :x, :y
 
       def self.random(map_width:, map_height:)
@@ -46,7 +46,7 @@ module RoadToRubykaigi
       end
 
       def characters
-        (self.class::CHARACTER + "\0").chars
+        super { [self.class::CHARACTER] }
       end
 
       def width

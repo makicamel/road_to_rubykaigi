@@ -36,7 +36,7 @@ module RoadToRubykaigi
       end
     end
 
-    class Effect
+    class Effect < Sprite
       def update
         elapsed = Time.now - @start_time
         @y = (@y - elapsed).to_i
