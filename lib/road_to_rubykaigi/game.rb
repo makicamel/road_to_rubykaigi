@@ -38,24 +38,24 @@ module RoadToRubykaigi
     def initialize
       @background = Map.new
       @foreground = Layer.new
-      @player = Player.new
-      @bonuses = Bonuses.new(
+      @player = Sprite::Player.new
+      @bonuses = Sprite::Bonuses.new(
         map_width: @background.width,
         map_height: @background.height,
       )
-      @enemies = Enemies.new(
+      @enemies = Sprite::Enemies.new(
         map_width: @background.width,
         map_height: @background.height,
       )
-      @attacks = Attacks.new
-      @effects = Effects.new
-      @deadline = Deadline.new(@background.height)
+      @attacks = Sprite::Attacks.new
+      @effects = Sprite::Effects.new
+      @deadline = Sprite::Deadline.new(@background.height)
       [@player, @deadline, @bonuses, @enemies, @attacks, @effects].each do |object|
         @foreground.add(object)
       end
-      @update_manager = UpdateManager.new(@background, [@player, @deadline, @attacks, @effects])
-      @collision_manager = CollisionManager.new(@player, @bonuses, @enemies, @attacks, @effects, @deadline)
-      @drawing_manager = DrawingManager.new(@background, @foreground)
+      @update_manager = Manager::UpdateManager.new(@background, [@player, @deadline, @attacks, @effects])
+      @collision_manager = Manager::CollisionManager.new(@player, @bonuses, @enemies, @attacks, @effects, @deadline)
+      @drawing_manager = Manager::DrawingManager.new(@background, @foreground)
       @scroll_offset_x = 0
       @score = 0
     end

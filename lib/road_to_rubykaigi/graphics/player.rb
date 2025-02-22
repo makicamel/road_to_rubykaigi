@@ -1,8 +1,8 @@
 module RoadToRubykaigi
   module Graphics
     module Player
-      RIGHT = RoadToRubykaigi::Player::RIGHT
-      LEFT = RoadToRubykaigi::Player::LEFT
+      RIGHT = RoadToRubykaigi::Sprite::Player::RIGHT
+      LEFT = RoadToRubykaigi::Sprite::Player::LEFT
 
       CHARACTERS = {
         normal: {
