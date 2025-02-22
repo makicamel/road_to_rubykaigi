@@ -2,10 +2,10 @@ module RoadToRubykaigi
   module Manager
     class CollisionManager
       def process
-        process_enemy_collisions
+        player_meet_enemy
         if player_meet_deadline?
           :game_over
-        elsif process_player_bonus_collisions || process_attack_bonus_collisions
+        elsif player_meet_bonus || attack_hit_bonus
           :bonus
         end
       end
@@ -25,7 +25,7 @@ module RoadToRubykaigi
         !!find_collision_item(@player, @deadline)
       end
 
-      def process_player_bonus_collisions
+      def player_meet_bonus
         if (collided_item = find_collision_item(@player, @bonuses))
           @effects.heart(
             @player.x + @player.width - 1,
@@ -35,7 +35,7 @@ module RoadToRubykaigi
         end
       end
 
-      def process_attack_bonus_collisions
+      def attack_hit_bonus
         collided = @attacks.dup.select do |attack|
           if (collided_item = find_collision_item(attack, @bonuses))
             @effects.heart(
@@ -49,7 +49,7 @@ module RoadToRubykaigi
         !collided
       end
 
-      def process_enemy_collisions
+      def player_meet_enemy
         if (collided_item = find_collision_item(@player, @enemies))
           @effects.lightning(
             @player.x + @player.width - 1,
