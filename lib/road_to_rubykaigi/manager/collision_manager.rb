@@ -12,13 +12,8 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(player, bonuses, enemies, attacks, effects, deadline)
-        @player = player
-        @attacks = attacks
-        @bonuses = bonuses
-        @enemies = enemies
-        @effects = effects
-        @deadline = deadline
+      def initialize(foreground)
+        @player, @deadline, @bonuses, @enemies, @attacks, @effects = foreground.layers
       end
 
       def player_meet_deadline?

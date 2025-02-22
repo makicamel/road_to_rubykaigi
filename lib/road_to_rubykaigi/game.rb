@@ -53,8 +53,8 @@ module RoadToRubykaigi
       [@player, @deadline, @bonuses, @enemies, @attacks, @effects].each do |object|
         @foreground.add(object)
       end
-      @update_manager = Manager::UpdateManager.new(@background, [@player, @deadline, @attacks, @effects])
-      @collision_manager = Manager::CollisionManager.new(@player, @bonuses, @enemies, @attacks, @effects, @deadline)
+      @update_manager = Manager::UpdateManager.new(@background, @foreground)
+      @collision_manager = Manager::CollisionManager.new(@foreground)
       @drawing_manager = Manager::DrawingManager.new(@background, @foreground)
       @scroll_offset_x = 0
       @score = 0

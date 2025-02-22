@@ -20,6 +20,9 @@ module RoadToRubykaigi
         buffer
       end
 
+      def update
+      end
+
       private
 
       def initialize(n = 3, map_width:, map_height:)

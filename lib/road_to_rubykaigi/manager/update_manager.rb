@@ -1,17 +1,17 @@
 module RoadToRubykaigi
   module Manager
     class UpdateManager
-      def initialize(map, *entities)
-        @map = map
-        @entities = entities.flatten
-      end
-
       def update(offset_x:)
         @entities.each(&:update)
         enforce_boundary(offset_x: offset_x)
       end
 
       private
+
+      def initialize(map, foreground)
+        @map = map
+        @entities = foreground.layers
+      end
 
       def enforce_boundary(offset_x:)
         @entities.each do |entity|
