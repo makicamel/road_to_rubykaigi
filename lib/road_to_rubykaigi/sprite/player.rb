@@ -26,10 +26,6 @@ module RoadToRubykaigi
         move(LEFT)
       end
 
-      def auto_move
-        # move(current_direction, auto: true)
-      end
-
       def jump
         unless jumping?
           @jumping = true
