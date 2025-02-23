@@ -3,12 +3,18 @@ module RoadToRubykaigi
     class Player
       attr_reader :x, :y
 
-      WALKING_DELAY_SECOND = 0.5
-      JUMP_DURATION_SECOND = 0.5
-      JUMP_DISTANCE_WIDTH = 6
-      DASH_THRESHOLD_SECOND = 0.5
-      DASH_MULTIPLIER = 3
-      STUN_DURATION = 2.0
+      WALK_ACCEL = 10.0
+      WALK_MAX_SPEED = 20.0
+      WALK_FRICTION = 1.0
+
+      BASE_Y = 25
+      JUMP_INITIAL_VELOCITY = -40.0
+      JUMP_GRAVITY = 80.0
+
+      KEY_INPUT_THRESHOLD = 0.5
+      ANIMETION_FRAME_SECOND = 0.5
+      STUN_SECOND = 2.0
+
       RIGHT = 1
       LEFT = -1
 
@@ -21,21 +27,18 @@ module RoadToRubykaigi
       end
 
       def auto_move
-        move(current_direction, auto: true)
+        # move(current_direction, auto: true)
       end
 
       def jump
         unless jumping?
           @jumping = true
-          @jump_start_time = Time.now
-          @jump_base_x = @x
-          @jump_base_y = @y
-          @current_jump_direction = direction
+          @vy = JUMP_INITIAL_VELOCITY
         end
       end
 
       def stun
-        @stunned_until = Time.now + STUN_DURATION
+        @stunned_until = Time.now + STUN_SECOND
       end
 
       def stunned?
@@ -43,34 +46,34 @@ module RoadToRubykaigi
       end
 
       def update
-        return if stunned?
+        return @coordinate_updated_time = Time.now if stunned?
 
         now = Time.now
-        if (now - @last_moved_time) >= WALKING_DELAY_SECOND
+        if (now - @animetion_updated_time) >= ANIMETION_FRAME_SECOND
           @walking_frame = (@walking_frame + 1) % current_character.size
-          @last_moved_time = now
+          @animetion_updated_time = now
         end
 
+        elapsed_time = now - @coordinate_updated_time
+        @coordinate_updated_time = now
         if jumping?
-          if (now - @jump_start_time) >= JUMP_DURATION_SECOND
+          @vy += JUMP_GRAVITY * elapsed_time
+          @y += @vy * elapsed_time
+          if @y >= BASE_Y
+            @y = BASE_Y
+            @vy = 0
             @jumping = false
-            @x = @jump_base_x + JUMP_DISTANCE_WIDTH * @current_jump_direction
-            @y = @jump_base_y
-            @current_jump_direction = RIGHT
+          end
+        else
+          if current_direction == RIGHT
+            @vx = @vx - friction * elapsed_time
+            @vx = [@vx, 0].max # vx must be positive
           else
-            f = (now - @jump_start_time) / JUMP_DURATION_SECOND
-            new_x = @jump_base_x + f * JUMP_DISTANCE_WIDTH * @current_jump_direction
-            # radius equation:
-            #   (x - center_x)^2 + (y - center_y)^2 = radius^2
-            # top half radius equation:
-            #   y = center_y - sqrt(radius^2 - (x - center_x)^2)
-            radius = JUMP_DISTANCE_WIDTH / 2
-            center_x = @jump_base_x + (JUMP_DISTANCE_WIDTH * @current_jump_direction) / 2.0
-            new_y = @jump_base_y - Math.sqrt(radius**2 - (new_x - center_x)**2)
-            @x = new_x.round.to_i
-            @y = new_y.round.to_i
+            @vx = @vx + friction * elapsed_time
+            @vx = [@vx, 0].min # vx must be negative
           end
         end
+        @x += @vx * elapsed_time
       end
 
       def build_buffer(offset_x:)
@@ -105,36 +108,25 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(x = 10, y = 25)
+      def initialize(x = 10, y = BASE_Y)
         @x = x
         @y = y
-        @attacks = []
+        @vx = 0.0
+        @vy = 0.0
         @walking_frame = 0
-        @last_moved_time = Time.now
-        @last_walked_time = Time.now
+        @coordinate_updated_time = Time.now
+        @animetion_updated_time = Time.now
+        @key_input_time = Time.now
         @jumping = false
-        @jump_start_time = nil
-        @jump_base_x = nil
-        @jump_base_y = nil
-        @last_dx = RIGHT
-        @current_jump_direction = RIGHT
         @stunned_until = Time.now
       end
 
-      def move(dx, auto: false)
-        if jumping?
-          new_direction = (dx > 0) ? RIGHT : LEFT
-          unless new_direction == @current_jump_direction
-            @jump_base_x = @x
-            @current_jump_direction = new_direction
-          end
-        else
-          now = Time.now
-          multiplier = (dx == current_direction && walking?) ? DASH_MULTIPLIER : 1
-          @x += multiplier * dx
-          @last_walked_time = now unless auto
+      def move(dx)
+        unless current_direction == dx
+          @vx = 0
         end
-        @last_dx = dx
+        @vx += WALK_ACCEL * dx
+        @vx = @vx.clamp(-WALK_MAX_SPEED, WALK_MAX_SPEED)
       end
 
       def current_character
@@ -142,20 +134,20 @@ module RoadToRubykaigi
         Graphics::Player.character(status, current_direction)
       end
 
-      def current_direction
-        jumping? ? @current_jump_direction : direction
-      end
-
       def jumping?
         @jumping
       end
 
-      def walking?
-        !jumping? && (Time.now - @last_walked_time) < DASH_THRESHOLD_SECOND
+      def friction
+        if (Time.now - @key_input_time) >= KEY_INPUT_THRESHOLD
+          WALK_MAX_SPEED
+        else
+          WALK_FRICTION
+        end
       end
 
-      def direction
-        (@last_dx > 0) ? RIGHT : LEFT
+      def current_direction
+        (@vx >= 0) ? RIGHT : LEFT
       end
     end
   end
