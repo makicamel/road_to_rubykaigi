@@ -20,7 +20,7 @@ module RoadToRubykaigi
         move(LEFT)
       end
 
-      def walk
+      def auto_move
         move(current_direction, auto: true)
       end
 
@@ -46,9 +46,9 @@ module RoadToRubykaigi
         return if stunned?
 
         now = Time.now
-        if (now - @last_walked_time) >= WALKING_DELAY_SECOND
+        if (now - @last_moved_time) >= WALKING_DELAY_SECOND
           @walking_frame = (@walking_frame + 1) % current_character.size
-          @last_walked_time = now
+          @last_moved_time = now
         end
 
         if jumping?
@@ -110,8 +110,8 @@ module RoadToRubykaigi
         @y = y
         @attacks = []
         @walking_frame = 0
+        @last_moved_time = Time.now
         @last_walked_time = Time.now
-        @last_move_time = Time.now
         @jumping = false
         @jump_start_time = nil
         @jump_base_x = nil
@@ -132,7 +132,7 @@ module RoadToRubykaigi
           now = Time.now
           multiplier = (dx == current_direction && walking?) ? DASH_MULTIPLIER : 1
           @x += multiplier * dx
-          @last_move_time = now unless auto
+          @last_walked_time = now unless auto
         end
         @last_dx = dx
       end
@@ -151,7 +151,7 @@ module RoadToRubykaigi
       end
 
       def walking?
-        !jumping? && (Time.now - @last_move_time) < DASH_THRESHOLD_SECOND
+        !jumping? && (Time.now - @last_walked_time) < DASH_THRESHOLD_SECOND
       end
 
       def direction
