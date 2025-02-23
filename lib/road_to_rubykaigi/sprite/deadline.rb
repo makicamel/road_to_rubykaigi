@@ -1,6 +1,8 @@
 module RoadToRubykaigi
   module Sprite
     class Deadline < Sprite
+      DEADLINE_SPEED = 0.3
+
       attr_reader :x, :y, :width, :height
 
       def find
@@ -9,7 +11,7 @@ module RoadToRubykaigi
 
       def update
         now = Time.now
-        if (now - @last_update) > 1
+        if (now - @last_update) > DEADLINE_SPEED
           @x += 1
           @last_update = now
         end
