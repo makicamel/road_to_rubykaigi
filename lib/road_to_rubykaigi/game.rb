@@ -18,7 +18,7 @@ module RoadToRubykaigi
           @drawing_manager.draw(offset_x: @scroll_offset_x)
 
           puts RoadToRubykaigi.debug
-          sleep 1.0/36
+          sleep 1.0/10
         end
       end
     end

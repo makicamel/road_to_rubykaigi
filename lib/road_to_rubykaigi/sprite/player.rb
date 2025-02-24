@@ -3,11 +3,11 @@ module RoadToRubykaigi
     class Player
       attr_reader :x, :y
 
-      WALK_ACCEL = 10.0
+      WALK_ACCEL = 15.0
       WALK_MAX_SPEED = 20.0
       WALK_FRICTION = 1.0
 
-      BASE_Y = 25
+      BASE_Y = 26
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
 
