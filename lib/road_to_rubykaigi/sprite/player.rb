@@ -70,6 +70,9 @@ module RoadToRubykaigi
           end
         end
         @x += @vx * elapsed_time
+
+        @x = @x.round.to_i
+        @y = @y.round.to_i
       end
 
       def build_buffer(offset_x:)
@@ -85,9 +88,11 @@ module RoadToRubykaigi
       end
 
       def enforce_boundary(map, offset_x:)
-        clamped_x, clamped_y = map.clamp_position(**bounding_box)
-        @x = clamped_x
-        @y = clamped_y
+        @x, @y = map.clamp_position(
+          dx: @vx.round.clamp(-1, 1) * -1,
+          dy: @vy.round.clamp(-1, 1) * -1,
+          **bounding_box
+        )
       end
 
       def bounding_box
