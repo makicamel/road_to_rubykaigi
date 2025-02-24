@@ -2,12 +2,19 @@ module RoadToRubykaigi
   module Manager
     class CollisionManager
       def process
-        player_meet_enemy
+        event = [player_meet_enemy] # player must hit enemy before land
         player_fall
         player_land
-        if player_meet_deadline?
+
+        event += [
+          player_meet_deadline,
+          player_meet_bonus,
+          attack_hit_bonus,
+          attack_hit_enemy,
+        ]
+        if event.include?(:game_over)
           :game_over
-        elsif player_meet_bonus || attack_hit_bonus || attack_hit_enemy
+        elsif event.include?(:bonus)
           :bonus
         end
       end
@@ -39,8 +46,9 @@ module RoadToRubykaigi
         end
       end
 
-      def player_meet_deadline?
-        !!find_collision_item(@player, @deadline)
+      # @returns [:game_over, Nil]
+      def player_meet_deadline
+        find_collision_item(@player, @deadline) && :game_over
       end
 
       def player_meet_bonus
@@ -50,11 +58,13 @@ module RoadToRubykaigi
             @player.y,
           )
           @bonuses.delete(collided_item)
+          :bonus
         end
       end
 
+      # @returns [:bonus, false]
       def attack_hit_bonus
-        collided = @attacks.dup.select do |attack|
+        collided = !@attacks.dup.select do |attack|
           if (collided_item = find_collision_item(attack, @bonuses))
             @effects.heart(
               @player.x + @player.width - 1,
@@ -64,11 +74,12 @@ module RoadToRubykaigi
             @attacks.delete(attack)
           end
         end.empty?
-        !collided
+        collided && :bonus
       end
 
+      # @returns [:bonus, Nil]
       def attack_hit_enemy
-        collided = @attacks.dup.select do |attack|
+        collided = !@attacks.dup.select do |attack|
           if (collided_item = find_collision_item(attack, @enemies))
             @effects.heart(
               @player.x + @player.width - 1,
@@ -78,9 +89,10 @@ module RoadToRubykaigi
             @attacks.delete(attack)
           end
         end.empty?
-        !collided
+        collided && :bonus
       end
 
+      # @returns [:bonus, Nil]
       def player_meet_enemy
         if (collided_item = find_collision_item(@player, @enemies))
           if @player.vy > 0
@@ -90,6 +102,7 @@ module RoadToRubykaigi
             )
             @enemies.delete(collided_item)
             @player.vy = @player.class::JUMP_INITIAL_VELOCITY
+            :bonus
           else
             @effects.lightning(
               @player.x + @player.width - 1,
