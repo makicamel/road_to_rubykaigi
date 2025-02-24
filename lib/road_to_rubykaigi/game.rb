@@ -33,10 +33,7 @@ module RoadToRubykaigi
         map_width: @background.width,
         map_height: @background.height,
       )
-      enemies = Sprite::Enemies.new(
-        map_width: @background.width,
-        map_height: @background.height,
-      )
+      enemies = Sprite::Enemies.new
       @attacks = Sprite::Attacks.new
       effects = Sprite::Effects.new
       deadline = Sprite::Deadline.new(@background.height)

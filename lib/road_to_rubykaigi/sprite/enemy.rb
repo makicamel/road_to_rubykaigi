@@ -5,6 +5,11 @@ module RoadToRubykaigi
     class Enemies
       extend Forwardable
       def_delegators :@enemies, :to_a, :find, :delete
+      ENEMIES_DATA = [
+        { x: 30, y: 26, left_bound: 25, right_bound: 35, speed: 2.0 },
+        { x: 60, y: 26, left_bound: 55, right_bound: 65, speed: 1.5 },
+        { x: 90, y: 26, left_bound: 85, right_bound: 95, speed: 2.5 },
+      ]
 
       def build_buffer(offset_x:)
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
@@ -21,28 +26,31 @@ module RoadToRubykaigi
       end
 
       def update
+        @enemies.each(&:update)
       end
 
       private
 
-      def initialize(n = 3, map_width:, map_height:)
-        @enemies = (1..n).map do
-          Enemy.random(
-            map_width: map_width,
-            map_height: map_height,
+      def initialize
+        @enemies = ENEMIES_DATA.map do |enemy|
+          Bug.new(
+            enemy[:x],
+            enemy[:y],
+            HorizontalPatrolStrategy.new(
+              left_bound: enemy[:left_bound],
+              right_bound: enemy[:right_bound],
+              speed: enemy[:speed],
+            ),
           )
         end
       end
     end
 
     class Enemy < Sprite
-      attr_reader :x, :y
-
-      def self.random(map_width:, map_height:)
-        x = rand(2..(map_width - Map::VIEWPORT_WIDTH))
-        y = rand(2..map_height - 1)
-        Bug.new(x, y)
-      end
+      RIGHT = 1
+      LEFT  = -1
+      attr_accessor :x
+      attr_reader :y, :direction
 
       def bounding_box
         { x: @x, y: @y, width: width, height: height }
@@ -50,6 +58,12 @@ module RoadToRubykaigi
 
       def characters
         super { [self.class::CHARACTER] }
+      end
+
+      def update
+        elapsed_time = Time.now - @last_update_time
+        @last_update_time = Time.now
+        @strategy.update(self, elapsed_time)
       end
 
       def width
@@ -60,11 +74,18 @@ module RoadToRubykaigi
         self.class::HEIGHT
       end
 
+      def reverse_direction
+        @direction *= -1
+      end
+
       private
 
-      def initialize(x, y)
+      def initialize(x, y, strategy)
         @x = x
         @y = y
+        @direction = LEFT
+        @strategy = strategy
+        @last_update_time = Time.now
       end
     end
 
@@ -72,6 +93,20 @@ module RoadToRubykaigi
       CHARACTER = ["🐛", "🐝"].sample
       WIDTH = 2
       HEIGHT = 1
+    end
+
+    class HorizontalPatrolStrategy
+      def initialize(left_bound:, right_bound:, speed:)
+        @left_bound = left_bound
+        @right_bound = right_bound
+        @speed = speed
+      end
+
+      def update(enemy, elapsed_time)
+        enemy.x += @speed * elapsed_time * enemy.direction
+        enemy.x = enemy.x.clamp(@left_bound, @right_bound)
+        enemy.reverse_direction if enemy.x == @left_bound || enemy.x == @right_bound
+      end
     end
   end
 end
