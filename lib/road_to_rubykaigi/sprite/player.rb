@@ -2,6 +2,7 @@ module RoadToRubykaigi
   module Sprite
     class Player
       attr_reader :x, :y
+      attr_accessor :vy
 
       WALK_ACCEL = 15.0
       WALK_MAX_SPEED = 20.0

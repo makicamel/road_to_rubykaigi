@@ -83,12 +83,21 @@ module RoadToRubykaigi
 
       def player_meet_enemy
         if (collided_item = find_collision_item(@player, @enemies))
-          @effects.lightning(
-            @player.x + @player.width - 1,
-            @player.y,
-          )
-          @enemies.delete(collided_item)
-          @player.stun
+          if @player.vy > 0
+            @effects.heart(
+              @player.x + @player.width - 1,
+              @player.y,
+            )
+            @enemies.delete(collided_item)
+            @player.vy = @player.class::JUMP_INITIAL_VELOCITY
+          else
+            @effects.lightning(
+              @player.x + @player.width - 1,
+              @player.y,
+            )
+            @enemies.delete(collided_item)
+            @player.stun
+          end
         end
       end
 
