@@ -2,6 +2,10 @@ module RoadToRubykaigi
   module Manager
     class UpdateManager
       def update(offset_x:)
+        enemies = @entities[3]
+        enemies.each do |enemy|
+          enemy.activate_with_offset(offset_x)
+        end
         @entities.each(&:update)
         enforce_boundary(offset_x: offset_x)
       end

@@ -4,12 +4,25 @@ module RoadToRubykaigi
   module Sprite
     class Enemies
       extend Forwardable
-      def_delegators :@enemies, :to_a, :find, :delete
-      ENEMIES_DATA = [
-        { x: 30, y: 26, left_bound: 25, right_bound: 35, speed: 2.0 },
-        { x: 60, y: 26, left_bound: 55, right_bound: 65, speed: 1.5 },
-        { x: 90, y: 26, left_bound: 85, right_bound: 95, speed: 2.5 },
-      ]
+      def_delegators :@enemies, :to_a, :find, :delete, :each
+      ENEMIES_DATA = {
+        FixedPatrol: [
+          { x: 55, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
+          { x: 223, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
+        ],
+        HorizontalPatrol: [
+          { x: 53, y: 26, left_bound: 43, right_bound: 53, speed: 1.5, character: :bee },
+          { x: 101, y: 26, left_bound: 91, right_bound: 101, speed: 1.5, character: :bee },
+          { x: 208, y: 15, left_bound: 200, right_bound: 208, speed: 1.5, character: :bug },
+          { x: 221, y: 15, left_bound: 213, right_bound: 221, speed: 1.5, character: :bug },
+          { x: 232, y: 15, left_bound: 227, right_bound: 232, speed: 1.5, character: :bug },
+        ],
+        ScreenEntryPatrol: [
+          { x: 151, y: 23, left_bound: 0, right_bound: 151, speed: 6.0, character: :bee },
+          { x: 170, y: 19, left_bound: 0, right_bound: 170, speed: 6.0, character: :bee },
+          { x: 186, y: 16, left_bound: 0, right_bound: 186, speed: 6.0, character: :bee },
+        ],
+      }
 
       def build_buffer(offset_x:)
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
@@ -32,21 +45,31 @@ module RoadToRubykaigi
       private
 
       def initialize
-        @enemies = ENEMIES_DATA.map do |enemy|
-          Bug.new(
-            enemy[:x],
-            enemy[:y],
-            HorizontalPatrolStrategy.new(
-              left_bound: enemy[:left_bound],
-              right_bound: enemy[:right_bound],
-              speed: enemy[:speed],
-            ),
-          )
-        end
+        @enemies = ENEMIES_DATA.map do |key, enemies|
+          strategy = RoadToRubykaigi::Sprite.const_get("#{key}Strategy")
+          enemies.map do |enemy|
+            Enemy.new(
+              enemy[:x],
+              enemy[:y],
+              enemy[:character],
+              strategy.new(
+                left_bound: enemy[:left_bound],
+                right_bound: enemy[:right_bound],
+                speed: enemy[:speed],
+              ),
+            )
+          end
+        end.flatten
       end
     end
 
     class Enemy < Sprite
+      CHARACTER = {
+        bee: "🐝",
+        bug: "🐛",
+        ladybug: "🐞",
+        spider: "🕷️",
+      }
       RIGHT = 1
       LEFT  = -1
       attr_accessor :x
@@ -57,7 +80,7 @@ module RoadToRubykaigi
       end
 
       def characters
-        super { [self.class::CHARACTER] }
+        super { [CHARACTER[@character]] }
       end
 
       def update
@@ -67,35 +90,41 @@ module RoadToRubykaigi
       end
 
       def width
-        self.class::WIDTH
+        2
       end
 
       def height
-        self.class::HEIGHT
+        1
       end
 
       def reverse_direction
         @direction *= -1
       end
 
+      def activate_with_offset(offset_x)
+        if !@active && @x <= (offset_x + Map::VIEWPORT_WIDTH)
+          @active = true
+        end
+      end
+
+      def active?
+        @active
+      end
+
       private
 
-      def initialize(x, y, strategy)
+      def initialize(x, y, character, strategy)
         @x = x
         @y = y
+        @character = character
         @direction = LEFT
         @strategy = strategy
+        @active = !strategy.is_a?(ScreenEntryPatrolStrategy)
         @last_update_time = Time.now
       end
     end
 
-    class Bug < Enemy
-      CHARACTER = ["🐛", "🐝"].sample
-      WIDTH = 2
-      HEIGHT = 1
-    end
-
-    class HorizontalPatrolStrategy
+    class PatrolStrategy
       def initialize(left_bound:, right_bound:, speed:)
         @left_bound = left_bound
         @right_bound = right_bound
@@ -103,9 +132,24 @@ module RoadToRubykaigi
       end
 
       def update(enemy, elapsed_time)
+      end
+    end
+
+    class FixedPatrolStrategy < PatrolStrategy
+    end
+
+    class HorizontalPatrolStrategy < PatrolStrategy
+      def update(enemy, elapsed_time)
         enemy.x += @speed * elapsed_time * enemy.direction
         enemy.x = enemy.x.clamp(@left_bound, @right_bound)
         enemy.reverse_direction if enemy.x == @left_bound || enemy.x == @right_bound
+      end
+    end
+
+    class ScreenEntryPatrolStrategy < PatrolStrategy
+      def update(enemy, elapsed_time)
+        return unless enemy.active?
+        enemy.x += @speed * elapsed_time * enemy.direction
       end
     end
   end
