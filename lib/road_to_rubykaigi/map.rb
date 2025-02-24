@@ -13,40 +13,53 @@ module RoadToRubykaigi
     def clamp_position(x:, y:, width:, height:, dx:, dy:)
       clamped_x = x.clamp(2, @width - width)
       clamped_y = y.clamp(2, @height - height)
-
       return [clamped_x, clamped_y] if box_passable?(clamped_x, clamped_y, width, height)
 
-      corrected_x = clamped_x
-      corrected_y = clamped_y
+      attempt_count = 10
+      delta_x = nil
+      delta_y = nil
       unless dx == 0
-        while corrected_x.between?(2, @width - width)
-          break x_ok = true if box_passable?(corrected_x, clamped_y, width, height)
-          corrected_x += dx
+        (1..attempt_count).each do |i|
+          attempt_x = clamped_x + i * dx
+          if box_passable?(attempt_x, clamped_y, width, height)
+            break delta_x = attempt_x - clamped_x
+          end
         end
       end
       unless dy == 0
-        while corrected_y.between?(2, @height - height)
-          break y_ok = true if box_passable?(clamped_x, corrected_y, width, height)
-          corrected_y += dy
+        (1..attempt_count).each do |i|
+          attempt_y = [clamped_y + i * dy, RoadToRubykaigi::Sprite::Player::BASE_Y].min
+          if box_passable?(clamped_x, attempt_y, width, height)
+            break delta_y = attempt_y - clamped_y
+          end
         end
       end
 
       case
-      when x_ok && y_ok
-        if (corrected_x - clamped_x).abs <= (corrected_y - clamped_y).abs
-          [corrected_x, clamped_y]
+      when delta_x && delta_y
+        if delta_x.abs <= delta_y.abs
+          [clamped_x + delta_x, clamped_y]
         else
-          [clamped_x, corrected_y]
+          [clamped_x, clamped_y + delta_y]
         end
-      when x_ok && !y_ok
-        [corrected_x, clamped_y]
-      when !x_ok && y_ok
-        [clamped_x, corrected_y]
-      when box_passable?(corrected_x, corrected_y, width, height)
-        [corrected_x, corrected_y]
-      when
-        [clamped_x, clamped_y]
+      when delta_x && !delta_y
+        [clamped_x + delta_x, clamped_y]
+      when !delta_x && delta_y
+        [clamped_x, clamped_y + delta_y]
+      else
+        coordinates = (1..attempt_count).select do |i|
+          attempt_x = clamped_x + i * dx
+          attempt_y = [clamped_y + i * dy, RoadToRubykaigi::Sprite::Player::BASE_Y].min
+          if box_passable?(attempt_x, attempt_y, width, height)
+            break [attempt_x, attempt_y]
+          end
+        end
+        coordinates.empty? ? [clamped_x + dx, clamped_y + dy] : coordinates
       end
+    end
+
+    def passable_at?(col, row)
+      @tiles[row-1][col-1].passable?
     end
 
     private
@@ -66,7 +79,7 @@ module RoadToRubykaigi
     def box_passable?(x, y, width, height)
       (y...(y + height)).all? do |row|
         (x...(x + width)).all? do |col|
-          @tiles[row-1][col-1].passable?
+          passable_at?(col, row)
         end
       end
     end

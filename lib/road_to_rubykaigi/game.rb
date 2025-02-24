@@ -50,7 +50,7 @@ module RoadToRubykaigi
         effects: effects,
       )
       @update_manager = Manager::UpdateManager.new(@background, @foreground)
-      @collision_manager = Manager::CollisionManager.new(@foreground)
+      @collision_manager = Manager::CollisionManager.new(@background, @foreground)
       @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground)
       @scroll_offset_x = 0
     end

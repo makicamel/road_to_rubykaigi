@@ -3,6 +3,8 @@ module RoadToRubykaigi
     class CollisionManager
       def process
         player_meet_enemy
+        player_fall
+        player_land
         if player_meet_deadline?
           :game_over
         elsif player_meet_bonus || attack_hit_bonus || attack_hit_enemy
@@ -12,8 +14,29 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(foreground)
+      def initialize(background, foreground)
+        @map = background
         @player, @deadline, @bonuses, @enemies, @attacks, @effects = foreground.layers
+      end
+
+      def player_fall
+        bounding_box = @player.bounding_box
+        foot_y = bounding_box[:y] + bounding_box[:height]
+        center_x = bounding_box[:x] + bounding_box[:width] / 2.0
+        if @map.passable_at?(center_x, foot_y + 1)
+          @player.fall
+        end
+      end
+
+      def player_land
+        bounding_box = @player.bounding_box
+        foot_y = bounding_box[:y] + bounding_box[:height]
+        foot_y = foot_y.clamp(bounding_box[:height], RoadToRubykaigi::Sprite::Player::BASE_Y)
+        (bounding_box[:x]...(bounding_box[:x] + bounding_box[:width])).each do |col|
+          unless @map.passable_at?(col, foot_y)
+            break @player.land(foot_y)
+          end
+        end
       end
 
       def player_meet_deadline?

@@ -33,6 +33,19 @@ module RoadToRubykaigi
         end
       end
 
+      def land(land_y)
+        @y = land_y - height
+        @vy = 0
+        @jumping = false
+      end
+
+      def fall
+        unless @jumping
+          @jumping = true
+          @vy = 0
+        end
+      end
+
       def stun
         @stunned_until = Time.now + STUN_SECOND
       end
