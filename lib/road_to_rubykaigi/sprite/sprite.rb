@@ -14,7 +14,8 @@ module RoadToRubykaigi
         (0x1F300..0x1F5FF).cover?(code) ||
           (0x1F600..0x1F64F).cover?(code) ||
           (0x1F680..0x1F6FF).cover?(code) ||
-          (0x1F700..0x1F77F).cover?(code)
+          (0x1F700..0x1F77F).cover?(code) ||
+          code == 0x2615
       end
     end
   end

@@ -5,6 +5,49 @@ module RoadToRubykaigi
     class Bonuses
       extend Forwardable
       def_delegators :@bonuses, :to_a, :find, :delete
+      BONUSES_DATA = {
+        Basic: [
+          { x: 37, y: 23, character: :coffee },
+          { x: 40, y: 23, character: :book },
+          { x: 72, y: 16, character: :ruby },
+          { x: 76, y: 16, character: :ruby },
+          { x: 135, y: 19, character: :money },
+          { x: 142, y: 19, character: :money },
+          { x: 135, y: 19, character: :money },
+          { x: 142, y: 19, character: :money },
+          { x: 153, y: 17, character: :money },
+          { x: 161, y: 17, character: :money },
+          { x: 173, y: 13, character: :money },
+          { x: 180, y: 13, character: :money },
+          { x: 190, y: 10, character: :sushi },
+          { x: 195, y: 10, character: :meat },
+          { x: 200, y: 10, character: :fish },
+          { x: 190, y: 10, character: :sushi },
+          { x: 195, y: 10, character: :meat },
+          { x: 200, y: 10, character: :fish },
+          { x: 205, y: 10, character: :sushi },
+          { x: 210, y: 10, character: :meat },
+          { x: 215, y: 10, character: :fish },
+          { x: 220, y: 10, character: :sushi },
+          { x: 225, y: 10, character: :meat },
+          { x: 230, y: 10, character: :fish },
+          { x: 288, y: 15, character: :money },
+          { x: 293, y: 13, character: :money },
+          { x: 298, y: 15, character: :money },
+          { x: 303, y: 13, character: :money },
+          { x: 308, y: 15, character: :money },
+          { x: 313, y: 13, character: :money },
+          { x: 318, y: 15, character: :money },
+        ],
+        Alcohol: [
+          { x: 147, y: 28, character: :beer },
+          { x: 150, y: 28, character: :beer },
+          { x: 153, y: 28, character: :beer },
+        ],
+        Laptop: [
+          { x: 228, y: 23, character: :laptop },
+        ]
+      }
 
       def build_buffer(offset_x:)
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
@@ -25,66 +68,56 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(n = 3, map_width:, map_height:)
-        @bonuses = (1..n).map do
-          Bonus.random(
-            map_width: map_width,
-            map_height: map_height,
-          )
-        end
+      def initialize
+        @bonuses = BONUSES_DATA.map do |key, bonuses|
+          bonuses.map do |bonus|
+            Bonus.new(
+              bonus[:x],
+              bonus[:y],
+              bonus[:character],
+            )
+          end
+        end.flatten
       end
     end
 
     class Bonus < Sprite
-      class << self
-        def random(map_width:, map_height:)
-          bonus = [Ruby, Beer, Sake].sample
-          x = rand(2..(map_width - Map::VIEWPORT_WIDTH))
-          y = rand(2..map_height - 1)
-          bonus.new(x, y)
-        end
-      end
+      CHARACTER = {
+        ruby: "💎",
+        money: "💰",
+        coffee: "☕️",
+        book: "📚",
+        sushi: "🍣",
+        meat: "🍖",
+        fish: "🐟",
+        beer: "🍺",
+        sake: "🍶",
+        laptop: "💻",
+      }
 
       def bounding_box
         { x: @x, y: @y, width: width, height: height }
       end
 
       def characters
-        super { [self.class::CHARACTER] }
+        super { [CHARACTER[@character]] }
       end
 
       def width
-        self.class::WIDTH
+        2
       end
 
       def height
-        self.class::HEIGHT
+        1
       end
 
       private
 
-      def initialize(x, y)
+      def initialize(x, y, character)
         @x = x
         @y = y
+        @character = character
       end
-    end
-
-    class Ruby < Bonus
-      CHARACTER = "💎"
-      WIDTH = 2
-      HEIGHT = 1
-    end
-
-    class Beer < Bonus
-      CHARACTER = "🍺"
-      WIDTH = 2
-      HEIGHT = 1
-    end
-
-    class Sake < Bonus
-      CHARACTER = "🍶"
-      WIDTH = 2
-      HEIGHT = 1
     end
   end
 end

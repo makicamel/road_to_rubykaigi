@@ -29,10 +29,7 @@ module RoadToRubykaigi
       @background = Map.new
       @score_board = ScoreBoard.new
       @player = Sprite::Player.new
-      bonuses = Sprite::Bonuses.new(
-        map_width: @background.width,
-        map_height: @background.height,
-      )
+      bonuses = Sprite::Bonuses.new
       enemies = Sprite::Enemies.new
       @attacks = Sprite::Attacks.new
       effects = Sprite::Effects.new
