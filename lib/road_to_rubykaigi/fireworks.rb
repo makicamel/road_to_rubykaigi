@@ -8,7 +8,10 @@ module RoadToRubykaigi
     end
 
     def update
-      return if !shooting? || finished?
+      return unless shooting?
+      if finished?
+        return @game_manager.finish
+      end
 
       if Time.now - @last_frame_time >= DURATION_SECOND
         @frame_index += 1
@@ -25,6 +28,7 @@ module RoadToRubykaigi
       current_frame.each_with_index do |row, i|
         row.chars.each_with_index do |character, j|
           next if character == " "
+          next if (relative_x + j).abs > Map::VIEWPORT_WIDTH
           buffer[relative_y+i][relative_x+j] = character
         end
       end
@@ -33,9 +37,10 @@ module RoadToRubykaigi
 
     private
 
-    def initialize
+    def initialize(game_manager)
       @x = START_X
       @y = 3
+      @game_manager = game_manager
       @start_time = Time.now
       @frame_index = 0
       @last_frame_time = Time.now

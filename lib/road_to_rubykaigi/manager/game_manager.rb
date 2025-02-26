@@ -6,7 +6,8 @@ module RoadToRubykaigi
         playing: 0,
         pause: 1,
         game_over: 2,
-        cleared: 3,
+        ending: 3,
+        finished: 4,
       }
       attr_reader :fireworks
 
@@ -16,20 +17,28 @@ module RoadToRubykaigi
         end
       end
 
-      def playing?
-        @state == STATE[:playing]
+      def finish
+        @state = STATE[:finished]
+      end
+
+      def finished?
+        @state == STATE[:finished]
       end
 
       private
 
       def initialize(player)
         @player = player
-        @fireworks = RoadToRubykaigi::Fireworks.new
+        @fireworks = RoadToRubykaigi::Fireworks.new(self)
         @state = STATE[:playing]
       end
 
+      def playing?
+        @state == STATE[:playing]
+      end
+
       def game_clear
-        @state = STATE[:cleared]
+        @state = STATE[:ending]
         @fireworks.shoot
       end
     end

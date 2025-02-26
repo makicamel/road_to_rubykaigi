@@ -1,22 +1,31 @@
 module RoadToRubykaigi
   class Game
     def run
+      @start_time = Time.now
       ANSI.clear
       $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
           process_input($stdin.read_nonblock(4, exception: false))
 
-          @game_manager.update
-          @update_manager.update(offset_x: @scroll_offset_x)
-          @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
-          case @collision_manager.process
-          when :game_over
-            game_over
-          when :bonus
-            @score_board.increment
+          if @game_manager.finished?
+            result_time = (Time.now - @start_time).round(2)
+            print(["CLEAR!", @score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
+              ANSI::RESULT_DATA[i] + message
+            end.join)
+            exit
+          else
+            @game_manager.update
+            @update_manager.update(offset_x: @scroll_offset_x)
+            @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
+            case @collision_manager.process
+            when :game_over
+              game_over
+            when :bonus
+              @score_board.increment
+            end
+            @drawing_manager.draw(offset_x: @scroll_offset_x)
           end
-          @drawing_manager.draw(offset_x: @scroll_offset_x)
 
           puts RoadToRubykaigi.debug
           sleep 1.0/10
