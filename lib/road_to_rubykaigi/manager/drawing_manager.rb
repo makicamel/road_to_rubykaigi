@@ -10,11 +10,14 @@ module RoadToRubykaigi
           merge_buffer(buffer, layer, offset_x: offset_x)
         end
 
-        print "\e[1;1H" + @score_board.render
+        ANSI.home
+        ANSI.background_color
+        ANSI.default_text_color
+        print @score_board.render
         @viewport_height.times do |row|
           @viewport_width.times do |col|
             unless buffer[row][col] == @preview_buffer[row][col]
-              print "\e[#{row+MAP_Y_START};#{col+MAP_X_START}H" + buffer[row][col]
+              print "\e[#{row+MAP_Y_START};#{col+MAP_X_START}H" + ANSI::BACKGROUND_COLOR + ANSI::DEFAULT_TEXT_COLOR + buffer[row][col]
             end
           end
         end

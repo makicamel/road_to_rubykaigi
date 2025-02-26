@@ -6,6 +6,8 @@ module RoadToRubykaigi
     HOME = "\e[H"
     RESET = "\e[0m"
     RED = "\e[31m"
+    BACKGROUND_COLOR = "\e[48;5;230m"
+    DEFAULT_TEXT_COLOR = "\e[38;5;238m"
     NULL = "\0"
 
     self.constants(false).each do |constant|
