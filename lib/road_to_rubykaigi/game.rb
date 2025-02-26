@@ -77,10 +77,10 @@ module RoadToRubykaigi
       when left
         @player.left
       when attack
-        @attacks.add(
-          @player.x + @player.width,
-          @player.y + 1,
-        )
+        # @attacks.add(
+        #   @player.x + @player.width,
+        #   @player.y + 1,
+        # )
       when *stop
         exit
       end

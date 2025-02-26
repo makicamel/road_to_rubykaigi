@@ -9,24 +9,24 @@ module RoadToRubykaigi
           RIGHT => [
             <<~SPRITE,
               ╭──────╮
-              │｡・◡・│_◢◤
+              │｡・◡・│
               ╰ᜊ───ᜊ─╯
             SPRITE
             <<~SPRITE,
               ╭──────╮
-              │｡・◡・│_◢◤
+              │｡・◡・│
               ╰─∪───∪╯
             SPRITE
           ],
           LEFT => [
             <<~SPRITE,
               ╭──────╮
-              │・◡・｡│_◢◤
+              │・◡・｡│
               ╰─ᜊ───ᜊ╯
             SPRITE
             <<~SPRITE,
               ╭──────╮
-              │・◡・｡│_◢◤
+              │・◡・｡│
               ╰∪───∪─╯
             SPRITE
           ],
@@ -35,24 +35,24 @@ module RoadToRubykaigi
           RIGHT => [
             <<~SPRITE,
               ╭──────╮
-              │ ´×⌓× │_◢◤
+              │ ´×⌓× │
               ╰─ᜊ───ᜊ╯
             SPRITE
             <<~SPRITE,
               ╭──────╮
-              │ ´×⌓× │_◢◤
+              │ ´×⌓× │
               ╰─∪───∪╯
             SPRITE
           ],
           LEFT => [
             <<~SPRITE,
               ╭──────╮
-              │ ×⌓×` │_◢◤
+              │ ×⌓×` │
               ╰─ᜊ───ᜊ╯
             SPRITE
             <<~SPRITE,
               ╭──────╮
-              │ ×⌓×` │_◢◤
+              │ ×⌓×` │
               ╰─∪───∪╯
             SPRITE
           ],
