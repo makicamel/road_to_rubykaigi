@@ -8,6 +8,8 @@ ignore:
     - Layout/SpaceAroundOperators
     - Layout/SpaceInsideHashLiteralBraces
     - Naming/MethodParameterName
+    - Style/IfInsideElse
+    - Style/EmptyCaseCondition
     - Style/StringLiterals
     - Style/TrailingCommaInArguments
     - Style/TrailingCommaInArrayLiteral
