@@ -13,6 +13,7 @@ module RoadToRubykaigi
 
       def update
         @deadline.activate(player_x: @player.x)
+        @enemies.activate if player_moved?
         if @player.x >= GOAL_X && playing?
           game_clear
         end
@@ -28,11 +29,17 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(player, deadline)
+      def initialize(player, deadline, enemies)
         @player = player
         @deadline = deadline
+        @enemies = enemies
         @fireworks = RoadToRubykaigi::Fireworks.new(self)
         @state = STATE[:playing]
+      end
+
+      def player_moved?
+        @player_initial_x ||= @player.x
+        @player_initial_x != @player.x
       end
 
       def playing?

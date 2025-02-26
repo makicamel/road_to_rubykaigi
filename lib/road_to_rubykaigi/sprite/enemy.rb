@@ -43,7 +43,15 @@ module RoadToRubykaigi
       end
 
       def update
-        @enemies.each(&:update)
+        if activated?
+          @enemies.each(&:update)
+        else
+          @enemies.each(&:reset_last_update_time)
+        end
+      end
+
+      def activate
+        @waiting = false
       end
 
       private
@@ -64,6 +72,11 @@ module RoadToRubykaigi
             )
           end
         end.flatten
+        @waiting = true
+      end
+
+      def activated?
+        !@waiting
       end
     end
 
@@ -91,6 +104,10 @@ module RoadToRubykaigi
         elapsed_time = Time.now - @last_update_time
         @last_update_time = Time.now
         @strategy.update(self, elapsed_time)
+      end
+
+      def reset_last_update_time
+        @last_update_time = Time.now
       end
 
       def width
