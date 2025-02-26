@@ -81,7 +81,7 @@ module RoadToRubykaigi
       def attack_hit_enemy
         collided = !@attacks.dup.select do |attack|
           if (collided_item = find_collision_item(attack, @enemies))
-            @effects.heart(
+            @effects.note(
               @player.x + @player.width - 1,
               @player.y,
             )
@@ -96,7 +96,7 @@ module RoadToRubykaigi
       def player_meet_enemy
         if (collided_item = find_collision_item(@player, @enemies))
           if @player.vy > 0
-            @effects.heart(
+            @effects.note(
               @player.x + @player.width - 1,
               @player.y,
             )

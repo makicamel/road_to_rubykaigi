@@ -9,6 +9,10 @@ module RoadToRubykaigi
         @effects << HeartEffect.new(x, y)
       end
 
+      def note(x, y)
+        @effects << NoteEffect.new(x, y)
+      end
+
       def lightning(x, y)
         @effects << LightningEffect.new(x, y)
       end
@@ -65,12 +69,17 @@ module RoadToRubykaigi
 
     class HeartEffect < Effect
       DURATION = 1.0
-      SYMBOL = "\e[31m♥\e[0m"
+      SYMBOL = ANSI::RED + "♥" + ANSI::DEFAULT_TEXT_COLOR
+    end
+
+    class NoteEffect < Effect
+      DURATION = 1.0
+      SYMBOL = ANSI::BLUE + "♪" + ANSI::DEFAULT_TEXT_COLOR
     end
 
     class LightningEffect < Effect
       DURATION = 0.3
-      SYMBOL = "\e[33m⚡︎\e[0m"
+      SYMBOL = ANSI::YELLOW + "⚡︎" + ANSI::DEFAULT_TEXT_COLOR
 
       def update
       end

@@ -25,7 +25,7 @@ module RoadToRubykaigi
         relative_y = @y - 1
         @height.times do |i|
           next if relative_x < 1
-          buffer[relative_y+i][relative_x] = ANSI::RED + "#\e[0m"
+          buffer[relative_y+i][relative_x] = ANSI::RED + "#" + ANSI::DEFAULT_TEXT_COLOR
         end
         buffer
       end

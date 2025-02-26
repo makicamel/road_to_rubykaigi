@@ -6,6 +6,8 @@ module RoadToRubykaigi
     HOME = "\e[H"
     RESET = "\e[0m"
     RED = "\e[31m"
+    BLUE = "\e[38;5;39m"
+    YELLOW = "\e[33m"
     BACKGROUND_COLOR = "\e[48;5;230m"
     DEFAULT_TEXT_COLOR = "\e[38;5;238m"
     RESULT_DATA = ["\e[4;18H", "\e[5;18H", "\e[6;18H"]
