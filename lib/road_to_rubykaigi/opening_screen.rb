@@ -1,33 +1,52 @@
 module RoadToRubykaigi
   class OpeningScreen
-    W = 10
-    OFFSET = 50
+    WIDTH = 10
+    OFFSET = 30
     DELAY = 0.75
-    AA = [
-      "╭──────╮",
-      "│｡・◡・│_◢◤",
-      "╰ᜊ───ᜊ─╯"
-    ]
+    LOGO =<<~LOGO
+    ╔═══════╗
+    ║       ║
+    ║       ║                                ║
+    ║       ║                                ║
+    ╠═════╦═╝  ╔═══════╗  ╔═══════║   ╔══════╣
+    ║     ╚═╗  ║       ║  ║       ║  ╔╝      ║    ══╬══  ╔═══╗
+    ║       ║  ║       ║  ║       ║  ║       ║      ║    ║   ║
+    ║       ║  ╚═══════╝  ╚═══════║  ╚═══════╝      ║    ╚═══╝
+
+    ╔═══════╗                                   ║       ║
+    ║       ║                                   ║       ║
+    ║       ║             ║          ║       ║  ║       ║                ╔═══════║
+    ║       ║             ║          ║       ║  ║       ║             ║  ║       ║  ║
+    ╠═════╦═╝  ║       ║  ╠══════╗   ║       ║  ╠═════╦═╝  ╔═══════║     ║       ║
+    ║     ╚═╗  ║       ║  ║      ╚╗  ╚═══════╣  ║     ╚═╗  ║       ║  ║  ╚═══════╣  ║
+    ║       ║  ║       ║  ║       ║          ║  ║       ║  ║       ║  ║          ║  ║
+    ║       ║  ╚═══════║  ╚═══════╝  ════════╝  ║       ║  ╚═══════║  ║  ════════╝  ║
+    LOGO
+    PLAYER =<<~PLAYER
+    ╭──────╮
+    │｡・◡・│_◢◤
+    ╰ᜊ───ᜊ─╯
+    PLAYER
 
     def display
-      position = 0
+      x = 0
       direction = 1
 
       loop do
         ANSI.clear
+        puts "\e[6;1H" + LOGO
         puts [
-          AA.map.with_index do |aa, i|
-            "\e[#{i+1};#{position+OFFSET}H"+aa
-          end.join("\n"),
-          "\e[4;1H", # y;x
-          "Press Space to start...",
+          PLAYER.lines.map.with_index do |line, i|
+            "\e[#{i+1};#{x+OFFSET}H" + line
+          end.join,
+          "\e[4;1H" + "Press Space to start...",
         ]
         if $stdin.raw { $stdin.read_nonblock(1, exception: false) == " " }
           break true
         end
 
-        position += direction
-        if position >= W || position <= 0
+        x += direction
+        if x >= WIDTH || x <= 0
           direction = -direction
         end
         sleep DELAY
