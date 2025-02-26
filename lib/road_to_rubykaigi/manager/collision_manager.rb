@@ -95,7 +95,7 @@ module RoadToRubykaigi
       # @returns [:bonus, Nil]
       def player_meet_enemy
         if (collided_item = find_collision_item(@player, @enemies))
-          if @player.vy > 0
+          if @player.stompable?
             @effects.note(
               @player.x + @player.width - 1,
               @player.y,

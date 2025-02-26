@@ -38,12 +38,14 @@ module RoadToRubykaigi
         @y = land_y - height
         @vy = 0
         @jumping = false
+        # Not change stompable since stompable will not change from true
       end
 
       def fall
         unless @jumping
           @jumping = true
           @vy = 0
+          @stompable = true
         end
       end
 
@@ -53,6 +55,10 @@ module RoadToRubykaigi
 
       def stunned?
         Time.now < @stunned_until
+      end
+
+      def stompable?
+        @stompable
       end
 
       def update
@@ -69,12 +75,14 @@ module RoadToRubykaigi
         if jumping?
           @vy += JUMP_GRAVITY * elapsed_time
           @y += @vy * elapsed_time
+          @stompable = @vy.positive?
           if @y >= BASE_Y
             @y = BASE_Y
             @vy = 0
             @jumping = false
           end
         else
+          @stompable = false
           if current_direction == RIGHT
             @vx -= friction * elapsed_time
             @vx = [@vx, 0].max # vx must be positive
@@ -133,6 +141,7 @@ module RoadToRubykaigi
         @animetion_updated_time = Time.now
         @key_input_time = Time.now
         @jumping = false
+        @stompable = false
         @stunned_until = Time.now
       end
 
