@@ -75,7 +75,7 @@ module RoadToRubykaigi
         spider: "🕷️",
       }
       RIGHT = 1
-      LEFT  = -1
+      LEFT = -1
       attr_accessor :x
       attr_reader :y, :direction
 

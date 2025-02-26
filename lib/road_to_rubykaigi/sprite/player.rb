@@ -76,10 +76,10 @@ module RoadToRubykaigi
           end
         else
           if current_direction == RIGHT
-            @vx = @vx - friction * elapsed_time
+            @vx -= friction * elapsed_time
             @vx = [@vx, 0].max # vx must be positive
           else
-            @vx = @vx + friction * elapsed_time
+            @vx += friction * elapsed_time
             @vx = [@vx, 0].min # vx must be negative
           end
         end
