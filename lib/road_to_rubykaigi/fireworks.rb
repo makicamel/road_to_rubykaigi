@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Fireworks
-    START_X = 465
+    START_X = 632
     DURATION_SECOND = 0.1
 
     def shoot
@@ -28,7 +28,7 @@ module RoadToRubykaigi
       current_frame.each_with_index do |row, i|
         row.chars.each_with_index do |character, j|
           next if character == " "
-          next if (relative_x + j).abs > Map::VIEWPORT_WIDTH
+          next if (relative_x + j) > Map::VIEWPORT_WIDTH
           buffer[relative_y+i][relative_x+j] = character
         end
       end

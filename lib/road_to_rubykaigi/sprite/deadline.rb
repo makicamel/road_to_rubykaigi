@@ -2,6 +2,7 @@ module RoadToRubykaigi
   module Sprite
     class Deadline < Sprite
       DEADLINE_SPEED = 0.3
+      DEADLINE_START_X = 18
 
       attr_reader :x, :y, :width, :height
 
@@ -10,6 +11,7 @@ module RoadToRubykaigi
       end
 
       def update
+        return unless active?
         now = Time.now
         if (now - @last_update) > DEADLINE_SPEED
           @x += 1
@@ -32,6 +34,10 @@ module RoadToRubykaigi
         { x: @x, y: @y, width: @width, height: @height }
       end
 
+      def activate(player_x:)
+        @waiting = false if player_x > DEADLINE_START_X
+      end
+
       private
 
       def initialize(map_height)
@@ -40,6 +46,11 @@ module RoadToRubykaigi
         @width = 1
         @height = map_height
         @last_update = Time.now
+        @waiting = true
+      end
+
+      def active?
+        !@waiting
       end
     end
   end

@@ -7,20 +7,23 @@ module RoadToRubykaigi
       def_delegators :@enemies, :to_a, :find, :delete, :each
       ENEMIES_DATA = {
         FixedPatrol: [
-          { x: 55, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
-          { x: 223, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
+          { x: 125, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
+          { x: 293, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
         ],
         HorizontalPatrol: [
-          { x: 53, y: 26, left_bound: 43, right_bound: 53, speed: 1.5, character: :bee },
-          { x: 101, y: 26, left_bound: 91, right_bound: 101, speed: 1.5, character: :bee },
-          { x: 208, y: 15, left_bound: 200, right_bound: 208, speed: 1.5, character: :bug },
-          { x: 221, y: 15, left_bound: 213, right_bound: 221, speed: 1.5, character: :bug },
-          { x: 232, y: 15, left_bound: 227, right_bound: 232, speed: 1.5, character: :bug },
+          { x: 123, y: 26, left_bound: 114, right_bound: 123, speed: 1.5, character: :bee },
+          { x: 171, y: 26, left_bound: 162, right_bound: 171, speed: 1.5, character: :bee },
+          { x: 278, y: 15, left_bound: 270, right_bound: 278, speed: 1.5, character: :bug },
+          { x: 291, y: 15, left_bound: 283, right_bound: 291, speed: 1.5, character: :bug },
+          { x: 302, y: 15, left_bound: 297, right_bound: 302, speed: 1.5, character: :bug },
         ],
         ScreenEntryPatrol: [
-          { x: 151, y: 23, left_bound: 0, right_bound: 151, speed: 6.0, character: :bee },
-          { x: 170, y: 19, left_bound: 0, right_bound: 170, speed: 6.0, character: :bee },
-          { x: 186, y: 16, left_bound: 0, right_bound: 186, speed: 6.0, character: :bee },
+          { x: 63, y: 27, left_bound: 0, right_bound: 63, speed: 4.0, character: :bug },
+          { x: 76, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
+          { x: 87, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
+          { x: 221, y: 23, left_bound: 0, right_bound: 151, speed: 6.0, character: :bee },
+          { x: 240, y: 19, left_bound: 0, right_bound: 170, speed: 6.0, character: :bee },
+          { x: 256, y: 16, left_bound: 0, right_bound: 186, speed: 6.0, character: :bee },
         ],
       }
 

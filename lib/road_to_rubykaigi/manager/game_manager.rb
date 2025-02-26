@@ -1,7 +1,7 @@
 module RoadToRubykaigi
   module Manager
     class GameManager
-      GOAL_X = 600
+      GOAL_X = 650
       STATE = {
         playing: 0,
         pause: 1,

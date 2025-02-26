@@ -15,6 +15,7 @@ module RoadToRubykaigi
             end.join)
             exit
           else
+            @deadline.activate(player_x: @player.x)
             @game_manager.update
             @update_manager.update(offset_x: @scroll_offset_x)
             @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
@@ -43,11 +44,11 @@ module RoadToRubykaigi
       enemies = Sprite::Enemies.new
       @attacks = Sprite::Attacks.new
       effects = Sprite::Effects.new
-      deadline = Sprite::Deadline.new(@background.height)
+      @deadline = Sprite::Deadline.new(@background.height)
 
       @foreground = Layer.new(
         player: @player,
-        deadline: deadline,
+        deadline: @deadline,
         bonuses: bonuses,
         enemies: enemies,
         attacks: @attacks,
