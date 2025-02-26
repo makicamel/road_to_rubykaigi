@@ -26,14 +26,14 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(score_board, background, foreground)
+      def initialize(score_board, background, foreground, fireworks)
         @viewport_width = Map::VIEWPORT_WIDTH
         @viewport_height = Map::VIEWPORT_HEIGHT
         @preview_buffer = Array.new(@viewport_height) { Array.new(@viewport_width) { "" } }
         @score_board = score_board
         @background = background
         @foreground = foreground
-        @layers = [background, *foreground.layers]
+        @layers = [background, *foreground.layers, fireworks]
       end
 
       def merge_buffer(buffer, layer, offset_x:)

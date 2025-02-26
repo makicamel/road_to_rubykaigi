@@ -7,6 +7,7 @@ module RoadToRubykaigi
           RoadToRubykaigi.debug.clear
           process_input($stdin.read_nonblock(4, exception: false))
 
+          @game_manager.update
           @update_manager.update(offset_x: @scroll_offset_x)
           @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
           case @collision_manager.process
@@ -43,9 +44,10 @@ module RoadToRubykaigi
         attacks: @attacks,
         effects: effects,
       )
-      @update_manager = Manager::UpdateManager.new(@background, @foreground)
+      @game_manager = Manager::GameManager.new(@player)
+      @update_manager = Manager::UpdateManager.new(@background, @foreground, @game_manager.fireworks)
       @collision_manager = Manager::CollisionManager.new(@background, @foreground)
-      @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground)
+      @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground, @game_manager.fireworks)
       @scroll_offset_x = 0
     end
 

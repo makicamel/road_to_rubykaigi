@@ -12,9 +12,9 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(map, foreground)
+      def initialize(map, foreground, fireworks)
         @map = map
-        @entities = foreground.layers
+        @entities = foreground.layers + [fireworks]
       end
 
       def enforce_boundary(offset_x:)
