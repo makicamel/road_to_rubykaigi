@@ -7,6 +7,7 @@ module RoadToRubykaigi
       def_delegators :@enemies, :to_a, :find, :delete, :each
       ENEMIES_DATA = {
         FixedPatrol: [
+          { x: 55, y: 6, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
           { x: 125, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
           { x: 293, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
         ],
