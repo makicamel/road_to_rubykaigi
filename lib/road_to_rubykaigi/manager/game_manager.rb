@@ -12,6 +12,7 @@ module RoadToRubykaigi
       attr_reader :fireworks
 
       def update
+        @deadline.activate(player_x: @player.x)
         if @player.x >= GOAL_X && playing?
           game_clear
         end
@@ -27,8 +28,9 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(player)
+      def initialize(player, deadline)
         @player = player
+        @deadline = deadline
         @fireworks = RoadToRubykaigi::Fireworks.new(self)
         @state = STATE[:playing]
       end
