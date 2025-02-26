@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["makicamel"]
   spec.email = ["unright@gmail.com"]
 
-  spec.summary = "A CLI side-scrolling action game that Rubyist battles deadlines and bugs to attend RubyKaigi"
-  spec.description = "A CLI side-scrolling action game that Rubyist battles deadlines and bugs to attend RubyKaigi"
+  spec.summary = "A retro ASCII action game where Rubyist overcomes a looming deadline and bugs on your way to RubyKaigi"
+  spec.description = "Road to RubyKaigi is a Ruby gem that delivers a nostalgic, text-based action game experience. Dodge obstacles, overcome bugs, and beat the deadline to reach RubyKaigi. All in your terminal."
   spec.homepage = "https://github.com/makicamel/road_to_rubykaigi"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.4.0"
