@@ -87,7 +87,10 @@ module RoadToRubykaigi
     end
 
     def game_over
-      puts ANSI::RED + "Game Over\e[0m"
+      result_time = (Time.now - @start_time).round(2)
+      print([ANSI::RED + "Game Over", ANSI::DEFAULT_TEXT_COLOR + @score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
+        ANSI::RESULT_DATA[i] + message
+      end.join)
       exit
     end
   end
