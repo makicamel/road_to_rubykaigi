@@ -28,7 +28,7 @@ gem install road_to_rubykaigi
 Run the game from your terminal:
 
 ```bash
-bundle exec road_to_rubykaigi
+road_to_rubykaigi
 ```
 
 ## Requirements
