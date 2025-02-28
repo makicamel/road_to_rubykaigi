@@ -2,6 +2,7 @@ module RoadToRubykaigi
   module Manager
     class GameManager
       GOAL_X = 650
+      DEMO_GOAL_X = 540
       STATE = {
         playing: 0,
         pause: 1,
@@ -11,10 +12,14 @@ module RoadToRubykaigi
       }
       attr_reader :fireworks
 
+      def self.goal_x
+        @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X
+      end
+
       def update
         @deadline.activate(player_x: @player.x)
         @enemies.activate if player_moved?
-        if @player.x >= GOAL_X && playing?
+        if @player.x >= GameManager.goal_x && playing?
           game_clear
         end
       end

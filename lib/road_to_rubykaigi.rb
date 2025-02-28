@@ -24,16 +24,21 @@ require "io/console"
 
 module RoadToRubykaigi
   class Error < StandardError; end
-  END_POSITION = Map.new.height + 2
+  END_POSITION = Map::VIEWPORT_HEIGHT + 2
 
-  def self.start
+  def self.start(game_mode = :normal)
     ANSI.cursor_off
     at_exit do
       print "\e[#{END_POSITION};1H"
       ANSI.cursor_on
     end
 
+    @game_mode = game_mode
     OpeningScreen.new.display && Game.new.run
+  end
+
+  def self.demo?
+    @game_mode != :normal
   end
 
   def self.debug

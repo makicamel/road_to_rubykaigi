@@ -1,6 +1,7 @@
 module RoadToRubykaigi
   class Fireworks
     START_X = 632
+    DEMO_START_X = 524
     DURATION_SECOND = 0.1
 
     def shoot
@@ -38,7 +39,7 @@ module RoadToRubykaigi
     private
 
     def initialize(game_manager)
-      @x = START_X
+      @x = RoadToRubykaigi.demo? ? DEMO_START_X : START_X
       @y = 3
       @game_manager = game_manager
       @start_time = Time.now
