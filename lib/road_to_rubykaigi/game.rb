@@ -3,6 +3,8 @@ module RoadToRubykaigi
     def run
       @start_time = Time.now
       ANSI.clear
+      last_time = Time.now
+      accumulator = 0.0
       $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
@@ -15,20 +17,27 @@ module RoadToRubykaigi
             end.join)
             exit
           else
-            @game_manager.update
-            @update_manager.update(offset_x: @scroll_offset_x)
-            @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
-            case @collision_manager.process
-            when :game_over
-              game_over
-            when :bonus
-              @score_board.increment
+            current_time = Time.now
+            accumulator += current_time - last_time
+            last_time = current_time
+            while accumulator >= Manager::GameManager::UPDATE_RATE
+              @game_manager.update
+              @update_manager.update(offset_x: @scroll_offset_x)
+              accumulator -= Manager::GameManager::UPDATE_RATE
+              @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
+              case @collision_manager.process
+              when :game_over
+                game_over
+              when :bonus
+                @score_board.increment
+              end
             end
+
             @drawing_manager.draw(offset_x: @scroll_offset_x)
           end
 
           puts RoadToRubykaigi.debug
-          sleep 1.0/10
+          sleep Manager::GameManager::FRAME_RATE
         end
       end
     end
