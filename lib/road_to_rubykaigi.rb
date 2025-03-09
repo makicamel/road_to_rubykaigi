@@ -5,6 +5,7 @@ require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
 require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/score_board"
+require_relative "road_to_rubykaigi/manager/audio_manager"
 require_relative "road_to_rubykaigi/manager/collision_manager"
 require_relative "road_to_rubykaigi/manager/drawing_manager"
 require_relative "road_to_rubykaigi/manager/game_manager"
@@ -29,6 +30,7 @@ module RoadToRubykaigi
   def self.start(game_mode = :normal)
     ANSI.cursor_off
     at_exit do
+      Manager::AudioManager.instance.dispose
       print "\e[#{END_POSITION};1H"
       ANSI.cursor_on
     end

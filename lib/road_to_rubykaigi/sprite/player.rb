@@ -8,6 +8,7 @@ module RoadToRubykaigi
       WALK_MAX_SPEED = 20.0
       WALK_FRICTION = 1.0
 
+      INITIAL_X = 10
       BASE_Y = 26
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
@@ -31,6 +32,7 @@ module RoadToRubykaigi
         unless jumping?
           @jumping = true
           @vy = JUMP_INITIAL_VELOCITY
+          @audio_manager.jump
         end
       end
 
@@ -131,9 +133,9 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(x = 10, y = BASE_Y)
-        @x = x
-        @y = y
+      def initialize
+        @x = INITIAL_X
+        @y = BASE_Y
         @vx = 0.0
         @vy = 0.0
         @walking_frame = 0
@@ -143,6 +145,7 @@ module RoadToRubykaigi
         @jumping = false
         @stompable = false
         @stunned_until = Time.now
+        @audio_manager = Manager::AudioManager.instance
       end
 
       def move(dx)
