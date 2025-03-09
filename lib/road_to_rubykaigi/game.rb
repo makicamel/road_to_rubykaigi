@@ -52,7 +52,7 @@ module RoadToRubykaigi
       enemies = Sprite::Enemies.new
       @attacks = Sprite::Attacks.new
       effects = Sprite::Effects.new
-      deadline = Sprite::Deadline.new(@background.height)
+      deadline = Sprite::Deadline.new
 
       @foreground = Layer.new(
         player: @player,

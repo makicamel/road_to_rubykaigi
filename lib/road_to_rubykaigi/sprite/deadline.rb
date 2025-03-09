@@ -40,11 +40,11 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(map_height)
+      def initialize
         @x = 2
         @y = 1
         @width = 1
-        @height = map_height
+        @height = Map::VIEWPORT_HEIGHT
         @last_update = Time.now
         @waiting = true
       end
