@@ -18,6 +18,10 @@ module RoadToRubykaigi
         @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X
       end
 
+      def offset_x
+        (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @map.width - Map::VIEWPORT_WIDTH).to_i
+      end
+
       def update
         @deadline.activate(player_x: @player.x)
         @enemies.activate if player_moved?
@@ -36,7 +40,8 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(player, deadline, enemies)
+      def initialize(map:, deadline:, enemies:, player:)
+        @map = map
         @player = player
         @deadline = deadline
         @enemies = enemies

@@ -22,9 +22,8 @@ module RoadToRubykaigi
             last_time = current_time
             while accumulator >= Manager::GameManager::UPDATE_RATE
               @game_manager.update
-              @physics_engine.simulate(offset_x: @scroll_offset_x)
-              @update_manager.update(offset_x: @scroll_offset_x)
-              @scroll_offset_x = (@player.x - Map::VIEWPORT_WIDTH / 2).clamp(0, @background.width - Map::VIEWPORT_WIDTH).to_i
+              @physics_engine.simulate(offset_x: @game_manager.offset_x)
+              @update_manager.update(offset_x: @game_manager.offset_x)
               case @collision_manager.process
               when :game_over
                 game_over
@@ -34,7 +33,7 @@ module RoadToRubykaigi
               accumulator -= Manager::GameManager::UPDATE_RATE
             end
 
-            @drawing_manager.draw(offset_x: @scroll_offset_x)
+            @drawing_manager.draw(offset_x: @game_manager.offset_x)
           end
 
           puts RoadToRubykaigi.debug
@@ -63,7 +62,9 @@ module RoadToRubykaigi
         attacks: @attacks,
         effects: effects,
       )
-      @game_manager = Manager::GameManager.new(@player, deadline, enemies)
+      @game_manager = Manager::GameManager.new(
+        map: @background, deadline: deadline, enemies: enemies, player: @player
+      )
       @physics_engine = Manager::PhysicsEngine.new(
         attacks: @attacks, deadline: deadline, enemies: enemies, player: @player,
       )
@@ -72,7 +73,6 @@ module RoadToRubykaigi
       )
       @collision_manager = Manager::CollisionManager.new(@background, @foreground)
       @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground, @game_manager.fireworks)
-      @scroll_offset_x = 0
     end
 
     def process_input(input)
