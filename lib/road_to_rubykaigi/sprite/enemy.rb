@@ -43,10 +43,14 @@ module RoadToRubykaigi
         buffer
       end
 
-      def update
+      def simulate_physics
         if activated?
-          @enemies.each(&:update)
-        else
+          @enemies.each(&:move)
+        end
+      end
+
+      def update
+        unless activated?
           @enemies.each(&:reset_last_update_time)
         end
       end
@@ -101,10 +105,10 @@ module RoadToRubykaigi
         super { [CHARACTER[@character]] }
       end
 
-      def update
+      def move
         elapsed_time = Time.now - @last_update_time
         @last_update_time = Time.now
-        @strategy.update(self, elapsed_time)
+        @strategy.move(self, elapsed_time)
       end
 
       def reset_last_update_time
@@ -153,7 +157,7 @@ module RoadToRubykaigi
         @speed = speed
       end
 
-      def update(enemy, elapsed_time)
+      def move(enemy, elapsed_time)
       end
     end
 
@@ -161,7 +165,7 @@ module RoadToRubykaigi
     end
 
     class HorizontalPatrolStrategy < PatrolStrategy
-      def update(enemy, elapsed_time)
+      def move(enemy, elapsed_time)
         enemy.x += @speed * elapsed_time * enemy.direction
         enemy.x = enemy.x.clamp(@left_bound, @right_bound)
         enemy.reverse_direction if enemy.x == @left_bound || enemy.x == @right_bound
@@ -169,7 +173,7 @@ module RoadToRubykaigi
     end
 
     class ScreenEntryPatrolStrategy < PatrolStrategy
-      def update(enemy, elapsed_time)
+      def move(enemy, elapsed_time)
         return unless enemy.active?
         enemy.x += @speed * elapsed_time * enemy.direction
       end

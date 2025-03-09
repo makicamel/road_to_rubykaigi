@@ -64,27 +64,37 @@ module RoadToRubykaigi
       end
 
       def update
-        return @coordinate_updated_time = Time.now if stunned?
+        return if stunned?
 
         now = Time.now
         if (now - @animetion_updated_time) >= ANIMETION_FRAME_SECOND
           @walking_frame = (@walking_frame + 1) % current_character.size
           @animetion_updated_time = now
         end
+        if jumping?
+          @stompable = @vy.positive? || (@y == BASE_Y && @vy.zero?) # stompable also when the moment just land
+          if @vy.zero?
+            @jumping = false
+          end
+        else
+          @stompable = false
+        end
+      end
 
+      def simulate_physics
+        return @coordinate_updated_time = Time.now if stunned?
+
+        now = Time.now
         elapsed_time = now - @coordinate_updated_time
         @coordinate_updated_time = now
         if jumping?
           @vy += JUMP_GRAVITY * elapsed_time
           @y += @vy * elapsed_time
-          @stompable = @vy.positive?
           if @y >= BASE_Y
             @y = BASE_Y
             @vy = 0
-            @jumping = false
           end
         else
-          @stompable = false
           if current_direction == RIGHT
             @vx -= friction * elapsed_time
             @vx = [@vx, 0].max # vx must be positive
@@ -94,7 +104,6 @@ module RoadToRubykaigi
           end
         end
         @x += @vx * elapsed_time
-
         @x = @x.round.to_i
         @y = @y.round.to_i
       end

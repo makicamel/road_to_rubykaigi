@@ -10,7 +10,7 @@ module RoadToRubykaigi
         @attacks << Attack.new(x, y)
       end
 
-      def update
+      def simulate_physics
         @attacks.each(&:move)
       end
 

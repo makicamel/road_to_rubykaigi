@@ -10,7 +10,7 @@ module RoadToRubykaigi
         yield self || nil
       end
 
-      def update
+      def simulate_physics
         return unless active?
         now = Time.now
         if (now - @last_update) > DEADLINE_SPEED
