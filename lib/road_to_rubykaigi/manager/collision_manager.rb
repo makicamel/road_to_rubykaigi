@@ -2,122 +2,59 @@ module RoadToRubykaigi
   module Manager
     class CollisionManager
       def process
-        event = [player_meet_enemy] # player must hit enemy before land
-        player_fall
-        player_land
-
-        event += [
-          player_meet_deadline,
-          player_meet_bonus,
-          attack_hit_bonus,
-          attack_hit_enemy,
-        ]
-        if event.include?(:game_over)
+        collisions = CollisionDetector.new(attacks: @attacks, bonuses: @bonuses, deadline: @deadline, enemies: @enemies, player: @player).detect
+        events = CollisionResolver.new(attacks: @attacks, bonuses: @bonuses, effects: @effects, enemies: @enemies, player: @player).resolve(collisions)
+        if events.include?(:game_over)
           :game_over
-        elsif event.include?(:bonus)
+        elsif events.include?(:bonus)
           :bonus
         end
       end
 
       private
 
-      def initialize(background, foreground)
-        @map = background
-        @player, @deadline, @bonuses, @enemies, @attacks, @effects = foreground.layers
+      def initialize(map:, attacks:, bonuses:, deadline:, effects:, enemies:, player:)
+        @map = map
+        @attacks = attacks
+        @bonuses = bonuses
+        @deadline = deadline
+        @effects = effects
+        @enemies = enemies
+        @player = player
+      end
+    end
+
+    class CollisionDetector
+      def detect
+        {
+          attack_bonus: [@attacks, @bonuses],
+          attack_enemy: [@attacks, @enemies],
+          player_bonus: [[@player], @bonuses],
+          player_deadline: [[@player], [@deadline]],
+          player_enemy: [[@player], @enemies],
+        }.map do |type, pair|
+          collided_pair = find_collided_pair(*pair)
+          collided_pair.empty? ? nil : { type: type, pair: collided_pair }
+        end.compact
       end
 
-      def player_fall
-        bounding_box = @player.bounding_box
-        foot_y = bounding_box[:y] + bounding_box[:height]
-        center_x = bounding_box[:x] + bounding_box[:width] / 2.0
-        if @map.passable_at?(center_x, foot_y + 1)
-          @player.fall
-        end
+      private
+
+      def initialize(attacks:, bonuses:, deadline:, enemies:, player:)
+        @attacks = attacks
+        @bonuses = bonuses
+        @deadline = deadline
+        @enemies = enemies
+        @player = player
       end
 
-      def player_land
-        bounding_box = @player.bounding_box
-        foot_y = bounding_box[:y] + bounding_box[:height]
-        foot_y = foot_y.clamp(bounding_box[:height], RoadToRubykaigi::Sprite::Player::BASE_Y)
-        (bounding_box[:x]...(bounding_box[:x] + bounding_box[:width])).each do |col|
-          unless @map.passable_at?(col, foot_y)
-            break @player.land(foot_y)
+      def find_collided_pair(entities, others)
+        entities.map do |entity|
+          found = others.find do |other|
+            collided?(entity.bounding_box, other.bounding_box)
           end
-        end
-      end
-
-      # @returns [:game_over, Nil]
-      def player_meet_deadline
-        find_collision_item(@player, @deadline) && :game_over
-      end
-
-      def player_meet_bonus
-        if (collided_item = find_collision_item(@player, @bonuses))
-          @effects.heart(
-            @player.x + @player.width - 1,
-            @player.y,
-          )
-          @bonuses.delete(collided_item)
-          :bonus
-        end
-      end
-
-      # @returns [:bonus, false]
-      def attack_hit_bonus
-        collided = !@attacks.dup.select do |attack|
-          if (collided_item = find_collision_item(attack, @bonuses))
-            @effects.heart(
-              @player.x + @player.width - 1,
-              @player.y,
-            )
-            @bonuses.delete(collided_item)
-            @attacks.delete(attack)
-          end
-        end.empty?
-        collided && :bonus
-      end
-
-      # @returns [:bonus, Nil]
-      def attack_hit_enemy
-        collided = !@attacks.dup.select do |attack|
-          if (collided_item = find_collision_item(attack, @enemies))
-            @effects.note(
-              @player.x + @player.width - 1,
-              @player.y,
-            )
-            @enemies.delete(collided_item)
-            @attacks.delete(attack)
-          end
-        end.empty?
-        collided && :bonus
-      end
-
-      # @returns [:bonus, Nil]
-      def player_meet_enemy
-        if (collided_item = find_collision_item(@player, @enemies))
-          if @player.stompable?
-            @effects.note(
-              @player.x + @player.width - 1,
-              @player.y,
-            )
-            @enemies.delete(collided_item)
-            @player.vy = @player.class::JUMP_INITIAL_VELOCITY
-            :bonus
-          else
-            @effects.lightning(
-              @player.x + @player.width - 1,
-              @player.y,
-            )
-            @enemies.delete(collided_item)
-            @player.stun
-          end
-        end
-      end
-
-      def find_collision_item(entity, others)
-        others.find do |other|
-          collided?(entity.bounding_box, other.bounding_box)
-        end
+          break [entity, found] if found
+        end.compact
       end
 
       def collided?(box1, box2)
@@ -127,6 +64,58 @@ module RoadToRubykaigi
           box1[:y] + box1[:height] <= box2[:y] ||
           box1[:y] >= box2[:y] + box2[:height]
         )
+      end
+    end
+
+    class CollisionResolver
+      def resolve(collisions)
+        events = []
+        collisions.each do |collision|
+          case collision[:type]
+          when :attack_bonus
+            attack, bonus = collision[:pair]
+            @attacks.delete(attack)
+            @bonuses.delete(bonus)
+            @effects.heart(@player.x + @player.width - 1, @player.y)
+            events << :bonus
+          when :attack_enemy
+            attack, enemy = collision[:pair]
+            @attacks.delete(attack)
+            @effects.note(@player.x + @player.width - 1, @player.y)
+            @enemies.delete(enemy)
+            events << :bonus
+          when :player_bonus
+            _, bonus = collision[:pair]
+            @bonuses.delete(bonus)
+            @effects.heart(@player.x + @player.width - 1, @player.y)
+            events << :bonus
+          when :player_deadline
+            events << :game_over
+          when :player_enemy
+            _, enemy = collision[:pair]
+            if @player.stompable?
+              @effects.note(@player.x + @player.width - 1, @player.y)
+              @enemies.delete(enemy)
+              @player.jump
+              events << :bonus
+            else
+              @effects.lightning(@player.x + @player.width - 1, @player.y)
+              @enemies.delete(enemy)
+              @player.stun
+            end
+          end
+        end
+        events
+      end
+
+      private
+
+      def initialize(attacks:, bonuses:, effects:, enemies:, player:)
+        @attacks = attacks
+        @bonuses = bonuses
+        @effects = effects
+        @enemies = enemies
+        @player = player
       end
     end
   end

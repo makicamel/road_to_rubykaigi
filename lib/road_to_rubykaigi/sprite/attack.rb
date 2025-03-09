@@ -4,7 +4,7 @@ module RoadToRubykaigi
   module Sprite
     class Attacks
       extend Forwardable
-      def_delegators :@attacks, :each, :delete, :select
+      def_delegators :@attacks, :each, :map, :delete, :select
 
       def add(x, y)
         @attacks << Attack.new(x, y)

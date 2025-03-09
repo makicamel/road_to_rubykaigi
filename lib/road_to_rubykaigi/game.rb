@@ -71,7 +71,9 @@ module RoadToRubykaigi
       @update_manager = Manager::UpdateManager.new(
         map: @background, attacks: @attacks, effects: effects, enemies: enemies, player: @player, fireworks: @game_manager.fireworks,
       )
-      @collision_manager = Manager::CollisionManager.new(@background, @foreground)
+      @collision_manager = Manager::CollisionManager.new(
+        map: @map, attacks: @attacks, bonuses: bonuses, deadline: deadline, effects: effects, enemies: enemies, player: @player,
+      )
       @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground, @game_manager.fireworks)
     end
 

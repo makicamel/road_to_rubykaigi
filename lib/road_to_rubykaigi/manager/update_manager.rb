@@ -11,6 +11,8 @@ module RoadToRubykaigi
         @fireworks.update
         @player.enforce_boundary(@map, offset_x: offset_x)
         @attacks.enforce_boundary(@map, offset_x: offset_x)
+        @player.fall_if_ground_is_passable(@map)
+        @player.land_unless_ground_is_passable(@map)
       end
 
       private

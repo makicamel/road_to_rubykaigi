@@ -36,21 +36,6 @@ module RoadToRubykaigi
         end
       end
 
-      def land(land_y)
-        @y = land_y - height
-        @vy = 0
-        @jumping = false
-        # Not change stompable since stompable will not change from true
-      end
-
-      def fall
-        unless @jumping
-          @jumping = true
-          @vy = 0
-          @stompable = true
-        end
-      end
-
       def stun
         @stunned_until = Time.now + STUN_SECOND
       end
@@ -78,6 +63,24 @@ module RoadToRubykaigi
           end
         else
           @stompable = false
+        end
+      end
+
+      def fall_if_ground_is_passable(map)
+        foot_y = bounding_box[:y] + bounding_box[:height]
+        center_x = bounding_box[:x] + bounding_box[:width] / 2.0
+        if map.passable_at?(center_x, foot_y + 1)
+          fall
+        end
+      end
+
+      def land_unless_ground_is_passable(map)
+        foot_y = bounding_box[:y] + bounding_box[:height]
+        foot_y = foot_y.clamp(bounding_box[:height], RoadToRubykaigi::Sprite::Player::BASE_Y)
+        (bounding_box[:x]...(bounding_box[:x] + bounding_box[:width])).each do |col|
+          unless map.passable_at?(col, foot_y)
+            break land(foot_y)
+          end
         end
       end
 
@@ -163,6 +166,21 @@ module RoadToRubykaigi
         end
         @vx += WALK_ACCEL * dx
         @vx = @vx.clamp(-WALK_MAX_SPEED, WALK_MAX_SPEED)
+      end
+
+      def fall
+        unless @jumping
+          @jumping = true
+          @vy = 0
+          @stompable = true
+        end
+      end
+
+      def land(land_y)
+        @y = land_y - height
+        @vy = 0
+        @jumping = false
+        # Not change stompable since stompable will not change from true
       end
 
       def current_character
