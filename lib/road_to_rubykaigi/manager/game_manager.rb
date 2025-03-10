@@ -34,6 +34,18 @@ module RoadToRubykaigi
         @score_board.increment
       end
 
+      def render_result
+        if game_over?
+          @score_board.render_game_over_result
+        else
+          @score_board.render_clear_result
+        end
+      end
+
+      def result?
+        @state == STATE[:game_over] || @state == STATE[:finished]
+      end
+
       def game_over
         @state = STATE[:game_over]
       end
@@ -44,10 +56,6 @@ module RoadToRubykaigi
 
       def finish
         @state = STATE[:finished]
-      end
-
-      def finished?
-        @state == STATE[:finished]
       end
 
       private

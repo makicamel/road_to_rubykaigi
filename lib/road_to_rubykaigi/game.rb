@@ -1,7 +1,6 @@
 module RoadToRubykaigi
   class Game
     def run
-      @start_time = Time.now
       ANSI.clear
       last_time = Time.now
       accumulator = 0.0
@@ -10,14 +9,9 @@ module RoadToRubykaigi
           RoadToRubykaigi.debug.clear
           process_input($stdin.read_nonblock(4, exception: false))
 
-          if @game_manager.finished?
-            result_time = (Time.now - @start_time).round(2)
-            print(["CLEAR!", @game_manager.score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
-              ANSI::RESULT_DATA[i] + message
-            end.join)
+          if @game_manager.result?
+            print(@game_manager.render_result)
             exit
-          elsif @game_manager.game_over?
-            game_over
           else
             current_time = Time.now
             accumulator += current_time - last_time
@@ -30,7 +24,7 @@ module RoadToRubykaigi
               accumulator -= Manager::GameManager::UPDATE_RATE
             end
 
-            @drawing_manager.draw(offset_x: @game_manager.offset_x)
+            @drawing_manager.draw(offset_x: @game_manager.offset_x) unless @game_manager.game_over?
           end
 
           puts RoadToRubykaigi.debug
@@ -91,14 +85,6 @@ module RoadToRubykaigi
       when stop.include?(input)
         exit
       end
-    end
-
-    def game_over
-      result_time = (Time.now - @start_time).round(2)
-      print([ANSI::RED + "Game Over", ANSI::DEFAULT_TEXT_COLOR + @game_manager.score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
-        ANSI::RESULT_DATA[i] + "  #{message}  "
-      end.join)
-      exit
     end
   end
 end
