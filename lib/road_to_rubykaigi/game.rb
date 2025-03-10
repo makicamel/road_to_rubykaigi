@@ -44,14 +44,6 @@ module RoadToRubykaigi
       effects = Sprite::Effects.new
       deadline = Sprite::Deadline.new
 
-      @foreground = Layer.new(
-        player: @player,
-        deadline: deadline,
-        bonuses: bonuses,
-        enemies: enemies,
-        attacks: @attacks,
-        effects: effects,
-      )
       @game_manager = Manager::GameManager.new(
         map: @background, deadline: deadline, enemies: enemies, player: @player
       )
@@ -67,7 +59,9 @@ module RoadToRubykaigi
       EventHander.subscribe(
         attacks: @attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: @player, game_manager: @game_manager,
       )
-      @drawing_manager = Manager::DrawingManager.new(@game_manager.score_board, @background, @foreground, @game_manager.fireworks)
+      @drawing_manager = Manager::DrawingManager.new(
+        map: @background, player: @player, deadline: deadline, bonuses: bonuses, enemies: enemies, attacks: @attacks, effects: effects, game_manager: @game_manager
+      )
     end
 
     def process_input(input)

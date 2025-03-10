@@ -12,7 +12,7 @@ module RoadToRubykaigi
         ending: 3,
         finished: 4,
       }
-      attr_reader :score_board, :fireworks
+      attr_reader :fireworks
 
       def self.goal_x
         @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X
@@ -32,6 +32,10 @@ module RoadToRubykaigi
 
       def increment_score
         @score_board.increment
+      end
+
+      def render_score_board
+        @score_board.render_score_board
       end
 
       def render_result

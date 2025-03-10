@@ -4,7 +4,7 @@ module RoadToRubykaigi
       @score += 1
     end
 
-    def render
+    def render_score_board
       "Score: #{@score}".ljust(10).rjust(Map::VIEWPORT_WIDTH)
     end
 

@@ -85,20 +85,6 @@ module RoadToRubykaigi
     end
   end
 
-  class Layer
-    attr_reader :layers
-
-    def build_buffer(offset_x:)
-      @layers.map { |layer| layer.build_buffer(offset_x: offset_x) }
-    end
-
-    private
-
-    def initialize(player:, deadline:, bonuses:, enemies:, attacks:, effects:)
-      @layers = [player, deadline, bonuses, enemies, attacks, effects]
-    end
-  end
-
   class Tile
     MASK_CHAR = "#"
 

@@ -13,7 +13,7 @@ module RoadToRubykaigi
         ANSI.home
         ANSI.background_color
         ANSI.default_text_color
-        print @score_board.render
+        print @game_manager.render_score_board
         @viewport_height.times do |row|
           @viewport_width.times do |col|
             unless buffer[row][col] == @preview_buffer[row][col]
@@ -26,14 +26,15 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(score_board, background, foreground, fireworks)
+      def initialize(map:, attacks:, bonuses:, deadline:, effects:, enemies:, player:, game_manager:)
         @viewport_width = Map::VIEWPORT_WIDTH
         @viewport_height = Map::VIEWPORT_HEIGHT
         @preview_buffer = Array.new(@viewport_height) { Array.new(@viewport_width) { "" } }
-        @score_board = score_board
-        @background = background
-        @foreground = foreground
-        @layers = [background, *foreground.layers, fireworks]
+        @game_manager = game_manager
+        @layers = [
+          # From bottom to top
+          map, player, deadline, bonuses, enemies, attacks, effects, game_manager.fireworks,
+        ]
       end
 
       def merge_buffer(buffer, layer, offset_x:)
