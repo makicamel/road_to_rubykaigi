@@ -12,7 +12,7 @@ module RoadToRubykaigi
 
           if @game_manager.finished?
             result_time = (Time.now - @start_time).round(2)
-            print(["CLEAR!", @score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
+            print(["CLEAR!", @game_manager.score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
               ANSI::RESULT_DATA[i] + message
             end.join)
             exit
@@ -43,7 +43,6 @@ module RoadToRubykaigi
 
     def initialize
       @background = Map.new
-      @score_board = ScoreBoard.new
       @player = Sprite::Player.new
       bonuses = Sprite::Bonuses.new
       enemies = Sprite::Enemies.new
@@ -72,9 +71,9 @@ module RoadToRubykaigi
         attacks: @attacks, bonuses: bonuses, deadline: deadline, enemies: enemies, player: @player,
       )
       EventHander.subscribe(
-        attacks: @attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: @player, game_manager: @game_manager, score_board: @score_board,
+        attacks: @attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: @player, game_manager: @game_manager,
       )
-      @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground, @game_manager.fireworks)
+      @drawing_manager = Manager::DrawingManager.new(@game_manager.score_board, @background, @foreground, @game_manager.fireworks)
     end
 
     def process_input(input)
@@ -96,7 +95,7 @@ module RoadToRubykaigi
 
     def game_over
       result_time = (Time.now - @start_time).round(2)
-      print([ANSI::RED + "Game Over", ANSI::DEFAULT_TEXT_COLOR + @score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
+      print([ANSI::RED + "Game Over", ANSI::DEFAULT_TEXT_COLOR + @game_manager.score_board.render.strip, "Time: #{result_time} seconds"].map.with_index do |message, i|
         ANSI::RESULT_DATA[i] + "  #{message}  "
       end.join)
       exit

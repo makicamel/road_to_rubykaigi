@@ -18,8 +18,8 @@ module RoadToRubykaigi
   end
 
   class EventHander
-    def self.subscribe(attacks:, bonuses:, effects:, enemies:, player:, game_manager:, score_board:)
-      new(attacks: attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: player, game_manager: game_manager, score_board: score_board).subscribe
+    def self.subscribe(attacks:, bonuses:, effects:, enemies:, player:, game_manager:)
+      new(attacks: attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: player, game_manager: game_manager).subscribe
     end
 
     def subscribe
@@ -30,14 +30,13 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(attacks:, bonuses:, effects:, enemies:, player:, game_manager:, score_board:)
+    def initialize(attacks:, bonuses:, effects:, enemies:, player:, game_manager:)
       @attacks = attacks
       @bonuses = bonuses
       @effects = effects
       @enemies = enemies
       @player = player
       @game_manager = game_manager
-      @score_board = score_board
     end
 
     def handle_input(action)
@@ -63,20 +62,20 @@ module RoadToRubykaigi
       @attacks.delete(attack)
       @bonuses.delete(bonus)
       @effects.heart(@player.x + @player.width - 1, @player.y)
-      @score_board.increment
+      @game_manager.increment_score
     end
 
     def attack_enemy(attack, enemy)
       @attacks.delete(attack)
       @effects.note(@player.x + @player.width - 1, @player.y)
       @enemies.delete(enemy)
-      @score_board.increment
+      @game_manager.increment_score
     end
 
     def player_bonus(_, bonus)
       @bonuses.delete(bonus)
       @effects.heart(@player.x + @player.width - 1, @player.y)
-      @score_board.increment
+      @game_manager.increment_score
     end
 
     def player_deadline(*args)
@@ -88,7 +87,7 @@ module RoadToRubykaigi
         @effects.note(@player.x + @player.width - 1, @player.y)
         @enemies.delete(enemy)
         @player.jump
-        @score_board.increment
+        @game_manager.increment_score
       else
         @effects.lightning(@player.x + @player.width - 1, @player.y)
         @enemies.delete(enemy)

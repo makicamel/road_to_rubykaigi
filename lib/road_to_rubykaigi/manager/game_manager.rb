@@ -12,7 +12,7 @@ module RoadToRubykaigi
         ending: 3,
         finished: 4,
       }
-      attr_reader :fireworks
+      attr_reader :score_board, :fireworks
 
       def self.goal_x
         @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X
@@ -28,6 +28,10 @@ module RoadToRubykaigi
         if @player.x >= GameManager.goal_x && playing?
           ending
         end
+      end
+
+      def increment_score
+        @score_board.increment
       end
 
       def game_over
@@ -53,6 +57,7 @@ module RoadToRubykaigi
         @player = player
         @deadline = deadline
         @enemies = enemies
+        @score_board = ScoreBoard.new
         @fireworks = RoadToRubykaigi::Fireworks.new
         @state = STATE[:playing]
       end
