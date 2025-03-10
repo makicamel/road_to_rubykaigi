@@ -16,6 +16,8 @@ module RoadToRubykaigi
               ANSI::RESULT_DATA[i] + message
             end.join)
             exit
+          elsif @game_manager.game_over?
+            game_over
           else
             current_time = Time.now
             accumulator += current_time - last_time
@@ -24,12 +26,7 @@ module RoadToRubykaigi
               @game_manager.update
               @physics_engine.simulate
               @update_manager.update(offset_x: @game_manager.offset_x)
-              case @collision_manager.process
-              when :game_over
-                game_over
-              when :bonus
-                @score_board.increment
-              end
+              @collision_manager.process
               accumulator -= Manager::GameManager::UPDATE_RATE
             end
 
@@ -72,33 +69,27 @@ module RoadToRubykaigi
         map: @background, attacks: @attacks, effects: effects, enemies: enemies, player: @player, fireworks: @game_manager.fireworks,
       )
       @collision_manager = Manager::CollisionManager.new(
-        map: @map, attacks: @attacks, bonuses: bonuses, deadline: deadline, effects: effects, enemies: enemies, player: @player,
+        attacks: @attacks, bonuses: bonuses, deadline: deadline, enemies: enemies, player: @player,
+      )
+      EventHander.subscribe(
+        attacks: @attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: @player, game_manager: @game_manager, score_board: @score_board,
       )
       @drawing_manager = Manager::DrawingManager.new(@score_board, @background, @foreground, @game_manager.fireworks)
     end
 
     def process_input(input)
-      return if @player.stunned?
-
-      up = "\e[A"
-      right = "\e[C"
-      left = "\e[D"
-      attack = " "
+      actions = {
+        "\e[A" => :jump,
+        "\e[C" => :right,
+        "\e[D" => :left,
+        " " => :attack,
+      }
       stop = %W[q \x03]
 
-      case input
-      when up
-        @player.jump
-      when right
-        @player.right
-      when left
-        @player.left
-      when attack
-        # @attacks.add(
-        #   @player.x + @player.width,
-        #   @player.y + 1,
-        # )
-      when *stop
+      case
+      when actions[input]
+        EventDispatcher.publish(:input, actions[input])
+      when stop.include?(input)
         exit
       end
     end

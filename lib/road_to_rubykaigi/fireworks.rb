@@ -11,7 +11,7 @@ module RoadToRubykaigi
     def update
       return unless shooting?
       if finished?
-        return @game_manager.finish
+        return EventDispatcher.publish(:finish)
       end
 
       if Time.now - @last_frame_time >= DURATION_SECOND
@@ -38,10 +38,9 @@ module RoadToRubykaigi
 
     private
 
-    def initialize(game_manager)
+    def initialize
       @x = RoadToRubykaigi.demo? ? DEMO_START_X : START_X
       @y = 3
-      @game_manager = game_manager
       @start_time = Time.now
       @frame_index = 0
       @last_frame_time = Time.now

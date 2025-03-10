@@ -1,5 +1,6 @@
 require_relative "road_to_rubykaigi/version"
 require_relative "road_to_rubykaigi/ansi"
+require_relative "road_to_rubykaigi/event_dispatcher"
 require_relative "road_to_rubykaigi/fireworks"
 require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
