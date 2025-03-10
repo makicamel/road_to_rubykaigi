@@ -36,31 +36,31 @@ module RoadToRubykaigi
     private
 
     def initialize
-      @background = Map.new
-      @player = Sprite::Player.new
+      map = Map.new
+      player = Sprite::Player.new
       bonuses = Sprite::Bonuses.new
       enemies = Sprite::Enemies.new
-      @attacks = Sprite::Attacks.new
+      attacks = Sprite::Attacks.new
       effects = Sprite::Effects.new
       deadline = Sprite::Deadline.new
 
       @game_manager = Manager::GameManager.new(
-        map: @background, deadline: deadline, enemies: enemies, player: @player
+        map: map, deadline: deadline, enemies: enemies, player: player,
       )
       @physics_engine = Manager::PhysicsEngine.new(
-        attacks: @attacks, deadline: deadline, enemies: enemies, player: @player,
+        attacks: attacks, deadline: deadline, enemies: enemies, player: player,
       )
       @update_manager = Manager::UpdateManager.new(
-        map: @background, attacks: @attacks, effects: effects, enemies: enemies, player: @player, fireworks: @game_manager.fireworks,
+        map: map, attacks: attacks, effects: effects, enemies: enemies, player: player, fireworks: @game_manager.fireworks,
       )
       @collision_manager = Manager::CollisionManager.new(
-        attacks: @attacks, bonuses: bonuses, deadline: deadline, enemies: enemies, player: @player,
-      )
-      EventHander.subscribe(
-        attacks: @attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: @player, game_manager: @game_manager,
+        attacks: attacks, bonuses: bonuses, deadline: deadline, enemies: enemies, player: player,
       )
       @drawing_manager = Manager::DrawingManager.new(
-        map: @background, player: @player, deadline: deadline, bonuses: bonuses, enemies: enemies, attacks: @attacks, effects: effects, game_manager: @game_manager
+        map: map, player: player, deadline: deadline, bonuses: bonuses, enemies: enemies, attacks: attacks, effects: effects, game_manager: @game_manager,
+      )
+      EventHander.subscribe(
+        attacks: attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: player, game_manager: @game_manager,
       )
     end
 
