@@ -49,6 +49,6 @@ module RoadToRubykaigi
   end
 
   def self.debug_add(string)
-    @debug << "\e[#{END_POSITION+@debug.size};1H" + string
+    debug << "\e[#{END_POSITION+debug.size};1H" + string
   end
 end
