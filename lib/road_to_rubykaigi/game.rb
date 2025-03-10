@@ -22,7 +22,7 @@ module RoadToRubykaigi
             last_time = current_time
             while accumulator >= Manager::GameManager::UPDATE_RATE
               @game_manager.update
-              @physics_engine.simulate(offset_x: @game_manager.offset_x)
+              @physics_engine.simulate
               @update_manager.update(offset_x: @game_manager.offset_x)
               case @collision_manager.process
               when :game_over

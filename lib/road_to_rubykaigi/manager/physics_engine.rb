@@ -1,7 +1,7 @@
 module RoadToRubykaigi
   module Manager
     class PhysicsEngine
-      def simulate(offset_x:)
+      def simulate
         @attacks.simulate_physics
         @deadline.simulate_physics
         @enemies.simulate_physics
