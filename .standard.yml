@@ -14,5 +14,8 @@ ignore:
     - Style/TrailingCommaInArguments
     - Style/TrailingCommaInArrayLiteral
     - Style/TrailingCommaInHashLiteral
+    - Style/WhenThen
   - '**/**/ansi.rb':
     - Style/RedundantSelf
+  - '**/**/macos.rb':
+    - Naming/ConstantName
