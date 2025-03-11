@@ -36,6 +36,18 @@ module RoadToRubykaigi
         end
       end
 
+      def can_attack!
+        @can_attack = true
+      end
+
+      def can_attack?
+        @can_attack
+      end
+
+      def attack_position
+        [x + width, y + 1]
+      end
+
       def stun
         @stunned_until = Time.now + STUN_SECOND
       end
@@ -157,6 +169,7 @@ module RoadToRubykaigi
         @jumping = false
         @stompable = false
         @stunned_until = Time.now
+        @can_attack = false
         @audio_manager = Manager::AudioManager.instance
       end
 

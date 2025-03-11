@@ -47,10 +47,9 @@ module RoadToRubykaigi
       when :right; @player.right
       when :left; @player.left
       when :attack
-        # @attacks.add(
-        #   @player.x + @player.width,
-        #   @player.y + 1,
-        # )
+        if @player.can_attack?
+          @attacks.add(@player)
+        end
       end
     end
 
@@ -76,6 +75,7 @@ module RoadToRubykaigi
       @bonuses.delete(bonus)
       @effects.heart(@player.x + @player.width - 1, @player.y)
       @game_manager.increment_score
+      @player.can_attack! if bonus.type == :laptop
     end
 
     def player_deadline(*args)

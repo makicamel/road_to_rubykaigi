@@ -6,8 +6,8 @@ module RoadToRubykaigi
       extend Forwardable
       def_delegators :@attacks, :each, :map, :delete, :select
 
-      def add(x, y)
-        @attacks << Attack.new(x, y)
+      def add(player)
+        @attacks << Attack.new(*player.attack_position)
       end
 
       def simulate_physics

@@ -98,6 +98,22 @@ module RoadToRubykaigi
         sake: "🍶",
         laptop: "💻",
       }
+      TYPE = {
+        ruby: :basic,
+        money: :basic,
+        coffee: :basic,
+        book: :basic,
+        sushi: :basic,
+        meat: :basic,
+        fish: :basic,
+        beer: :alcohol,
+        sake: :alcohol,
+        laptop: :laptop,
+      }
+
+      def type
+        TYPE[@character]
+      end
 
       def bounding_box
         { x: @x, y: @y, width: width, height: height }
