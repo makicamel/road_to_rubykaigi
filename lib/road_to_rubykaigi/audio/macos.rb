@@ -1,35 +1,39 @@
-require 'ffi'
+require 'fiddle'
+require 'fiddle/import'
+require 'fiddle/types'
 
 module RoadToRubykaigi
   module Audio
     module CoreFoundation
-      extend FFI::Library
-      ffi_lib '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation'
+      extend Fiddle::Importer
+      dlload '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation'
+      include Fiddle::BasicTypes
 
       # CFStringCreateWithCString(CFAllocatorRef alloc, const char *cStr, CFStringEncoding encoding)
-      attach_function :CFStringCreateWithCString, [:pointer, :string, :uint32], :pointer
-      # CFURLCreateWithFileSystemPath(CFAllocatorRef alloc, CFStringRef filePath, CFURLPathStyle pathStyle, Boolean isDirectory)
-      attach_function :CFURLCreateWithFileSystemPath, [:pointer, :pointer, :int, :bool], :pointer
+      extern 'void* CFStringCreateWithCString(void*, const char*, unsigned int)'
+      # CFURLCreateWithFileSystemPath(CFAllocatorRef alloc, CFStringRef filePath, CFURLPathStyle pathStyle, int isDirectory)
+      extern 'void* CFURLCreateWithFileSystemPath(void*, void*, int, int)'
       # CFRelease(CFTypeRef cf)
-      attach_function :CFRelease, [:pointer], :void
+      extern 'void CFRelease(void*)'
 
-      DefaultAllocator = FFI::Pointer::NULL
+      DefaultAllocator = 0
       POSIXPathStyle = 0
       UTF8Encoding = 0x08000100
     end
 
     module AudioToolbox
-      extend FFI::Library
-      ffi_lib '/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox'
+      extend Fiddle::Importer
+      dlload '/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox'
+      include Fiddle::BasicTypes
 
       # OSStatus AudioServicesCreateSystemSoundID(CFURLRef inFileURL, SystemSoundID *outSystemSoundID)
       #   0 is success
-      attach_function :AudioServicesCreateSystemSoundID, [:pointer, :pointer], :int
+      extern 'int AudioServicesCreateSystemSoundID(void*, void*)'
       # void AudioServicesPlaySystemSound(SystemSoundID inSystemSoundID)
-      attach_function :AudioServicesPlaySystemSound, [:uint32], :void
+      extern 'void AudioServicesPlaySystemSound(unsigned int)'
       # OSStatus AudioServicesDisposeSystemSoundID(SystemSoundID inSystemSoundID)
       #   0 is success
-      attach_function :AudioServicesDisposeSystemSoundID, [:uint32], :int
+      extern 'int AudioServicesDisposeSystemSoundID(unsigned int)'
     end
   end
 end

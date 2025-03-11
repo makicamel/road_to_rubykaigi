@@ -1,4 +1,6 @@
-require 'ffi'
+require 'fiddle'
+require 'fiddle/import'
+require 'singleton'
 
 module RoadToRubykaigi
   module Manager
@@ -48,25 +50,25 @@ module RoadToRubykaigi
           file_path,
           Audio::CoreFoundation::UTF8Encoding,
         )
-        return nil if cf_str.null?
+        return nil if cf_str.to_i.zero?
 
         cf_url = Audio::CoreFoundation.CFURLCreateWithFileSystemPath(
           Audio::CoreFoundation::DefaultAllocator,
           cf_str,
           Audio::CoreFoundation::POSIXPathStyle,
-          false, # isDirectory
+          0, # isDirectory false
         )
         Audio::CoreFoundation.CFRelease(cf_str)
-        return nil if cf_url.null?
+        return nil if cf_url.to_i.zero?
 
-        sound_id_pointer = FFI::MemoryPointer.new(:uint32)
+        sound_id_pointer = Fiddle::Pointer.malloc(Fiddle::SIZEOF_UINT)
         os_status = Audio::AudioToolbox.AudioServicesCreateSystemSoundID(cf_url, sound_id_pointer)
         Audio::CoreFoundation.CFRelease(cf_url)
         unless os_status.zero?
           return warn "Failed to load sound #{file_path}: error code #{os_status}"
         end
 
-        sound_id_pointer.read_uint32
+        sound_id_pointer[0, Fiddle::SIZEOF_UINT].unpack1('L')
       end
     end
   end
