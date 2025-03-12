@@ -12,7 +12,7 @@ module RoadToRubykaigi
       end
 
       def add(player)
-        @attacks << Attack.new(*player.attack_position)
+        @attacks << Attack.new(*player.attack_position, player.current_direction)
       end
 
       def simulate_physics
@@ -51,7 +51,7 @@ module RoadToRubykaigi
       SPEED = 3
 
       def move
-        @x += SPEED
+        @x += @direction * SPEED
       end
 
       def characters
@@ -69,9 +69,10 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(x, y)
+      def initialize(x, y, direction)
         @x = x
         @y = y
+        @direction = direction
       end
     end
   end

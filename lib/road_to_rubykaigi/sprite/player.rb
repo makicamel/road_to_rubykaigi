@@ -51,7 +51,7 @@ module RoadToRubykaigi
       end
 
       def attack_position
-        [x + width, y + 1]
+        current_direction == RIGHT ? [x + width, y + 1] : [x - 2, y + 1]
       end
 
       def stun
@@ -161,6 +161,10 @@ module RoadToRubykaigi
         @height ||= current_character.first.size
       end
 
+      def current_direction
+        (@vx >= 0) ? RIGHT : LEFT
+      end
+
       private
 
       def initialize
@@ -218,10 +222,6 @@ module RoadToRubykaigi
         else
           WALK_FRICTION
         end
-      end
-
-      def current_direction
-        (@vx >= 0) ? RIGHT : LEFT
       end
     end
   end
