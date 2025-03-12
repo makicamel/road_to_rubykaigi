@@ -49,6 +49,7 @@ module RoadToRubykaigi
       when :attack
         if @player.can_attack?
           @attacks.add(@player)
+          Manager::AudioManager.instance.attack
         end
       end
     end

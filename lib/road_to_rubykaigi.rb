@@ -32,7 +32,6 @@ module RoadToRubykaigi
   def self.start(game_mode = :normal)
     ANSI.cursor_off
     at_exit do
-      Manager::AudioManager.instance.dispose
       print "\e[#{END_POSITION};1H"
       ANSI.cursor_on
     end

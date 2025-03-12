@@ -4,36 +4,45 @@ require 'fiddle/types'
 
 module RoadToRubykaigi
   module Audio
-    module CoreFoundation
+    module MacOS
       extend Fiddle::Importer
-      dlload '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation'
+      dlopen '/System/Library/Frameworks/AVFoundation.framework/AVFoundation'
+      dlload LibObjC = dlopen('/usr/lib/libobjc.A.dylib')
       include Fiddle::BasicTypes
 
-      # CFStringCreateWithCString(CFAllocatorRef alloc, const char *cStr, CFStringEncoding encoding)
-      extern 'void* CFStringCreateWithCString(void*, const char*, unsigned int)'
-      # CFURLCreateWithFileSystemPath(CFAllocatorRef alloc, CFStringRef filePath, CFURLPathStyle pathStyle, int isDirectory)
-      extern 'void* CFURLCreateWithFileSystemPath(void*, void*, int, int)'
-      # CFRelease(CFTypeRef cf)
-      extern 'void CFRelease(void*)'
+      extern 'void* objc_getClass(const char*)'
+      extern 'void* sel_registerName(const char*)'
 
-      DefaultAllocator = 0
-      POSIXPathStyle = 0
-      UTF8Encoding = 0x08000100
-    end
+      class << self
+        def build_player(path)
+          ns_string_path = objc_msgSend("NSString", "stringWithUTF8String:", path)
+          ns_url = objc_msgSend("NSURL", "fileURLWithPath:", ns_string_path)
+          error_pointer = 0 # Ignore errors
+          initial_player = objc_msgSend("AVAudioPlayer", "alloc")
+          objc_msgSend(initial_player, "initWithContentsOfURL:error:", ns_url, error_pointer)
+        end
 
-    module AudioToolbox
-      extend Fiddle::Importer
-      dlload '/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox'
-      include Fiddle::BasicTypes
+        def play(player)
+          objc_msgSend(player, "stop") # Reset player
+          objc_msgSend(player, "play")
+        end
 
-      # OSStatus AudioServicesCreateSystemSoundID(CFURLRef inFileURL, SystemSoundID *outSystemSoundID)
-      #   0 is success
-      extern 'int AudioServicesCreateSystemSoundID(void*, void*)'
-      # void AudioServicesPlaySystemSound(SystemSoundID inSystemSoundID)
-      extern 'void AudioServicesPlaySystemSound(unsigned int)'
-      # OSStatus AudioServicesDisposeSystemSoundID(SystemSoundID inSystemSoundID)
-      #   0 is success
-      extern 'int AudioServicesDisposeSystemSoundID(unsigned int)'
+        private
+
+        def objc_msgSend(klass_or_klass_name, selector_name, *args)
+          klass = klass_or_klass_name.is_a?(String) ? objc_getClass(klass_or_klass_name) : klass_or_klass_name
+          func = Fiddle::Function.new(
+            LibObjC["objc_msgSend"],
+            [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VOIDP] + args.map { Fiddle::TYPE_VOIDP },
+            Fiddle::TYPE_VOIDP,
+          )
+          func.call(
+            klass,
+            sel_registerName(selector_name),
+            *args,
+          )
+        end
+      end
     end
   end
 end
