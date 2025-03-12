@@ -13,6 +13,7 @@ module RoadToRubykaigi
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
 
+      ATTACK_COOLDOWN_SECOND = 0.1
       KEY_INPUT_THRESHOLD = 0.5
       ANIMETION_FRAME_SECOND = 0.5
       STUN_SECOND = 2.0
@@ -41,7 +42,12 @@ module RoadToRubykaigi
       end
 
       def can_attack?
-        @can_attack
+        @can_attack && (Time.now - @last_attack_time >= ATTACK_COOLDOWN_SECOND)
+      end
+
+      def attack(attacks)
+        attacks.add(self)
+        @last_attack_time = Time.now
       end
 
       def attack_position
@@ -170,6 +176,7 @@ module RoadToRubykaigi
         @stompable = false
         @stunned_until = Time.now
         @can_attack = false
+        @last_attack_time = Time.now
         @audio_manager = Manager::AudioManager.instance
       end
 
