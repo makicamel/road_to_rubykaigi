@@ -41,8 +41,8 @@ module RoadToRubykaigi
         @can_attack = true
       end
 
-      def can_attack?
-        @can_attack && (Time.now - @last_attack_time >= ATTACK_COOLDOWN_SECOND)
+      def can_attack?(attacks)
+        @can_attack && attacks.remain_attack? && (Time.now - @last_attack_time >= ATTACK_COOLDOWN_SECOND)
       end
 
       def attack(attacks)

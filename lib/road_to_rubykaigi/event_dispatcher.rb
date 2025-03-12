@@ -47,7 +47,7 @@ module RoadToRubykaigi
       when :right; @player.right
       when :left; @player.left
       when :attack
-        if @player.can_attack?
+        if @player.can_attack?(@attacks)
           @player.attack(@attacks)
           Manager::AudioManager.instance.attack
         end

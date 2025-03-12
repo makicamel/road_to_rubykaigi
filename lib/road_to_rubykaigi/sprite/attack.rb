@@ -5,6 +5,11 @@ module RoadToRubykaigi
     class Attacks
       extend Forwardable
       def_delegators :@attacks, :each, :map, :delete, :select
+      ATTACK_COUNT = 13
+
+      def remain_attack?
+        @attacks.size < ATTACK_COUNT
+      end
 
       def add(player)
         @attacks << Attack.new(*player.attack_position)
@@ -43,9 +48,10 @@ module RoadToRubykaigi
 
     class Attack < Sprite
       SYMBOL = ".˖"
+      SPEED = 3
 
       def move
-        @x += 1
+        @x += SPEED
       end
 
       def characters
