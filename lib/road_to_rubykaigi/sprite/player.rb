@@ -38,11 +38,11 @@ module RoadToRubykaigi
       end
 
       def can_attack!
-        @can_attack = true
+        @attack_mode = true
       end
 
       def can_attack?(attacks)
-        @can_attack && attacks.remain_attack? && (Time.now - @last_attack_time >= ATTACK_COOLDOWN_SECOND)
+        @attack_mode && attacks.remain_attack? && (Time.now - @last_attack_time >= ATTACK_COOLDOWN_SECOND)
       end
 
       def attack(attacks)
@@ -179,7 +179,7 @@ module RoadToRubykaigi
         @jumping = false
         @stompable = false
         @stunned_until = Time.now
-        @can_attack = false
+        @attack_mode = false
         @last_attack_time = Time.now
         @audio_manager = Manager::AudioManager.instance
       end
@@ -209,7 +209,7 @@ module RoadToRubykaigi
 
       def current_character
         status = stunned? ? :stunned : :normal
-        Graphics::Player.character(status, current_direction)
+        Graphics::Player.character(status, current_direction, attack_mode: @attack_mode)
       end
 
       def jumping?

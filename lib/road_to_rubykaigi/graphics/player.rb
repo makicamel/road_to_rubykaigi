@@ -4,27 +4,27 @@ module RoadToRubykaigi
       RIGHT = RoadToRubykaigi::Sprite::Player::RIGHT
       LEFT = RoadToRubykaigi::Sprite::Player::LEFT
 
-      CHARACTERS = {
+      DEFAULT_CHARACTERS = {
         normal: {
           RIGHT => [
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │｡・◡・│
               ╰ᜊ───ᜊ─╯
             SPRITE
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │｡・◡・│
               ╰─∪───∪╯
             SPRITE
           ],
           LEFT => [
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │・◡・｡│
               ╰─ᜊ───ᜊ╯
             SPRITE
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │・◡・｡│
               ╰∪───∪─╯
@@ -33,24 +33,24 @@ module RoadToRubykaigi
         },
         stunned: {
           RIGHT => [
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │ ´×⌓× │
               ╰─ᜊ───ᜊ╯
             SPRITE
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │ ´×⌓× │
               ╰─∪───∪╯
             SPRITE
           ],
           LEFT => [
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │ ×⌓×` │
               ╰─ᜊ───ᜊ╯
             SPRITE
-            <<~SPRITE,
+            <<~SPRITE.lines.map(&:chomp),
               ╭──────╮
               │ ×⌓×` │
               ╰─∪───∪╯
@@ -58,11 +58,38 @@ module RoadToRubykaigi
           ],
         },
       }
+      ATTACK_CHARACTERS = {
+        normal: {
+          RIGHT => DEFAULT_CHARACTERS[:normal][RIGHT].map do |character|
+            character.map.with_index do |line, i|
+              i == 1 ? line + "_◢◤" : line
+            end
+          end,
+          LEFT => DEFAULT_CHARACTERS[:normal][LEFT].map.with_index do |character|
+            character.map.with_index do |line, i|
+              i == 1 ? "◥◣_" + line : "   " + line
+            end
+          end
+        },
+        stunned: {
+          RIGHT => DEFAULT_CHARACTERS[:stunned][RIGHT].map do |character|
+            character.map.with_index do |line, i|
+              i == 1 ? line + "_◢◤" : line
+            end
+          end,
+          LEFT => DEFAULT_CHARACTERS[:normal][LEFT].map.with_index do |character|
+            character.map.with_index do |line, i|
+              i == 1 ? "◥◣_" + line : "   " + line
+            end
+          end
+        }
+      }
 
       class << self
-        def character(status, direction)
-          CHARACTERS[status][direction].map do |lines|
-            lines.split("\n").map do |line|
+        def character(status, direction, attack_mode: false)
+          characters = attack_mode ? ATTACK_CHARACTERS : DEFAULT_CHARACTERS
+          characters[status][direction].map do |lines|
+            lines.map do |line|
               line.chars.map do |character|
                 fullwidth?(character) ? [character, ANSI::NULL] : character
               end.flatten
