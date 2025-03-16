@@ -67,6 +67,7 @@ module RoadToRubykaigi
     def process_input(input)
       actions = {
         "\e[A" => :jump,
+        "\e[B" => :crouch,
         "\e[C" => :right,
         "\e[D" => :left,
         " " => :attack,

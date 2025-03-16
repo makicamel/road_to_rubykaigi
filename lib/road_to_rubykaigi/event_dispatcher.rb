@@ -44,6 +44,7 @@ module RoadToRubykaigi
 
       case action
       when :jump; @player.jump
+      when :crouch; @player.crouch
       when :right; @player.right
       when :left; @player.left
       when :attack

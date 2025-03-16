@@ -17,15 +17,23 @@ module RoadToRubykaigi
         def load_data
           return if @normal_characters
           index = { "RIGHT" => Sprite::Player::RIGHT, "LEFT" => Sprite::Player::LEFT }
-          @normal_characters = { normal: { index["RIGHT"] => [], index["LEFT"] => [] }, stunned: { index["RIGHT"] => [], index["LEFT"] => [] } }
-          @attack_characters = { normal: { index["RIGHT"] => [], index["LEFT"] => [] }, stunned: { index["RIGHT"] => [], index["LEFT"] => [] } }
-          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (normal|stunned)_(RIGHT|LEFT)\n((?:.*\n){6})/) do |raw_status, direction, raw_frames|
+          @normal_characters = {
+            normal: { index["RIGHT"] => [], index["LEFT"] => [] },
+            stunned: { index["RIGHT"] => [], index["LEFT"] => [] },
+            crouching: { index["RIGHT"] => [], index["LEFT"] => [] },
+          }
+          @attack_characters = {
+            normal: { index["RIGHT"] => [], index["LEFT"] => [] },
+            stunned: { index["RIGHT"] => [], index["LEFT"] => [] },
+            crouching: { index["RIGHT"] => [], index["LEFT"] => [] },
+          }
+          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (normal|stunned|crouching)_(RIGHT|LEFT)_(\d)\n((?:[^#]+\n){4,6})/) do |raw_status, direction, height, raw_frames|
             status = raw_status.to_sym
             normal_frames = raw_frames.lines.map do |line|
               line.chomp.chars.map do |char|
                 fullwidth?(char) ? [char, ANSI::NULL] : char
               end.flatten
-            end.each_slice(3).to_a
+            end.each_slice(height.to_i).to_a
             @normal_characters[status][index[direction]] = normal_frames
             attack_frames = normal_frames.map do |character|
               character.map.with_index do |line, i|

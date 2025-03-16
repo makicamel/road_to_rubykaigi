@@ -17,6 +17,7 @@ module RoadToRubykaigi
       KEY_INPUT_THRESHOLD = 0.5
       ANIMETION_FRAME_SECOND = 0.5
       STUN_SECOND = 2.0
+      CROUCH_SECOND = 1.0
 
       RIGHT = 1
       LEFT = -1
@@ -30,11 +31,21 @@ module RoadToRubykaigi
       end
 
       def jump
-        unless jumping?
+        unless jumping? || crouching?
           @jumping = true
           @vy = JUMP_INITIAL_VELOCITY
           @audio_manager.jump
         end
+      end
+
+      def crouch
+        unless jumping? || crouching?
+          @crouching_until = Time.now + CROUCH_SECOND
+        end
+      end
+
+      def crouching?
+        Time.now < @crouching_until
       end
 
       def can_attack!
@@ -178,6 +189,7 @@ module RoadToRubykaigi
         @animetion_updated_time = Time.now
         @key_input_time = Time.now
         @jumping = false
+        @crouching_until = Time.now - 1
         @stompable = false
         @stunned_until = Time.now
         @attack_mode = false
@@ -209,7 +221,7 @@ module RoadToRubykaigi
       end
 
       def current_character
-        status = stunned? ? :stunned : :normal
+        status = crouching? ? :crouching : stunned? ? :stunned : :normal
         Graphics::Player.character(status, current_direction, attack_mode: @attack_mode)
       end
 
