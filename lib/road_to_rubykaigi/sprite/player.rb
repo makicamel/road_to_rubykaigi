@@ -10,6 +10,7 @@ module RoadToRubykaigi
 
       INITIAL_X = 10
       BASE_Y = 26
+      BASE_HEIGHT = 3
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
 
@@ -62,7 +63,9 @@ module RoadToRubykaigi
       end
 
       def attack_position
-        current_direction == RIGHT ? [x + width, y + 1] : [x - 2, y + 1]
+        x_position = current_direction == RIGHT ? x + width : x - 2
+        y_position = crouching? ? y + 2 : y + 1
+        [x_position, y_position]
       end
 
       def stun
@@ -143,7 +146,7 @@ module RoadToRubykaigi
       def build_buffer(offset_x:)
         buffer = Array.new(Map::VIEWPORT_HEIGHT) { Array.new(Map::VIEWPORT_WIDTH) { "" } }
         relative_x = @x - offset_x - 1
-        relative_y = @y - 1
+        relative_y = @y + (BASE_HEIGHT - height) - 1
         current_character[@walking_frame].each_with_index do |row, i|
           row.each_with_index do |character, j|
             buffer[relative_y+i][relative_x+j] = character
@@ -169,7 +172,7 @@ module RoadToRubykaigi
       end
 
       def height
-        @height ||= current_character.first.size
+        @height[crouching?] ||= current_character.first.size
       end
 
       def current_direction
@@ -184,6 +187,7 @@ module RoadToRubykaigi
         @vx = 0.0
         @vy = 0.0
         @width ||= {}
+        @height ||= {}
         @walking_frame = 0
         @coordinate_updated_time = Time.now
         @animetion_updated_time = Time.now

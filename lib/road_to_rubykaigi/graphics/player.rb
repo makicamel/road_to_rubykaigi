@@ -41,21 +41,21 @@ module RoadToRubykaigi
                     [
                       set[:head],
                       set["face_#{posture}_#{status}_#{direction}".to_sym],
-                      set["foot_#{status}_#{i}".to_sym],
-                    ]
+                      posture == :crouching ? nil : set["foot_#{status}_#{i}".to_sym],
+                    ].compact
                   )
                   @attack_characters[posture][status][direction_value] << (
                     direction == "RIGHT" ?
                       [
                         set[:head] + "   ".chars,
                         set["face_#{posture}_#{status}_#{direction}".to_sym] + "_◢◤".chars,
-                        set["foot_#{status}_#{i}".to_sym] + "   ".chars,
-                      ] :
+                        posture == :crouching ? nil : set["foot_#{status}_#{i}".to_sym] + "   ".chars,
+                      ].compact :
                       [
                         "   ".chars + set[:head],
                         "◥◣_".chars + set["face_#{posture}_#{status}_#{direction}".to_sym],
-                        "   ".chars + set["foot_#{status}_#{i}".to_sym],
-                      ]
+                        posture == :crouching ? nil : "   ".chars + set["foot_#{status}_#{i}".to_sym],
+                      ].compact
                   )
                 end
               end
