@@ -154,7 +154,7 @@ module RoadToRubykaigi
       end
 
       def width
-        @width ||= current_character.first.map(&:size).max
+        @width[@attack_mode] ||= current_character.first.map(&:size).max
       end
 
       def height
@@ -172,6 +172,7 @@ module RoadToRubykaigi
         @y = BASE_Y
         @vx = 0.0
         @vy = 0.0
+        @width ||= {}
         @walking_frame = 0
         @coordinate_updated_time = Time.now
         @animetion_updated_time = Time.now

@@ -3,104 +3,45 @@ module RoadToRubykaigi
     module Player
       RIGHT = RoadToRubykaigi::Sprite::Player::RIGHT
       LEFT = RoadToRubykaigi::Sprite::Player::LEFT
-
-      DEFAULT_CHARACTERS = {
-        normal: {
-          RIGHT => [
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │｡・◡・│
-              ╰ᜊ───ᜊ─╯
-            SPRITE
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │｡・◡・│
-              ╰─∪───∪╯
-            SPRITE
-          ],
-          LEFT => [
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │・◡・｡│
-              ╰─ᜊ───ᜊ╯
-            SPRITE
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │・◡・｡│
-              ╰∪───∪─╯
-            SPRITE
-          ],
-        },
-        stunned: {
-          RIGHT => [
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │ ´×⌓× │
-              ╰─ᜊ───ᜊ╯
-            SPRITE
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │ ´×⌓× │
-              ╰─∪───∪╯
-            SPRITE
-          ],
-          LEFT => [
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │ ×⌓×` │
-              ╰─ᜊ───ᜊ╯
-            SPRITE
-            <<~SPRITE.lines.map(&:chomp),
-              ╭──────╮
-              │ ×⌓×` │
-              ╰─∪───∪╯
-            SPRITE
-          ],
-        },
-      }
-      ATTACK_CHARACTERS = {
-        normal: {
-          RIGHT => DEFAULT_CHARACTERS[:normal][RIGHT].map do |character|
-            character.map.with_index do |line, i|
-              i == 1 ? line + "_◢◤" : line
-            end
-          end,
-          LEFT => DEFAULT_CHARACTERS[:normal][LEFT].map.with_index do |character|
-            character.map.with_index do |line, i|
-              i == 1 ? "◥◣_" + line : "   " + line
-            end
-          end
-        },
-        stunned: {
-          RIGHT => DEFAULT_CHARACTERS[:stunned][RIGHT].map do |character|
-            character.map.with_index do |line, i|
-              i == 1 ? line + "_◢◤" : line
-            end
-          end,
-          LEFT => DEFAULT_CHARACTERS[:normal][LEFT].map.with_index do |character|
-            character.map.with_index do |line, i|
-              i == 1 ? "◥◣_" + line : "   " + line
-            end
-          end
-        }
-      }
+      FILE_PATH = "player.txt"
 
       class << self
-        def character(status, direction, attack_mode: false)
-          characters = attack_mode ? ATTACK_CHARACTERS : DEFAULT_CHARACTERS
-          characters[status][direction].map do |lines|
-            lines.map do |line|
-              line.chars.map do |character|
-                fullwidth?(character) ? [character, ANSI::NULL] : character
-              end.flatten
-            end
-          end
+        def character(status, direction, attack_mode:)
+          load_data
+          characters = attack_mode ? @attack_characters : @normal_characters
+          characters[status][direction]
         end
 
         private
 
-        def fullwidth?(character)
-          %w[・].include? character
+        def load_data
+          return if @normal_characters
+          index = { "RIGHT" => Sprite::Player::RIGHT, "LEFT" => Sprite::Player::LEFT }
+          @normal_characters = { normal: { index["RIGHT"] => [], index["LEFT"] => [] }, stunned: { index["RIGHT"] => [], index["LEFT"] => [] } }
+          @attack_characters = { normal: { index["RIGHT"] => [], index["LEFT"] => [] }, stunned: { index["RIGHT"] => [], index["LEFT"] => [] } }
+          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (normal|stunned)_(RIGHT|LEFT)\n((?:.*\n){6})/) do |raw_status, direction, raw_frames|
+            status = raw_status.to_sym
+            normal_frames = raw_frames.lines.map do |line|
+              line.chomp.chars.map do |char|
+                fullwidth?(char) ? [char, ANSI::NULL] : char
+              end.flatten
+            end.each_slice(3).to_a
+            @normal_characters[status][index[direction]] = normal_frames
+            attack_frames = normal_frames.map do |character|
+              character.map.with_index do |line, i|
+                if i == 1
+                  direction == "RIGHT" ? line + "_◢◤".chars : "◥◣_".chars + line
+                else
+                  direction == "RIGHT" ? line + "   ".chars : "   ".chars + line
+                end
+              end
+            end
+            @attack_characters[status][index[direction]] = attack_frames
+          end
+        end
+
+        def fullwidth?(char)
+          %w[・].include? char
         end
       end
     end
