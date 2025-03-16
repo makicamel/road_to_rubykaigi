@@ -221,8 +221,11 @@ module RoadToRubykaigi
       end
 
       def current_character
-        status = crouching? ? :crouching : stunned? ? :stunned : :normal
-        Graphics::Player.character(status, current_direction, attack_mode: @attack_mode)
+        posture = crouching? ? :crouching : :standup
+        status = stunned? ? :stunned : :normal
+        Graphics::Player.character(
+          posture: posture, status: status, direction: current_direction, attack_mode: @attack_mode
+        )
       end
 
       def jumping?

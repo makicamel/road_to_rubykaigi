@@ -6,45 +6,60 @@ module RoadToRubykaigi
       FILE_PATH = "player.txt"
 
       class << self
-        def character(status, direction, attack_mode:)
+        def character(posture:, status:, direction:, attack_mode:)
           load_data
-          characters = attack_mode ? @attack_characters : @normal_characters
-          characters[status][direction]
+          characters = attack_mode ? @attack_characters : @default_characters
+          characters[posture][status][direction]
         end
 
         private
 
         def load_data
-          return if @normal_characters
+          return if @default_characters
           index = { "RIGHT" => Sprite::Player::RIGHT, "LEFT" => Sprite::Player::LEFT }
-          @normal_characters = {
-            normal: { index["RIGHT"] => [], index["LEFT"] => [] },
-            stunned: { index["RIGHT"] => [], index["LEFT"] => [] },
-            crouching: { index["RIGHT"] => [], index["LEFT"] => [] },
+          hash = Hash.new { |h, k| h[k] = [] }
+          @default_characters = {
+            standup: { normal: hash.dup, stunned: hash.dup },
+            crouching: { normal: hash.dup, stunned: hash.dup },
           }
           @attack_characters = {
-            normal: { index["RIGHT"] => [], index["LEFT"] => [] },
-            stunned: { index["RIGHT"] => [], index["LEFT"] => [] },
-            crouching: { index["RIGHT"] => [], index["LEFT"] => [] },
+            standup: { normal: hash.dup, stunned: hash.dup },
+            crouching: { normal: hash.dup, stunned: hash.dup },
           }
-          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (normal|stunned|crouching)_(RIGHT|LEFT)_(\d)\n((?:[^#]+\n){4,6})/) do |raw_status, direction, height, raw_frames|
-            status = raw_status.to_sym
-            normal_frames = raw_frames.lines.map do |line|
-              line.chomp.chars.map do |char|
-                fullwidth?(char) ? [char, ANSI::NULL] : char
-              end.flatten
-            end.each_slice(height.to_i).to_a
-            @normal_characters[status][index[direction]] = normal_frames
-            attack_frames = normal_frames.map do |character|
-              character.map.with_index do |line, i|
-                if i == 1
-                  direction == "RIGHT" ? line + "_◢◤".chars : "◥◣_".chars + line
-                else
-                  direction == "RIGHT" ? line + "   ".chars : "   ".chars + line
+          set = {}
+          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (\w+)\n(.*)\n/) do |type, line|
+            set[type.to_sym] = line.chars.map do |char|
+              fullwidth?(char) ? [char, ANSI::NULL] : char
+            end.flatten
+          end
+
+          %i[standup crouching].each do |posture|
+            %i[normal stunned].each do |status|
+              index.each do |(direction, direction_value)|
+                (1..2).each do |i|
+                  @default_characters[posture][status][direction_value] << (
+                    [
+                      set[:head],
+                      set["face_#{posture}_#{status}_#{direction}".to_sym],
+                      set["foot_#{status}_#{i}".to_sym],
+                    ]
+                  )
+                  @attack_characters[posture][status][direction_value] << (
+                    direction == "RIGHT" ?
+                      [
+                        set[:head] + "   ".chars,
+                        set["face_#{posture}_#{status}_#{direction}".to_sym] + "_◢◤".chars,
+                        set["foot_#{status}_#{i}".to_sym] + "   ".chars,
+                      ] :
+                      [
+                        "   ".chars + set[:head],
+                        "◥◣_".chars + set["face_#{posture}_#{status}_#{direction}".to_sym],
+                        "   ".chars + set["foot_#{status}_#{i}".to_sym],
+                      ]
+                  )
                 end
               end
             end
-            @attack_characters[status][index[direction]] = attack_frames
           end
         end
 

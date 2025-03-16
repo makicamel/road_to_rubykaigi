@@ -1,42 +1,26 @@
-# normal_RIGHT_3
+# head
 ╭──────╮
-│｡・◡・│
+# foot_normal_1
+╰─∪───∪╯
+# foot_normal_2
 ╰ᜊ───ᜊ─╯
-╭──────╮
+# foot_stunned_1
+╰─ᜊ───ᜊ╯
+# foot_stunned_2
+╰ᜊ───ᜊ─╯
+# face_standup_normal_RIGHT
 │｡・◡・│
-╰─∪───∪╯
-# normal_LEFT_3
-╭──────╮
+# face_standup_normal_LEFT
 │・◡・｡│
-╰─ᜊ───ᜊ╯
-╭──────╮
-│・◡・｡│
-╰∪───∪─╯
-# stunned_RIGHT_3
-╭──────╮
+# face_standup_stunned_RIGHT
 │ ´×⌓× │
-╰─ᜊ───ᜊ╯
-╭──────╮
-│ ´×⌓× │
-╰─∪───∪╯
-# stunned_LEFT_3
-╭──────╮
+# face_standup_stunned_LEFT
 │ ×⌓×` │
-╰─ᜊ───ᜊ╯
-╭──────╮
-│ ×⌓×` │
-╰─∪───∪╯
-# crouching_RIGHT_3
-
-╭──────╮
+# face_crouching_normal_RIGHT
 ╰ᜊ・◡・╯
-
-╭──────╮
-╰ᜊ・◡・╯
-# crouching_LEFT_3
-
-╭──────╮
+# face_crouching_normal_LEFT
 ╰・◡・ᜊ╯
-
-╭──────╮
-╰・◡・ᜊ╯
+# face_crouching_stunned_RIGHT
+╰ ´×⌓× ╯
+# face_crouching_stunned_LEFT
+╰ ×⌓×` ╯
