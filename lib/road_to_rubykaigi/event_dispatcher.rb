@@ -93,7 +93,6 @@ module RoadToRubykaigi
       @player.stun
       @game_manager.game_over
       Manager::AudioManager.instance.game_over
-      sleep 1
     end
 
     def player_enemy(_, enemy)

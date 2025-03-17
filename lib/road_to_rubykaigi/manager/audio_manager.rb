@@ -27,6 +27,17 @@ module RoadToRubykaigi
         }
       end
 
+      def game_over
+        if macos?
+          @players[:game_over].sample.tap do |player|
+            player.play
+            while player.playing?
+              sleep 0.1
+            end
+          end
+        end
+      end
+
       private
 
       def initialize

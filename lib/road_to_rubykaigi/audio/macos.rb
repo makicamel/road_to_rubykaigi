@@ -59,6 +59,16 @@ module RoadToRubykaigi
         objc_msgSend(@player, "play")
       end
 
+      def playing?
+        @func ||= Fiddle::Function.new(
+          LibObjC["objc_msgSend"],
+          [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VOIDP],
+          Fiddle::TYPE_INT, # Type conversion from bool to int
+        )
+        result = @func.call(@player, sel_registerName("isPlaying"))
+        result != 0
+      end
+
       private
 
       def initialize(player)
