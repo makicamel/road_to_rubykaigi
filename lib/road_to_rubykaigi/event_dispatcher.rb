@@ -66,6 +66,7 @@ module RoadToRubykaigi
       @bonuses.delete(bonus)
       @effects.heart(@player.x + @player.width - 1, @player.y)
       @game_manager.increment_score
+      Manager::AudioManager.instance.bonus
     end
 
     def attack_enemy(attack, enemy)
@@ -73,17 +74,26 @@ module RoadToRubykaigi
       @effects.note(@player.x + @player.width - 1, @player.y)
       @enemies.delete(enemy)
       @game_manager.increment_score
+      Manager::AudioManager.instance.defeat
     end
 
     def player_bonus(_, bonus)
       @bonuses.delete(bonus)
       @effects.heart(@player.x + @player.width - 1, @player.y)
       @game_manager.increment_score
-      @player.can_attack! if bonus.type == :laptop
+      if bonus.type == :laptop
+        @player.can_attack!
+        Manager::AudioManager.instance.laptop
+      else
+        Manager::AudioManager.instance.bonus
+      end
     end
 
     def player_deadline(*args)
+      @player.stun
       @game_manager.game_over
+      Manager::AudioManager.instance.game_over
+      sleep 1
     end
 
     def player_enemy(_, enemy)
@@ -92,10 +102,12 @@ module RoadToRubykaigi
         @enemies.delete(enemy)
         @player.jump
         @game_manager.increment_score
+        Manager::AudioManager.instance.defeat
       else
         @effects.lightning(@player.x + @player.width - 1, @player.y)
         @enemies.delete(enemy)
         @player.stun
+        Manager::AudioManager.instance.stun
       end
     end
   end

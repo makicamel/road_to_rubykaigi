@@ -10,8 +10,13 @@ module RoadToRubykaigi
           lib/road_to_rubykaigi/audio/attack_04.wav
           lib/road_to_rubykaigi/audio/attack_05.wav
         ],
+        bonus: %w[lib/road_to_rubykaigi/audio/bonus.wav],
         crouch: %w[lib/road_to_rubykaigi/audio/crouch.wav],
+        defeat: %w[lib/road_to_rubykaigi/audio/defeat.wav],
+        game_over: %w[lib/road_to_rubykaigi/audio/game_over.wav],
         jump: %w[lib/road_to_rubykaigi/audio/jump.wav],
+        laptop: %w[lib/road_to_rubykaigi/audio/laptop.wav],
+        stun: %w[lib/road_to_rubykaigi/audio/stun.wav],
       }
 
       SOUND_FILES.keys.each do |action|
