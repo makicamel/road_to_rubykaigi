@@ -19,3 +19,4 @@ ignore:
     - Style/RedundantSelf
   - '**/**/macos.rb':
     - Naming/ConstantName
+    - Naming/VariableName

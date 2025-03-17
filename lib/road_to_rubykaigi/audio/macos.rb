@@ -4,14 +4,11 @@ require 'fiddle/types'
 
 module RoadToRubykaigi
   module Audio
-    module MacOS
+    class MacOS
       extend Fiddle::Importer
       dlopen '/System/Library/Frameworks/AVFoundation.framework/AVFoundation'
       dlload LibObjC = dlopen('/usr/lib/libobjc.A.dylib')
       include Fiddle::BasicTypes
-
-      extern 'void* objc_getClass(const char*)'
-      extern 'void* sel_registerName(const char*)'
 
       class << self
         def build_player(path)
@@ -19,15 +16,28 @@ module RoadToRubykaigi
           ns_url = objc_msgSend("NSURL", "fileURLWithPath:", ns_string_path)
           error_pointer = 0 # Ignore errors
           initial_player = objc_msgSend("AVAudioPlayer", "alloc")
-          objc_msgSend(initial_player, "initWithContentsOfURL:error:", ns_url, error_pointer)
+          new(
+            objc_msgSend(initial_player, "initWithContentsOfURL:error:", ns_url, error_pointer)
+          )
         end
 
-        def play(player)
-          objc_msgSend(player, "stop") # Reset player
-          objc_msgSend(player, "play")
+        def objc_getClass(name)
+          @objc_getClass ||= Fiddle::Function.new(
+            LibObjC["objc_getClass"],
+            [Fiddle::TYPE_VOIDP],
+            Fiddle::TYPE_VOIDP,
+          )
+          @objc_getClass.call(name)
         end
 
-        private
+        def sel_registerName(register_name)
+          @sel_registerName ||= Fiddle::Function.new(
+            LibObjC["sel_registerName"],
+            [Fiddle::TYPE_VOIDP],
+            Fiddle::TYPE_VOIDP,
+          )
+          @sel_registerName.call(register_name)
+        end
 
         def objc_msgSend(klass_or_klass_name, selector_name, *args)
           klass = klass_or_klass_name.is_a?(String) ? objc_getClass(klass_or_klass_name) : klass_or_klass_name
@@ -42,6 +52,25 @@ module RoadToRubykaigi
             *args,
           )
         end
+      end
+
+      def play
+        objc_msgSend(@player, "stop") # Reset player
+        objc_msgSend(@player, "play")
+      end
+
+      private
+
+      def initialize(player)
+        @player = player
+      end
+
+      def objc_msgSend(klass_or_klass_name, selector_name, *args)
+        self.class.objc_msgSend(klass_or_klass_name, selector_name, *args)
+      end
+
+      def sel_registerName(selector_name)
+        self.class.sel_registerName(selector_name)
       end
     end
   end

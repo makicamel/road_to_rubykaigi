@@ -22,7 +22,7 @@ module RoadToRubykaigi
       SOUND_FILES.keys.each do |action|
         define_method(action) {
           if macos?
-            Audio::MacOS.play(@players[action].sample)
+            @players[action].sample.play
           end
         }
       end
