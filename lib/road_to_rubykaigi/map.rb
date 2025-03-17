@@ -12,7 +12,7 @@ module RoadToRubykaigi
 
     def clamp_position(x:, y:, width:, height:, dx:, dy:)
       clamped_x = x.clamp(2, @width - width)
-      clamped_y = y.clamp(2, @height - height)
+      clamped_y = y.clamp(2, @height - (Sprite::Player::BASE_HEIGHT - height))
       return [clamped_x, clamped_y] if box_passable?(clamped_x, clamped_y, width, height)
 
       attempt_count = 10

@@ -46,7 +46,7 @@ module RoadToRubykaigi
       end
 
       def crouching?
-        Time.now < @crouching_until
+        @crouching_until && Time.now < @crouching_until
       end
 
       def can_attack!
@@ -84,6 +84,7 @@ module RoadToRubykaigi
         return if stunned?
 
         now = Time.now
+        standup
         if (now - @animetion_updated_time) >= ANIMETION_FRAME_SECOND
           @walking_frame = (@walking_frame + 1) % current_character.size
           @animetion_updated_time = now
@@ -99,17 +100,16 @@ module RoadToRubykaigi
       end
 
       def fall_if_ground_is_passable(map)
-        foot_y = bounding_box[:y] + bounding_box[:height]
-        center_x = bounding_box[:x] + bounding_box[:width] / 2.0
+        foot_y = @y + BASE_HEIGHT
+        center_x = @x + width / 2.0
         if map.passable_at?(center_x, foot_y + 1)
           fall
         end
       end
 
       def land_unless_ground_is_passable(map)
-        foot_y = bounding_box[:y] + bounding_box[:height]
-        foot_y = foot_y.clamp(bounding_box[:height], RoadToRubykaigi::Sprite::Player::BASE_Y)
-        (bounding_box[:x]...(bounding_box[:x] + bounding_box[:width])).each do |col|
+        foot_y = @y + BASE_HEIGHT
+        (x...(x + width)).each do |col|
           unless map.passable_at?(col, foot_y)
             break land(foot_y)
           end
@@ -193,7 +193,7 @@ module RoadToRubykaigi
         @animetion_updated_time = Time.now
         @key_input_time = Time.now
         @jumping = false
-        @crouching_until = Time.now - 1
+        @crouching_until = nil
         @stompable = false
         @stunned_until = Time.now
         @attack_mode = false
@@ -218,10 +218,20 @@ module RoadToRubykaigi
       end
 
       def land(land_y)
-        @y = land_y - height
+        @y = land_y - BASE_HEIGHT
         @vy = 0
         @jumping = false
         # Not change stompable since stompable will not change from true
+      end
+
+      def standup
+        if @crouching_until && Time.now > @crouching_until
+          @crouching_until = nil
+          # Standup with jumping
+          @y -= 1
+          @jumping = true
+          @vy = -0.1 # Avoid 0 to keep @jumping true for 1 frame
+        end
       end
 
       def current_character
