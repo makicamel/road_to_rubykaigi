@@ -231,6 +231,7 @@ module RoadToRubykaigi
           @y -= 1
           @jumping = true
           @vy = -0.1 # Avoid 0 to keep @jumping true for 1 frame
+          Manager::AudioManager.instance.jump
         end
       end
 

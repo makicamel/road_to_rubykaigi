@@ -5,12 +5,13 @@ module RoadToRubykaigi
     class AudioManager
       include Singleton
       SOUND_FILES = {
-        jump: %w[lib/road_to_rubykaigi/audio/jump.wav],
         attack: %w[
           lib/road_to_rubykaigi/audio/attack_03.wav
           lib/road_to_rubykaigi/audio/attack_04.wav
           lib/road_to_rubykaigi/audio/attack_05.wav
         ],
+        crouch: %w[lib/road_to_rubykaigi/audio/crouch.wav],
+        jump: %w[lib/road_to_rubykaigi/audio/jump.wav],
       }
 
       SOUND_FILES.keys.each do |action|
