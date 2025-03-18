@@ -27,7 +27,7 @@ module RoadToRubykaigi
             crouching: { normal: hash.dup, stunned: hash.dup },
           }
           set = {}
-          data = File.read("#{__dir__}/#{FILE_PATH}").scan(/# (\w+)\n(.*)\n/) do |type, line|
+          File.read("#{__dir__}/#{FILE_PATH}").scan(/# (\w+)\n(.*)\n/) do |type, line|
             set[type.to_sym] = line.chars.map do |char|
               fullwidth?(char) ? [char, ANSI::NULL] : char
             end.flatten
@@ -40,21 +40,21 @@ module RoadToRubykaigi
                   @default_characters[posture][status][direction_value] << (
                     [
                       set[:head],
-                      set["face_#{posture}_#{status}_#{direction}".to_sym],
-                      posture == :crouching ? nil : set["foot_#{status}_#{i}".to_sym],
+                      set[:"face_#{posture}_#{status}_#{direction}"],
+                      posture == :crouching ? nil : set[:"foot_#{status}_#{i}"],
                     ].compact
                   )
                   @attack_characters[posture][status][direction_value] << (
                     direction == "RIGHT" ?
                       [
                         set[:head] + "   ".chars,
-                        set["face_#{posture}_#{status}_#{direction}".to_sym] + "_◢◤".chars,
-                        posture == :crouching ? nil : set["foot_#{status}_#{i}".to_sym] + "   ".chars,
+                        set[:"face_#{posture}_#{status}_#{direction}"] + "_◢◤".chars,
+                        posture == :crouching ? nil : set[:"foot_#{status}_#{i}"] + "   ".chars,
                       ].compact :
                       [
                         "   ".chars + set[:head],
-                        "◥◣_".chars + set["face_#{posture}_#{status}_#{direction}".to_sym],
-                        posture == :crouching ? nil : "   ".chars + set["foot_#{status}_#{i}".to_sym],
+                        "◥◣_".chars + set[:"face_#{posture}_#{status}_#{direction}"],
+                        posture == :crouching ? nil : "   ".chars + set[:"foot_#{status}_#{i}"],
                       ].compact
                   )
                 end

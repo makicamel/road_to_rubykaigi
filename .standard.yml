@@ -10,7 +10,9 @@ ignore:
     - Naming/MethodParameterName
     - Style/IfInsideElse
     - Style/EmptyCaseCondition
+    - Style/NestedTernaryOperator
     - Style/StringLiterals
+    - Style/TernaryParentheses
     - Style/TrailingCommaInArguments
     - Style/TrailingCommaInArrayLiteral
     - Style/TrailingCommaInHashLiteral
