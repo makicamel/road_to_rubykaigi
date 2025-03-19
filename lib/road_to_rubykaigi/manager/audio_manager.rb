@@ -17,7 +17,12 @@ module RoadToRubykaigi
         jump: %w[lib/road_to_rubykaigi/audio/jump.wav],
         laptop: %w[lib/road_to_rubykaigi/audio/laptop.wav],
         stun: %w[lib/road_to_rubykaigi/audio/stun.wav],
+        walk: %w[
+          lib/road_to_rubykaigi/audio/walk_01.wav
+          lib/road_to_rubykaigi/audio/walk_02.wav
+        ],
       }
+      WALK_SOUND_INTERVAL = 0.12
 
       SOUND_FILES.keys.each do |action|
         define_method(action) {
@@ -38,6 +43,17 @@ module RoadToRubykaigi
         end
       end
 
+      def walk
+        if macos?
+          now = Time.now
+          if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
+            @players[:walk][@walk_index].play
+            @last_walk_time = now
+            @walk_index = (@walk_index + 1) % @players[:walk].size
+          end
+        end
+      end
+
       private
 
       def initialize
@@ -49,6 +65,8 @@ module RoadToRubykaigi
           @players.each do |action, file_paths|
             @players[action] = file_paths.map { |file_path| Audio::MacOS.build_player(file_path) }
           end
+          @walk_index = 0
+          @last_walk_time = Time.now - 1
         end
       end
 

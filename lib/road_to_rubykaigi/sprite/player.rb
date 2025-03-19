@@ -16,7 +16,7 @@ module RoadToRubykaigi
 
       ATTACK_COOLDOWN_SECOND = 0.1
       KEY_INPUT_THRESHOLD = 0.5
-      ANIMETION_FRAME_SECOND = 0.5
+      ANIMETION_FRAME_SECOND = 0.24
       STUN_SECOND = 2.0
       CROUCH_SECOND = 1.0
 
@@ -35,7 +35,7 @@ module RoadToRubykaigi
         unless jumping? || crouching?
           @jumping = true
           @vy = JUMP_INITIAL_VELOCITY
-          @audio_manager.jump
+          Manager::AudioManager.instance.jump
         end
       end
 
@@ -198,7 +198,6 @@ module RoadToRubykaigi
         @stunned_until = Time.now
         @attack_mode = false
         @last_attack_time = Time.now
-        @audio_manager = Manager::AudioManager.instance
       end
 
       def move(dx)
@@ -207,6 +206,7 @@ module RoadToRubykaigi
         end
         @vx += WALK_ACCEL * dx
         @vx = @vx.clamp(-WALK_MAX_SPEED, WALK_MAX_SPEED)
+        Manager::AudioManager.instance.walk
       end
 
       def fall
