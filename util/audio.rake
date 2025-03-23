@@ -37,6 +37,27 @@ namespace :audio do
     puts "Output audio information to #{output_csv}"
   end
 
+  desc "Add artist name to metadata"
+  task :add_artist do
+    require "streamio-ffmpeg"
+
+    dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/"
+    filename = "stun.wav"
+    extname = File.extname(filename)
+    input_file = dir + filename
+    output_file = dir + File.basename(filename, extname) + "_1" + extname
+    artist_name = "PANICPUMPKIN / pansound.com/panicpumpkin"
+
+    FFMPEG::Movie.new(input_file).tap do |audio|
+      audio.transcode(output_file, {
+        audio_sample_rate: audio.audio_sample_rate,
+        audio_bitrate: "#{(audio.bitrate.to_i / 1000).to_i}k",
+        custom: ["-metadata", "artist=#{artist_name}"],
+      })
+    end
+    puts "Generated #{output_file} with the artist name."
+  end
+
   desc "Conversion mp3 files to wav files"
   task :conversion_from_mp3_to_wav do
     require "streamio-ffmpeg"
