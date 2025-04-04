@@ -11,15 +11,16 @@ namespace :audio do
     output_csv = "audio_info.csv"
     extensions = /\.(mp3|wav)$/i
 
-    CSV.open(output_csv, "w", write_headers: true, headers: %w[Filename Artist SampleRate(kHz) Duration(seconds) BitRate(kb/s) IntegratedLoudness(LUFS) TruePeak(dBTP)]) do |csv|
+    CSV.open(output_csv, "w", write_headers: true, headers: %w[Filename Artist SampleRate(kHz) Duration(seconds) BitRate(kb/s) Channels IntegratedLoudness(LUFS) TruePeak(dBTP)]) do |csv|
       Dir.glob(File.join(target_dir, "*")).each do |filepath|
         next unless filepath.match?(extensions)
 
-        artist, sample_rate, duration, bitrate, integrated_loudness, true_peak_value = nil
+        artist, sample_rate, duration, bitrate, channels, integrated_loudness, true_peak_value = nil
         [FFMPEG.ffprobe_binary, "-i", filepath, *%w[-print_format json -show_entries format_tags=artist,author -show_format -show_streams -show_error]].tap do |command|
           audio = JSON.parse(`#{command.join " "}`)
           artist = audio.dig("format", "tags", "artist") || audio.dig("format", "tags", "author") || ""
           sample_rate = audio["streams"][0]["sample_rate"].to_i / 1000.0
+          channels = audio["streams"][0]["channels"]
           duration = audio["format"]["duration"]
           bitrate = audio["format"]["bit_rate"].to_i / 1000.0
         end
@@ -30,7 +31,7 @@ namespace :audio do
           true_peak_value = result.scan(/True peak:\s*\n\s+Peak:\s+(-[\d.]+)\s*dBFS/).flatten.first
         end
 
-        csv << [File.basename(filepath), artist, sample_rate, duration, bitrate, integrated_loudness, true_peak_value]
+        csv << [File.basename(filepath), artist, sample_rate, duration, bitrate, channels, integrated_loudness, true_peak_value]
       end
     end
 
