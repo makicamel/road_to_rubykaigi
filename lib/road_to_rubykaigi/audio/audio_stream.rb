@@ -3,13 +3,6 @@ require 'ffi-portaudio'
 module RoadToRubykaigi
   module Audio
     module Phasor
-      attr_reader :frequency
-
-      def frequency=(frequency)
-        @frequency = frequency
-        @inc = @frequency.to_f / sample_rate
-      end
-
       def sample_rate
         44_100
       end
@@ -18,30 +11,38 @@ module RoadToRubykaigi
 
       def initialize
         frequency = 0
-        @phase = rand
+        @phases = Hash.new { |h, k| h[k] = rand }
       end
 
-      def tick
-        @phase += @inc
-        @phase -= 1.0 if @phase >= 1.0
-        @phase
+      def tick(frequency:)
+        phase = @phases[frequency]
+        phase += frequency.to_f / sample_rate
+        phase -= 1.0 if phase >= 1.0
+        @phases[frequency] = phase
       end
     end
 
     class SineOscillator
       include Phasor
 
-      def generate
-        Math.sin(2 * Math::PI * tick)
+      def generate(frequencies:)
+        samples = frequencies.map do |frequency|
+          phase = tick(frequency: frequency)
+          Math.sin(2 * Math::PI * phase)
+        end
+        samples.sum / samples.size
       end
     end
 
     class SquareOscillator
       include Phasor
 
-      def generate
-        phase = tick
-        phase < 0.5 ? 1.0 : -1.0
+      def generate(frequencies:)
+        samples = frequencies.map do |frequency|
+          phase = tick(frequency: frequency)
+          phase < 0.5 ? 1.0 : -1.0
+        end
+        samples.sum / samples.size
       end
     end
 

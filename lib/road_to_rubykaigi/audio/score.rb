@@ -30,43 +30,43 @@ module RoadToRubykaigi
         B5: 987.77,
       }
       SCORE = [
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
 
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
 
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :D5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :C5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
-        { frequency: :E5, duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[A4 D5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[G4 C5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
+        { frequency: %i[B4 E5], duration: 0.5 },
 
-        { frequency: :C5, duration: 1.0 },
-        { frequency: :G4, duration: 1.0 },
-        { frequency: :A4, duration: 1.0 },
-        { frequency: :B4, duration: 1.0 },
+        { frequency: %i[C5], duration: 1.0 },
+        { frequency: %i[G4], duration: 1.0 },
+        { frequency: %i[A4], duration: 1.0 },
+        { frequency: %i[B4], duration: 1.0 },
       ]
 
       def generate
         process
         sample = if @current_note_sample_count < (@samples_per_note * STACCATO_RATIO)
-          @generator.generate
+          @generator.generate(frequencies: current_frequencies)
         else
           0.0
         end
@@ -85,8 +85,8 @@ module RoadToRubykaigi
         @notes = SCORE
         @current_note_index = 0
         @current_note_sample_count = 0
-        @generator = SquareOscillator.new
-        change_frequency
+        @generator = SineOscillator.new
+        change_note
       end
 
       def process
@@ -96,7 +96,7 @@ module RoadToRubykaigi
           if @current_note_index >= @notes.size
             @current_note_index -= @notes.size
           end
-          change_frequency
+          change_note
         end
       end
 
@@ -104,10 +104,13 @@ module RoadToRubykaigi
         @notes[@current_note_index]
       end
 
-      def change_frequency
+      def current_frequencies
+        current_note[:frequency].map { |frequency| NOTES[frequency] }
+      end
+
+      def change_note
         quarter_duration = 60.0 / @bpm
         @samples_per_note = (@generator.sample_rate * quarter_duration * current_note[:duration]).to_i
-        @generator.frequency = NOTES[current_note[:frequency]]
       end
 
       def increment_current_note_sample_count
