@@ -32,12 +32,12 @@ module RoadToRubykaigi
 
       private
 
-      def initialize(note_sequencer)
+      def initialize(bass_sequencer)
         frame_size = 2 ** 12 # 4096
-        @sources = [note_sequencer]
+        @sources = [bass_sequencer]
         @muted = false
         API.Pa_Initialize
-        open(nil, output, note_sequencer.sample_rate, frame_size)
+        open(nil, output, bass_sequencer.sample_rate, frame_size)
         start
 
         at_exit do

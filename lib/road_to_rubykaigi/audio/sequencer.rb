@@ -1,8 +1,7 @@
 module RoadToRubykaigi
   module Audio
-    class NoteSequencer
+    class SequencerBase
       BPM = 120
-      STACCATO_RATIO = 0.3
       NOTES = {
         C4: 261.63, C4s: 277.18, # ド
         D4: 293.66, D4s: 311.13,
@@ -19,43 +18,10 @@ module RoadToRubykaigi
         A5: 880.00, A5s: 932.33,
         B5: 987.77,
       }
-      SCORE = [
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[A4 D5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[G4 C5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-        { frequency: %i[B4 E5], duration: 0.5 },
-
-        { frequency: %i[C5], duration: 1.0 },
-        { frequency: %i[G4], duration: 1.0 },
-        { frequency: %i[A4], duration: 1.0 },
-        { frequency: %i[B4], duration: 1.0 },
-      ]
 
       def generate
         process
-        sample = if @current_note_sample_count < (@samples_per_note * STACCATO_RATIO)
+        sample = if @current_note_sample_count < (@samples_per_note * self.class::STACCATO_RATIO)
           @generator.generate(frequencies: current_frequencies)
         else
           0.0
@@ -84,10 +50,10 @@ module RoadToRubykaigi
 
       def initialize
         @bpm = BPM
-        @notes = SCORE
+        @notes = self.class::SCORE
         @current_note_index = 0
         @current_note_sample_count = 0
-        @generator = SineOscillator.new
+        @generator = self.class::GENERATOR.new
         change_note
       end
 
@@ -118,6 +84,37 @@ module RoadToRubykaigi
       def increment_current_note_sample_count
         @current_note_sample_count += 1
       end
+    end
+
+    class BassSequencer < SequencerBase
+      GENERATOR = SineOscillator
+      STACCATO_RATIO = 0.3
+      SCORE = [
+        { frequency: %i[F4 A4], duration: 1.0 },
+        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 1.0 },
+        { frequency: %i[C4 F4], duration: 0.5 },
+
+        { frequency: %i[F4 A4], duration: 1.0 },
+        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 1.0 },
+        { frequency: %i[C4 F4], duration: 0.5 },
+
+        { frequency: %i[F4 A4], duration: 1.0 },
+        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 1.0 },
+        { frequency: %i[C4 F4], duration: 0.5 },
+
+        { frequency: %i[F4], duration: 1.0 },
+        { frequency: %i[C4], duration: 1.0 },
+        { frequency: %i[E4], duration: 1.0 },
+      ]
+    end
+
+    class MelodySequencer < SequencerBase
+      GENERATOR = SquareOscillator
+      STACCATO_RATIO = 0.3
+      SCORE = []
     end
   end
 end
