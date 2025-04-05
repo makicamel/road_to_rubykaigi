@@ -72,6 +72,14 @@ module RoadToRubykaigi
         @generator.gain
       end
 
+      def rewind
+        self
+      end
+
+      def finished?
+        false
+      end
+
       private
 
       def initialize

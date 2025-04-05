@@ -6,13 +6,12 @@ module RoadToRubykaigi
       end
 
       def gain
-        1.0
+        0.4
       end
 
       private
 
       def initialize
-        frequency = 0
         @phases = Hash.new { |h, k| h[k] = rand }
       end
 

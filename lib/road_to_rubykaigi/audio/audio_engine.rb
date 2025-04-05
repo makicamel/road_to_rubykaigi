@@ -14,11 +14,20 @@ module RoadToRubykaigi
               sample = source.generate * source.gain
               samples[i] += sample
             end
+            remove_source(source) if source.finished?
           end
         end
 
         output.write_array_of_float(samples)
         :paContinue
+      end
+
+      def add_source(source)
+        @sources << source.rewind
+      end
+
+      def remove_source(source)
+        @sources.delete(source)
       end
 
       private

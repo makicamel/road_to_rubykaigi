@@ -62,7 +62,7 @@ module RoadToRubykaigi
       EventHander.subscribe(
         attacks: attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: player, game_manager: @game_manager,
       )
-      @stream = Audio::AudioEngine.new
+      Manager::AudioManager.instance
     end
 
     def process_input(input)

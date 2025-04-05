@@ -7,7 +7,7 @@ namespace :audio do
     require "csv"
     require "json"
 
-    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio"
+    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav"
     output_csv = "audio_info.csv"
     extensions = /\.(mp3|wav)$/i
 
@@ -42,7 +42,7 @@ namespace :audio do
   task :add_artist do
     require "streamio-ffmpeg"
 
-    dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/"
+    dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav/"
     filename = "stun.wav"
     extname = File.extname(filename)
     input_file = dir + filename
@@ -92,7 +92,7 @@ namespace :audio do
     target_lufs = -23
     true_peak = -5
     loudness_range = 11
-    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio"
+    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav"
     extensions = /\.(mp3|wav)$/i
     type = args[:target_files].strip.to_sym
     if type == :all

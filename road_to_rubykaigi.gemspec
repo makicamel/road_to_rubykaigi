@@ -30,6 +30,6 @@ Gem::Specification.new do |spec|
   spec.executables = ["road_to_rubykaigi"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "fiddle"
   spec.add_dependency "ffi-portaudio"
+  spec.add_dependency "wavefile"
 end
