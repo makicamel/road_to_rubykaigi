@@ -38,6 +38,39 @@ namespace :audio do
     puts "Output audio information to #{output_csv}"
   end
 
+  desc "Convert stereo WAV files to mono WAV files. Separate multiple files with a space like: walk_01.wav walk_02.wav"
+  task :stereo_to_mono, [:target_files] do |t, args|
+    require 'wavefile'
+    include WaveFile
+
+    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav"
+    target_files = args[:target_files].split(" ").map { |filename| File.join(target_dir, filename) }
+
+    target_files.each do |filepath|
+      tmp_output_filepath = File.join(File.dirname(filepath), "tmp_" + File.basename(filepath))
+      puts "Converting #{filepath}..."
+      begin
+        reader = Reader.new(filepath)
+        format = reader.format
+        next if format.mono?
+        new_format = Format.new(1, :pcm_16, format.sample_rate)
+        writer = Writer.new(tmp_output_filepath, new_format)
+        reader.each_buffer(4096) do |buffer|
+          mono_samples = buffer.samples.map do |frame|
+            (frame[0] + frame[1]) / 2
+          end
+          new_buffer = Buffer.new(mono_samples, new_format)
+          writer.write(new_buffer)
+        end
+      ensure
+        reader.close
+        writer.close
+      end
+      puts "Converted #{filepath}."
+    end
+    puts "All stereo WAV files have been converted to mono."
+  end
+
   desc "Add artist name to metadata"
   task :add_artist do
     require "streamio-ffmpeg"
