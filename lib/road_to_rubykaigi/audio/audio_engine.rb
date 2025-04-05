@@ -32,9 +32,8 @@ module RoadToRubykaigi
 
       private
 
-      def initialize
+      def initialize(note_sequencer)
         frame_size = 2 ** 12 # 4096
-        note_sequencer = NoteSequencer.new
         @sources = [note_sequencer]
         @muted = false
         API.Pa_Initialize
