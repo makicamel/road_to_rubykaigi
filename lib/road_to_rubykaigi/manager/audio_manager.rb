@@ -33,6 +33,7 @@ module RoadToRubykaigi
       def game_over
         @sources[:game_over].first.tap do |source|
           @audio_engine.remove_source(@bass_sequencer)
+          @audio_engine.remove_source(@melody_sequencer)
           @audio_engine.add_source(source)
           until source.finished?
             sleep 0.1
@@ -53,7 +54,8 @@ module RoadToRubykaigi
 
       def initialize
         @bass_sequencer = Audio::BassSequencer.new
-        @audio_engine = Audio::AudioEngine.new(@bass_sequencer)
+        @melody_sequencer = Audio::MelodySequencer.new
+        @audio_engine = Audio::AudioEngine.new(@bass_sequencer, @melody_sequencer)
         @sources = SOUND_FILES
         @sources.each do |action, file_paths|
           @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(file_path) }

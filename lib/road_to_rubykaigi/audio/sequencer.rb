@@ -1,8 +1,9 @@
 module RoadToRubykaigi
   module Audio
     class SequencerBase
-      BPM = 120
+      BPM = 100
       NOTES = {
+        REST: 0.0,
         C4: 261.63, C4s: 277.18, # ド
         D4: 293.66, D4s: 311.13,
         E4: 329.63,
@@ -17,6 +18,7 @@ module RoadToRubykaigi
         G5: 783.99, G5s: 830.61,
         A5: 880.00, A5s: 932.33,
         B5: 987.77,
+        C6: 1046.50,
       }
 
       def generate
@@ -89,32 +91,83 @@ module RoadToRubykaigi
     class BassSequencer < SequencerBase
       GENERATOR = SineOscillator
       STACCATO_RATIO = 0.3
-      SCORE = [
+      SCORE = ([
         { frequency: %i[F4 A4], duration: 1.0 },
         { frequency: %i[F4 A4], duration: 0.5 },
         { frequency: %i[C4 F4], duration: 1.0 },
         { frequency: %i[C4 F4], duration: 0.5 },
-
-        { frequency: %i[F4 A4], duration: 1.0 },
-        { frequency: %i[F4 A4], duration: 0.5 },
-        { frequency: %i[C4 F4], duration: 1.0 },
-        { frequency: %i[C4 F4], duration: 0.5 },
-
-        { frequency: %i[F4 A4], duration: 1.0 },
-        { frequency: %i[F4 A4], duration: 0.5 },
-        { frequency: %i[C4 F4], duration: 1.0 },
-        { frequency: %i[C4 F4], duration: 0.5 },
-
+      ] * 5 + [
         { frequency: %i[F4], duration: 1.0 },
         { frequency: %i[C4], duration: 1.0 },
         { frequency: %i[E4], duration: 1.0 },
-      ]
+      ] +
+      [
+        { frequency: %i[F4 A4], duration: 1.0 },
+        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 1.0 },
+        { frequency: %i[C4 F4], duration: 0.5 },
+      ] * 4 + [
+        { frequency: %i[F4 A4], duration: 1.0 },
+        { frequency: %i[C4 F4], duration: 1.0 },
+        { frequency: %i[F4], duration: 1.0 },
+
+        { frequency: %i[E4], duration: 1.0 },
+        { frequency: %i[D4], duration: 1.0 },
+        { frequency: %i[C4], duration: 1.0 },
+      ])
     end
 
     class MelodySequencer < SequencerBase
       GENERATOR = SquareOscillator
-      STACCATO_RATIO = 0.3
-      SCORE = []
+      STACCATO_RATIO = 0.35
+      SCORE = [ # 6 Measures
+        { frequency: %i[C5], duration: 1.0 },
+        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[C5], duration: 1.0 },
+        { frequency: %i[F5], duration: 0.5 },
+
+        { frequency: %i[C5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[A5], duration: 0.5 },
+        { frequency: %i[G5], duration: 0.5 },
+        { frequency: %i[E5], duration: 0.5 },
+        { frequency: %i[C5], duration: 0.5 },
+
+        { frequency: %i[REST], duration: 0.5 },
+        { frequency: %i[A5], duration: 0.5 },
+        { frequency: %i[G5], duration: 0.5 },
+        { frequency: %i[E5], duration: 0.5 },
+        { frequency: %i[C5], duration: 1.0 },
+
+        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[C5], duration: 0.5 },
+        { frequency: %i[A4], duration: 0.5 },
+        { frequency: %i[E5], duration: 0.25 },
+        { frequency: %i[C5], duration: 0.25 },
+        { frequency: %i[D5], duration: 0.25 },
+        { frequency: %i[B4], duration: 0.25 },
+        { frequency: %i[A4], duration: 0.25 },
+        { frequency: %i[G4], duration: 0.25 },
+
+        { frequency: %i[C5], duration: 1.0 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[A5], duration: 0.25 },
+        { frequency: %i[C5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[C5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[C5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+
+        { frequency: %i[C5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[A5], duration: 0.25 },
+        { frequency: %i[G5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[E5], duration: 0.25 },
+        { frequency: %i[F5], duration: 1.0 },
+      ]
     end
   end
 end
