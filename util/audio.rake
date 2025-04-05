@@ -173,4 +173,39 @@ namespace :audio do
     puts "Normalize loudness completed."
     puts "Skip: #{skips.join(", ")}" unless skips.empty?
   end
+
+  desc "Trim some first samples from a WAV file"
+  task :trim_wav do
+    require "wavefile"
+    include WaveFile
+
+    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav/"
+    filename = "walk_02.wav"
+    input_path = target_dir + filename
+    output_path = target_dir + "tmp_" + filename
+    skip_sample_count = 300
+
+    Reader.new(input_path) do |reader|
+      format = reader.format
+      Writer.new(output_path, format) do |writer|
+        samples_skipped = 0
+
+        reader.each_buffer(1024) do |buffer|
+          samples = buffer.samples
+          if samples_skipped < skip_sample_count
+            to_skip = [skip_sample_count - samples_skipped, samples.size].min
+            samples = samples[to_skip...] || []
+            samples_skipped += to_skip
+          end
+
+          unless samples.empty?
+            new_buffer = Buffer.new(samples, format)
+            writer.write(new_buffer)
+          end
+        end
+      end
+    end
+
+    puts "Trimmed WAV file saved to #{output_path}"
+  end
 end

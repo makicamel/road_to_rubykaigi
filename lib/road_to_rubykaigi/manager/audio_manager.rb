@@ -22,7 +22,7 @@ module RoadToRubykaigi
           lib/road_to_rubykaigi/audio/wav/walk_02.wav
         ],
       }
-      WALK_SOUND_INTERVAL = 0.12
+      WALK_SOUND_INTERVAL = 0.25
 
       SOUND_FILES.keys.each do |action|
         define_method(action) {
