@@ -22,3 +22,6 @@ ignore:
   - 'lib/road_to_rubykaigi/audio/audio_engine.rb':
     - Naming/VariableName
     - Security/Open
+  - 'util/audio.rake':
+    - Lint/RedundantSplatExpansion
+    - Style/PercentLiteralDelimiters

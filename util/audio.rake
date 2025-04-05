@@ -107,7 +107,7 @@ namespace :audio do
 
     skips = []
     target_files.each do |filepath|
-      unless (filepath.match?(extensions)) && File.exist?(filepath)
+      unless filepath.match?(extensions) && File.exist?(filepath)
         next skips << filepath
       end
 
