@@ -138,9 +138,9 @@ module RoadToRubykaigi
         { frequency: %i[F5], duration: 0.25 },
         { frequency: %i[F5], duration: 0.25 },
         { frequency: %i[G5], duration: 0.5 },
-        { frequency: %i[A5], duration: 0.5 },
         { frequency: %i[F5], duration: 0.5 },
         { frequency: %i[C5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.5 },
 
         { frequency: %i[REST], duration: 0.5 },
         { frequency: %i[A5], duration: 0.5 },
