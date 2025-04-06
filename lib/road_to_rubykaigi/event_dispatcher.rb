@@ -25,7 +25,16 @@ module RoadToRubykaigi
     def subscribe
       EventDispatcher.subscribe(:input) { |action| handle_input(action) }
       EventDispatcher.subscribe(:collision) { |collision| handle_collision(collision) }
-      EventDispatcher.subscribe(:finish) { @game_manager.finish }
+      EventDispatcher.subscribe(:ending) do
+        Manager::AudioManager.instance.fanfare
+        @game_manager.ending
+      end
+      EventDispatcher.subscribe(:finish) do
+        until Manager::AudioManager.instance.fanfare_finished?
+          sleep 0.5
+        end
+        @game_manager.finish
+      end
     end
 
     private

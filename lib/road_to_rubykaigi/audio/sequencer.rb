@@ -45,7 +45,7 @@ module RoadToRubykaigi
       end
 
       def finished?
-        false
+        !loop? && @current_note_index >= @notes.size
       end
 
       private
@@ -63,7 +63,7 @@ module RoadToRubykaigi
         if @current_note_sample_count >= @samples_per_note
           @current_note_index += 1
           @current_note_sample_count = 0
-          if @current_note_index >= @notes.size
+          if loop? && @current_note_index >= @notes.size
             @current_note_index -= @notes.size
           end
           change_note
@@ -115,6 +115,12 @@ module RoadToRubykaigi
         { frequency: %i[D4], duration: 1.0 },
         { frequency: %i[C4], duration: 1.0 },
       ])
+
+      private
+
+      def loop?
+        true
+      end
     end
 
     class MelodySequencer < SequencerBase
@@ -170,6 +176,41 @@ module RoadToRubykaigi
         { frequency: %i[E5], duration: 0.25 },
         { frequency: %i[F5], duration: 1.0 },
       ]
+
+      def loop?
+        true
+      end
+    end
+
+    class FanfareSequencer < SequencerBase
+      GENERATOR = SquareOscillator
+      STACCATO_RATIO = 0.35
+      SCORE = [ # 4.75 Measures
+        { frequency: %i[REST], duration: 0.75 },
+
+        { frequency: %i[F5], duration: 1.00 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+
+        { frequency: %i[G5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[G5], duration: 0.5 },
+
+        { frequency: %i[C5], duration: 0.25 },
+        { frequency: %i[D5], duration: 0.25 },
+        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[G5], duration: 0.25 },
+        { frequency: %i[A5], duration: 0.25 },
+        { frequency: %i[B5], duration: 0.25 },
+
+        { frequency: %i[C6], duration: 1.5 },
+      ]
+
+      private
+
+      def loop?
+        false
+      end
     end
   end
 end

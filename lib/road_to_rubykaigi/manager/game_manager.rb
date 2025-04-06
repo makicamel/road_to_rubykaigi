@@ -26,7 +26,7 @@ module RoadToRubykaigi
         @deadline.activate(player_x: @player.x)
         @enemies.activate if player_moved?
         if @player.x >= GameManager.goal_x && playing?
-          ending
+          EventDispatcher.publish(:ending)
         end
       end
 
@@ -58,6 +58,11 @@ module RoadToRubykaigi
         @state == STATE[:game_over]
       end
 
+      def ending
+        @state = STATE[:ending]
+        @fireworks.shoot
+      end
+
       def finish
         @state = STATE[:finished]
       end
@@ -81,11 +86,6 @@ module RoadToRubykaigi
 
       def playing?
         @state == STATE[:playing]
-      end
-
-      def ending
-        @state = STATE[:ending]
-        @fireworks.shoot
       end
     end
   end

@@ -30,6 +30,14 @@ module RoadToRubykaigi
         @sources.delete(source)
       end
 
+      def mute
+        @muted = true
+      end
+
+      def unmute
+        @muted = false
+      end
+
       private
 
       def initialize(bass_sequencer, melody_sequencer)

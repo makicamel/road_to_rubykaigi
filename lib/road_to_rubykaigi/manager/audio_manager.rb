@@ -30,6 +30,18 @@ module RoadToRubykaigi
         }
       end
 
+      def fanfare
+        @audio_engine.mute
+        @audio_engine.remove_source(@bass_sequencer)
+        @audio_engine.remove_source(@melody_sequencer)
+        @audio_engine.unmute
+        @audio_engine.add_source(@fanfare_sequencer)
+      end
+
+      def fanfare_finished?
+        @fanfare_sequencer.finished?
+      end
+
       def game_over
         @sources[:game_over].first.tap do |source|
           @audio_engine.remove_source(@bass_sequencer)
@@ -55,6 +67,7 @@ module RoadToRubykaigi
       def initialize
         @bass_sequencer = Audio::BassSequencer.new
         @melody_sequencer = Audio::MelodySequencer.new
+        @fanfare_sequencer = Audio::FanfareSequencer.new
         @audio_engine = Audio::AudioEngine.new(@bass_sequencer, @melody_sequencer)
         @sources = SOUND_FILES
         @sources.each do |action, file_paths|
