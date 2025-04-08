@@ -23,13 +23,17 @@ module RoadToRubykaigi
       end
     end
 
-    class SineOscillator
+    class TriangleOscillator
       include Phasor
 
       def generate(frequencies:)
         samples = frequencies.map do |frequency|
           phase = tick(frequency: frequency)
-          Math.sin(2 * Math::PI * phase)
+          if phase < 0.5
+            4 * phase - 1
+          else
+            -4 * phase + 3
+          end
         end
         samples.sum / samples.size
       end
