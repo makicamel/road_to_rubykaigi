@@ -89,7 +89,7 @@ module RoadToRubykaigi
     end
 
     class BassSequencer < SequencerBase
-      GENERATOR = TriangleOscillator
+      GENERATOR = RoughTriangleOscillator
       STACCATO_RATIO = 0.3
       SCORE = ([
         { frequency: %i[F4 A4], duration: 1.0 },

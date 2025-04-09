@@ -39,6 +39,39 @@ module RoadToRubykaigi
       end
     end
 
+    class RoughTriangleOscillator
+      include Phasor
+
+      TABLE_SIZE = 32
+
+      def generate(frequencies:)
+        samples = frequencies.map do |frequency|
+          phase = tick(frequency: frequency)
+          index = (TABLE_SIZE * phase).floor % TABLE_SIZE
+          @table[index]
+        end
+        samples.sum / samples.size
+      end
+
+      private
+
+      def initialize
+        super
+        @table = generate_table
+      end
+
+      def generate_table
+        half = TABLE_SIZE / 2
+        # up：-1 -> +1
+        #   i = 0: -1.0, i = half-1: +1.0
+        up = (0...half).map { |i| -1.0 + (2.0 * i) / (half - 1) }
+        # down：+1 -> -1
+        #   i = 0: +1.0, i = half-1: -1.0
+        down = (0...half).map { |i| 1.0 - (2.0 * i) / (half - 1) }
+        up + down
+      end
+    end
+
     class SquareOscillator
       include Phasor
       DUTY_CYCLE = {
