@@ -20,16 +20,22 @@ module RoadToRubykaigi
         B5: 987.77,
         C6: 1046.50,
       }
+      ENVELOPE = {
+        bass:    { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 },
+        melody:  { a: 0.5, d: 0.0, s: 0.5, sl: 0.4, rl: 0.5 },
+        fanfare: { a: 0.2, d: 0.1, s: 0.4, sl: 0.6, rl: 0.2 },
+      }
 
       def generate
         process
+        env = envelope
         sample = if @current_note_sample_count < (@samples_per_note * self.class::STACCATO_RATIO)
           @generator.generate(frequencies: current_frequencies)
         else
           0.0
         end
         increment_current_note_sample_count
-        sample
+        sample * env
       end
 
       def sample_rate
@@ -70,6 +76,26 @@ module RoadToRubykaigi
         end
       end
 
+      def envelope
+        note_progress = @current_note_sample_count.to_f / @samples_per_note
+        current_envelop = current_note[:envelope] || ENVELOPE[default_envelop_key]
+        attack = current_envelop[:a]
+        decay = current_envelop[:d]
+        sustain_level = current_envelop[:sl]
+        release_level = current_envelop[:rl]
+        sustain = current_envelop[:s]
+
+        if note_progress < attack
+          note_progress / attack
+        elsif note_progress < (attack + decay)
+          1 - ((note_progress - attack) / decay) * (1 - sustain_level)
+        elsif note_progress < sustain
+          sustain_level
+        else
+          (1 - note_progress) / release_level
+        end
+      end
+
       def current_note
         @notes[@current_note_index]
       end
@@ -90,7 +116,7 @@ module RoadToRubykaigi
 
     class BassSequencer < SequencerBase
       GENERATOR = RoughTriangleOscillator
-      STACCATO_RATIO = 0.3
+      STACCATO_RATIO = 0.85
       SCORE = ([
         { frequency: %i[F4 A4], duration: 1.0 },
         { frequency: %i[F4 A4], duration: 0.5 },
@@ -117,6 +143,10 @@ module RoadToRubykaigi
       ])
 
       private
+
+      def default_envelop_key
+        :bass
+      end
 
       def loop?
         true
@@ -180,6 +210,12 @@ module RoadToRubykaigi
       def loop?
         true
       end
+
+      private
+
+      def default_envelop_key
+        :melody
+      end
     end
 
     class FanfareSequencer < SequencerBase
@@ -207,6 +243,10 @@ module RoadToRubykaigi
       ]
 
       private
+
+      def default_envelop_key
+        :fanfare
+      end
 
       def loop?
         false
