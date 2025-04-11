@@ -21,15 +21,17 @@ module RoadToRubykaigi
         C6: 1046.50,
       }
       ENVELOPE = {
-        bass:    { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 },
-        melody:  { a: 0.5, d: 0.0, s: 0.5, sl: 0.4, rl: 0.5 },
-        fanfare: { a: 0.2, d: 0.1, s: 0.4, sl: 0.6, rl: 0.2 },
+        bass:        { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 },
+        bass_short:  { a: 0.2, d: 0.2, s: 0.0, sl: 0.6, rl: 0.9 },
+        melody:      { a: 0.2, d: 0.0, s: 0.5, sl: 0.4, rl: 1.0 },
+        melody_long: { a: 0.5, d: 0.2, s: 0.7, sl: 0.4, rl: 1.0 },
+        fanfare:     { a: 0.2, d: 0.1, s: 0.4, sl: 0.6, rl: 0.2 },
       }
 
       def generate
         process
         env = envelope
-        sample = if @current_note_sample_count < (@samples_per_note * self.class::STACCATO_RATIO)
+        sample = if @current_note_sample_count < (@samples_per_note * staccato_ratio)
           @generator.generate(frequencies: current_frequencies)
         else
           0.0
@@ -78,7 +80,7 @@ module RoadToRubykaigi
 
       def envelope
         note_progress = @current_note_sample_count.to_f / @samples_per_note
-        current_envelop = current_note[:envelope] || ENVELOPE[default_envelop_key]
+        current_envelop = Hash === current_note[:envelope] ? current_note[:envelope] : ENVELOPE[current_note[:envelope] || default_envelop_key]
         attack = current_envelop[:a]
         decay = current_envelop[:d]
         sustain_level = current_envelop[:sl]
@@ -104,6 +106,10 @@ module RoadToRubykaigi
         current_note[:frequency].map { |frequency| NOTES[frequency] }
       end
 
+      def staccato_ratio
+        current_note[:staccato] || self.class::STACCATO_RATIO
+      end
+
       def change_note
         quarter_duration = 60.0 / @bpm
         @samples_per_note = (@generator.sample_rate * quarter_duration * current_note[:duration]).to_i
@@ -119,19 +125,19 @@ module RoadToRubykaigi
       STACCATO_RATIO = 0.85
       SCORE = ([
         { frequency: %i[F4 A4], duration: 1.0 },
-        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[F4 A4], duration: 0.5, envelope: :bass_short, staccato: 0.7 },
         { frequency: %i[C4 F4], duration: 1.0 },
-        { frequency: %i[C4 F4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 0.5, envelope: :bass_short, staccato: 0.7 },
       ] * 5 + [
         { frequency: %i[F4], duration: 1.0 },
         { frequency: %i[C4], duration: 1.0 },
-        { frequency: %i[E4], duration: 1.0 },
+        { frequency: %i[E4], duration: 1.0, staccato: 1.0 },
       ] +
       [
         { frequency: %i[F4 A4], duration: 1.0 },
-        { frequency: %i[F4 A4], duration: 0.5 },
+        { frequency: %i[F4 A4], duration: 0.5, envelope: :bass_short, staccato: 0.7 },
         { frequency: %i[C4 F4], duration: 1.0 },
-        { frequency: %i[C4 F4], duration: 0.5 },
+        { frequency: %i[C4 F4], duration: 0.5, envelope: :bass_short, staccato: 0.7 },
       ] * 4 + [
         { frequency: %i[F4 A4], duration: 1.0 },
         { frequency: %i[C4 F4], duration: 1.0 },
@@ -139,7 +145,7 @@ module RoadToRubykaigi
 
         { frequency: %i[E4], duration: 1.0 },
         { frequency: %i[D4], duration: 1.0 },
-        { frequency: %i[C4], duration: 1.0 },
+        { frequency: %i[C4], duration: 1.0, staccato: 1.0 },
       ])
 
       private
@@ -157,7 +163,7 @@ module RoadToRubykaigi
       GENERATOR = SquareOscillator
       STACCATO_RATIO = 0.35
       SCORE = [ # 6 Measures
-        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.5, envelope: { a: 0.05, d: 0.0, s: 0.5, sl: 0.4, rl: 1.0 } },
         { frequency: %i[C5], duration: 0.5 },
         { frequency: %i[F5], duration: 0.5 },
         { frequency: %i[F5], duration: 0.5 },
@@ -176,9 +182,9 @@ module RoadToRubykaigi
         { frequency: %i[A5], duration: 0.5 },
         { frequency: %i[G5], duration: 0.5 },
         { frequency: %i[F5], duration: 0.5 },
-        { frequency: %i[E5], duration: 1.0 },
+        { frequency: %i[E5], duration: 1.0, envelope: :melody_long, staccato: 0.95 },
 
-        { frequency: %i[F5], duration: 0.5 },
+        { frequency: %i[F5], duration: 0.5, envelope: { a: 0.15, d: 0.15, s: 0.5, sl: 0.4, rl: 0.9 } },
         { frequency: %i[C5], duration: 0.5 },
         { frequency: %i[A4], duration: 0.5 },
         { frequency: %i[C5], duration: 0.25 },
@@ -188,8 +194,8 @@ module RoadToRubykaigi
         { frequency: %i[C5], duration: 0.25 },
         { frequency: %i[F5], duration: 0.25 },
 
-        { frequency: %i[C5], duration: 1.0 },
-        { frequency: %i[F5], duration: 0.25 },
+        { frequency: %i[C5], duration: 1.0, envelope: { a: 0.5, d: 0.15, s: 0.7, sl: 0.5, rl: 0.5 }, staccato: 0.95 },
+        { frequency: %i[F5], duration: 0.25, envelope: { a: 0.05, d: 0.0, s: 0.5, sl: 0.4, rl: 1.0 } },
         { frequency: %i[A5], duration: 0.25 },
         { frequency: %i[C5], duration: 0.25 },
         { frequency: %i[F5], duration: 0.25 },
@@ -204,7 +210,7 @@ module RoadToRubykaigi
         { frequency: %i[G5], duration: 0.25 },
         { frequency: %i[F5], duration: 0.25 },
         { frequency: %i[E5], duration: 0.25 },
-        { frequency: %i[F5], duration: 1.0 },
+        { frequency: %i[F5], duration: 1.0, envelope: :melody_long, staccato: 0.95 },
       ]
 
       def loop?
