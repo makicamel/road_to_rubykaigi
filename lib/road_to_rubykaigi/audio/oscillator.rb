@@ -119,19 +119,18 @@ module RoadToRubykaigi
           off_to_on_end = SMOOTH_WIDTH / 2.0
           on_to_off_start = duty_cycle - SMOOTH_WIDTH / 2.0
           on_to_off_end = duty_cycle + SMOOTH_WIDTH / 2.0
-          off_to_on_start = 1 - SMOOTH_WIDTH / 2.0
-          weight = ->(t) { (1 - Math.cos(Math::PI * t)) / 2.0 }
-          smoothstep = ->(t) { t * t * (3 - 2 * t) }
 
           case phase
           when 0..off_to_on_end
             t = phase / off_to_on_end
-            -1.0 + 2.0 * smoothstep.call(t)
+            smoothstep_weight = t ** 2 * (3 - 2 * t)
+            -1.0 + smoothstep_weight * 2
           when off_to_on_end..on_to_off_start
             1.0
           when on_to_off_start..on_to_off_end
             t = (phase - on_to_off_start) / SMOOTH_WIDTH
-            1.0 - 2.0 * weight.call(t)
+            cos_weight = 1 - Math.cos(Math::PI * t)
+            1.0 - cos_weight
           else
             # We don't need interpolate off_to_on_start..1
             # because 1 is essentially contiguous with 0.

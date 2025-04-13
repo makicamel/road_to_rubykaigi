@@ -22,9 +22,9 @@ module RoadToRubykaigi
       }
       ENVELOPE = {
         bass:        { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 },
-        bass_short:  { a: 0.2, d: 0.2, s: 0.0, sl: 0.6, rl: 0.9 },
-        melody:      { a: 0.2, d: 0.0, s: 0.5, sl: 0.4, rl: 1.0 },
-        melody_long: { a: 0.5, d: 0.2, s: 0.7, sl: 0.4, rl: 1.0 },
+        bass_short:  { a: 0.2, d: 0.2, s: 0.05, sl: 0.6, rl: 0.9 },
+        melody:      { a: 0.05, d: 0.1, s: 0.5, sl: 0.6, rl: 1.0 },
+        melody_long: { a: 0.5, d: 0.2, s: 0.7, sl: 0.6, rl: 1.0 },
         fanfare:     { a: 0.2, d: 0.1, s: 0.4, sl: 0.6, rl: 0.2 },
       }
 
@@ -160,7 +160,7 @@ module RoadToRubykaigi
     end
 
     class MelodySequencer < SequencerBase
-      GENERATOR = SquareOscillator
+      GENERATOR = RoundedSquareOscillator
       STACCATO_RATIO = 0.35
       SCORE = [ # 6 Measures
         { frequency: %i[F5], duration: 0.5, envelope: { a: 0.05, d: 0.0, s: 0.5, sl: 0.4, rl: 1.0 } },
@@ -225,7 +225,7 @@ module RoadToRubykaigi
     end
 
     class FanfareSequencer < SequencerBase
-      GENERATOR = SquareOscillator
+      GENERATOR = RoundedSquareOscillator
       STACCATO_RATIO = 0.35
       SCORE = [ # 4.75 Measures
         { frequency: %i[REST], duration: 0.75 },
