@@ -103,5 +103,58 @@ module RoadToRubykaigi
         DUTY_CYCLE[@duty_cycle]
       end
     end
+
+    class RoundedSquareOscillator
+      include Phasor
+      DUTY_CYCLE = {
+        d0: 0.125,
+        d1: 0.25,
+        d2: 0.5,
+      }
+      SMOOTH_WIDTH = 0.05
+
+      def generate(frequencies:)
+        samples = frequencies.map do |frequency|
+          phase = tick(frequency: frequency)
+          off_to_on_end = SMOOTH_WIDTH / 2.0
+          on_to_off_start = duty_cycle - SMOOTH_WIDTH / 2.0
+          on_to_off_end = duty_cycle + SMOOTH_WIDTH / 2.0
+          off_to_on_start = 1 - SMOOTH_WIDTH / 2.0
+          weight = ->(t) { (1 - Math.cos(Math::PI * t)) / 2.0 }
+          smoothstep = ->(t) { t * t * (3 - 2 * t) }
+
+          case phase
+          when 0..off_to_on_end
+            t = phase / off_to_on_end
+            -1.0 + 2.0 * smoothstep.call(t)
+          when off_to_on_end..on_to_off_start
+            1.0
+          when on_to_off_start..on_to_off_end
+            t = (phase - on_to_off_start) / SMOOTH_WIDTH
+            1.0 - 2.0 * weight.call(t)
+          else
+            # We don't need interpolate off_to_on_start..1
+            # because 1 is essentially contiguous with 0.
+            -1.0
+          end
+        end
+        samples.sum / samples.size
+      end
+
+      def duty_cycle=(duty_cycle)
+        @duty_cycle = (DUTY_CYCLE.key?(duty_cycle) ? duty_cycle : :d0)
+      end
+
+      private
+
+      def initialize
+        @duty_cycle = :d1
+        super
+      end
+
+      def duty_cycle
+        DUTY_CYCLE[@duty_cycle]
+      end
+    end
   end
 end
