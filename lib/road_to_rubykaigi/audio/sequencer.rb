@@ -23,9 +23,9 @@ module RoadToRubykaigi
       ENVELOPE = {
         bass:        { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 },
         bass_short:  { a: 0.2, d: 0.2, s: 0.05, sl: 0.6, rl: 0.9 },
-        melody:      { a: 0.05, d: 0.1, s: 0.5, sl: 0.6, rl: 1.0 },
+        melody:      { a: 0.05, d: 0.1, s: 0.1, sl: 0.75, rl: 1.35 },
         melody_long: { a: 0.5, d: 0.2, s: 0.7, sl: 0.6, rl: 1.0 },
-        fanfare:     { a: 0.2, d: 0.1, s: 0.4, sl: 0.6, rl: 0.2 },
+        fanfare:     { a: 0.2, d: 0.1, s: 0.35, sl: 0.6, rl: 1.5 },
       }
 
       def generate
@@ -245,7 +245,7 @@ module RoadToRubykaigi
         { frequency: %i[A5], duration: 0.25 },
         { frequency: %i[B5], duration: 0.25 },
 
-        { frequency: %i[C6], duration: 1.5 },
+        { frequency: %i[C6], duration: 1.8, envelope: { a: 0.2, d: 0.2, s: 0.6, sl: 0.6, rl: 0.9 } },
       ]
 
       private
