@@ -79,7 +79,7 @@ module RoadToRubykaigi
       end
 
       def envelope
-        note_progress = @current_note_sample_count.to_f / @samples_per_note
+        note_progress = @current_note_sample_count.to_f / (@samples_per_note * staccato_ratio)
         current_envelop = Hash === current_note[:envelope] ? current_note[:envelope] : ENVELOPE[current_note[:envelope] || default_envelop_key]
         attack = current_envelop[:a]
         decay = current_envelop[:d]
