@@ -19,6 +19,13 @@
 
 ## Installation
 
+Install portaudio like:
+
+```bash
+# e.g. macOS
+brew install portaudio
+```
+
 ```bash
 gem install road_to_rubykaigi
 ```
@@ -35,6 +42,13 @@ road_to_rubykaigi
 
 - Ruby 3.4.0 or later
 - A terminal that supports ANSI escape sequences and 256-color mode
+- PortAudio
+
+## SoundEffects Creaters
+
+- Yasuhiro Tsuchiya / https://snd.dev
+- PANICPUMPKIN / https://pansound.com
+- タダノオト
 
 ## License
 
