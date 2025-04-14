@@ -41,7 +41,11 @@ module RoadToRubykaigi
     end
 
     @game_mode = game_mode
-    OpeningScreen.new.display && Game.new.run
+    if demo?
+      Game.new.run
+    else
+      OpeningScreen.new.display && Game.new.run
+    end
   end
 
   def self.demo?
