@@ -70,8 +70,9 @@ module RoadToRubykaigi
         @fanfare_sequencer = Audio::FanfareSequencer.new
         @audio_engine = Audio::AudioEngine.new(@bass_sequencer, @melody_sequencer)
         @sources = SOUND_FILES
+        dir = __dir__.sub("lib/road_to_rubykaigi/manager", "")
         @sources.each do |action, file_paths|
-          @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(file_path) }
+          @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(dir + file_path) }
         end
         @walk_index = 0
         @last_walk_time = Time.now - 1
