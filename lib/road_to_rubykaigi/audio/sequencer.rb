@@ -31,7 +31,8 @@ module RoadToRubykaigi
       def generate
         process
         env = envelope
-        sample = if @current_note_sample_count < (@samples_per_note * staccato_ratio)
+        sample = if (current_note[:frequency] != [:REST]) &&
+            (@current_note_sample_count < (@samples_per_note * staccato_ratio))
           @generator.generate(frequencies: current_frequencies)
         else
           0.0
