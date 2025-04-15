@@ -10,7 +10,7 @@ module RoadToRubykaigi
       end
 
       def gain
-        1.0
+        0.3
       end
 
       def generate
