@@ -44,11 +44,11 @@ road_to_rubykaigi
 - A terminal that supports ANSI escape sequences and 256-color mode
 - PortAudio
 
-## SoundEffects Creaters
+## SoundEffects Creators
 
 - Yasuhiro Tsuchiya / https://snd.dev
-- PANICPUMPKIN / https://pansound.com
-- タダノオト
+- PANICPUMPKIN / https://pansound.com/panicpumpkin
+- タダノオト / https://tadanote.tokyo
 
 ## License
 
