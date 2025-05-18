@@ -10,6 +10,7 @@ require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
 require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/score_board"
+require_relative "road_to_rubykaigi/gc_logger"
 require_relative "road_to_rubykaigi/manager/audio_manager"
 require_relative "road_to_rubykaigi/manager/collision_manager"
 require_relative "road_to_rubykaigi/manager/drawing_manager"
@@ -39,6 +40,7 @@ module RoadToRubykaigi
       print "\e[#{END_POSITION};1H"
       ANSI.cursor_on
     end
+    GcLogger.start
 
     @game_mode = game_mode
     if demo?
