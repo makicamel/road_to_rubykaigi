@@ -19,6 +19,9 @@ ignore:
     - Style/WhenThen
   - '**/**/ansi.rb':
     - Style/RedundantSelf
+  - '**/**/macos.rb':
+    - Naming/ConstantName
+    - Naming/VariableName
   - 'lib/road_to_rubykaigi/audio/audio_engine.rb':
     - Naming/VariableName
     - Security/Open

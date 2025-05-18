@@ -26,7 +26,11 @@ module RoadToRubykaigi
 
       SOUND_FILES.keys.each do |action|
         define_method(action) {
-          @audio_engine.add_source(@sources[action].sample)
+          if macos?
+            @players[action].sample.play
+          else
+            @audio_engine.add_source(@sources[action].sample)
+          end
         }
       end
 
@@ -43,22 +47,40 @@ module RoadToRubykaigi
       end
 
       def game_over
-        @sources[:game_over].first.tap do |source|
-          @audio_engine.remove_source(@bass_sequencer)
-          @audio_engine.remove_source(@melody_sequencer)
-          @audio_engine.add_source(source)
-          until source.finished?
-            sleep 0.1
+        if macos?
+          @players[:game_over].sample.tap do |player|
+            player.play
+            while player.playing?
+              sleep 0.1
+            end
+          end
+        else
+          @sources[:game_over].first.tap do |source|
+            @audio_engine.remove_source(@bass_sequencer)
+            @audio_engine.remove_source(@melody_sequencer)
+            @audio_engine.add_source(source)
+            until source.finished?
+              sleep 0.1
+            end
           end
         end
       end
 
       def walk
-        now = Time.now
-        if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
-          @audio_engine.add_source(@sources[:walk][@walk_index])
-          @last_walk_time = now
-          @walk_index = (@walk_index + 1) % @sources[:walk].size
+        if macos?
+          now = Time.now
+          if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
+            @players[:walk][@walk_index].play
+            @last_walk_time = now
+            @walk_index = (@walk_index + 1) % @players[:walk].size
+          end
+        else
+          now = Time.now
+          if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
+            @audio_engine.add_source(@sources[:walk][@walk_index])
+            @last_walk_time = now
+            @walk_index = (@walk_index + 1) % @sources[:walk].size
+          end
         end
       end
 
@@ -71,11 +93,23 @@ module RoadToRubykaigi
         @audio_engine = Audio::AudioEngine.new(@bass_sequencer, @melody_sequencer)
         @sources = SOUND_FILES
         dir = __dir__.sub("lib/road_to_rubykaigi/manager", "")
-        @sources.each do |action, file_paths|
-          @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(dir + file_path) }
+        if macos?
+          require_relative "../audio/macos"
+          @players = SOUND_FILES
+          @players.each do |action, file_paths|
+            @players[action] = file_paths.map { |file_path| Audio::MacOS.build_player(file_path) }
+          end
+        else
+          @sources.each do |action, file_paths|
+            @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(dir + file_path) }
+          end
         end
         @walk_index = 0
         @last_walk_time = Time.now - 1
+      end
+
+      def macos?
+        @macos ||= RUBY_PLATFORM.match?(/darwin/)
       end
     end
   end
