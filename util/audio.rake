@@ -208,4 +208,31 @@ namespace :audio do
 
     puts "Trimmed WAV file saved to #{output_path}"
   end
+
+  desc "Heavify the WAV file with keeping its duration"
+  task :heavy do
+    require "wavefile"
+    include WaveFile
+
+    target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav/"
+    %w[walk_01.wav walk_02.wav].each do |filename|
+      input_path = target_dir + filename
+      output_path = target_dir + "heavy/" + filename
+
+      Reader.new(input_path) do |reader|
+        format = reader.format
+        new_format = WaveFile::Format.new(32, :float, format.sample_rate)
+
+        Writer.new(output_path, new_format) do |writer|
+          reader.each_buffer(1024) do |buffer|
+            samples = buffer.samples
+            new_buffer = Buffer.new(samples, format)
+            writer.write(new_buffer)
+          end
+        end
+      end
+
+      puts "Heavified WAV file saved to #{output_path}"
+    end
+  end
 end
