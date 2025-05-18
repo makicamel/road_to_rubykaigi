@@ -70,7 +70,12 @@ module RoadToRubykaigi
         if macos?
           now = Time.now
           if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
+            start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
             @players[:walk][@walk_index].play
+            diff = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+            @logger.info format("Audio::MacOS#play took %.3f ms", diff * 1000)
+
             @last_walk_time = now
             @walk_index = (@walk_index + 1) % @players[:walk].size
           end
@@ -99,6 +104,7 @@ module RoadToRubykaigi
           @players.each do |action, file_paths|
             @players[action] = file_paths.map { |file_path| Audio::MacOS.build_player(file_path) }
           end
+          @logger = Logger.new("log/wave_logger.log")
         else
           @sources.each do |action, file_paths|
             @sources[action] = file_paths.map { |file_path| Audio::WavSource.new(dir + file_path) }

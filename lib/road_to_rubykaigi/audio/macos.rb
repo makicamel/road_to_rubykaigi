@@ -55,8 +55,14 @@ module RoadToRubykaigi
       end
 
       def play
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         objc_msgSend(@player, "stop") # Reset player
+        diff = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+        @logger.info format("Stop sound took %.3f ms", diff * 1000)
+
         objc_msgSend(@player, "play")
+        diff = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+        @logger.info format("Play sound took %.3f ms", diff * 1000)
       end
 
       def playing?
@@ -73,6 +79,7 @@ module RoadToRubykaigi
 
       def initialize(player)
         @player = player
+        @logger = Logger.new("log/wave_logger.log")
       end
 
       def objc_msgSend(klass_or_klass_name, selector_name, *args)
