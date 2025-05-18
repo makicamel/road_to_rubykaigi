@@ -217,11 +217,11 @@ namespace :audio do
     target_dir = "#{Dir.pwd}/lib/road_to_rubykaigi/audio/wav/"
     %w[walk_01.wav walk_02.wav].each do |filename|
       input_path = target_dir + filename
-      output_path = target_dir + "heavy/" + filename
+      output_path = target_dir + "heavy_sample_rate/" + filename
 
       Reader.new(input_path) do |reader|
         format = reader.format
-        new_format = WaveFile::Format.new(32, :float, format.sample_rate)
+        new_format = WaveFile::Format.new(16, :float_64, format.sample_rate * 2)
 
         Writer.new(output_path, new_format) do |writer|
           reader.each_buffer(1024) do |buffer|
