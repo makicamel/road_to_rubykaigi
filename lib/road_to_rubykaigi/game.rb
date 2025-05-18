@@ -4,9 +4,12 @@ module RoadToRubykaigi
       ANSI.clear
       last_time = Time.now
       accumulator = 0.0
+      draw_logger = Logger.new("log/draw_timing.log")
       $stdin.raw do
         loop do
           RoadToRubykaigi.debug.clear
+          start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
           process_input($stdin.read_nonblock(4, exception: false))
 
           if @game_manager.result?
@@ -27,6 +30,8 @@ module RoadToRubykaigi
             @drawing_manager.draw(offset_x: @game_manager.offset_x) unless @game_manager.game_over?
           end
 
+          elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+          draw_logger.info format("frame_time: %.2f", elapsed * 1000)
           puts RoadToRubykaigi.debug
           sleep Manager::GameManager::FRAME_RATE
         end
