@@ -6,6 +6,17 @@ module RoadToRubykaigi
       include FFI::PortAudio
 
       def process(_input, output, framesPerBuffer, _timeInfo, _statusFlags, _userData)
+        now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        if @last_time
+          ideal_interval = framesPerBuffer.to_f / @sample_rate
+          actual_interval = now - @last_time
+          @logger.info format(
+            "framesPerBuffer: %4d, ideal: %.2f ms, actual: %.2f ms, drift: %.2f ms",
+            framesPerBuffer, ideal_interval * 1000, actual_interval * 1000, (actual_interval - ideal_interval) * 1000,
+          )
+        end
+        @last_time = now
+
         samples = Array.new(framesPerBuffer, 0.0)
 
         unless @muted
@@ -41,6 +52,10 @@ module RoadToRubykaigi
       private
 
       def initialize(bass_sequencer, melody_sequencer)
+        @logger = Logger.new('log/audio_callback.log')
+        @sample_rate = bass_sequencer.sample_rate
+        @last_time = nil
+
         frame_size = 2 ** 12 # 4096
         @sources = [bass_sequencer, melody_sequencer]
         @muted = false
