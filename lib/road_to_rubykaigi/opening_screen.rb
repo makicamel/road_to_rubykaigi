@@ -30,49 +30,64 @@ module RoadToRubykaigi
     VERSION_ROW = 25
 
     def display
-      x = 0
-      direction = 1
-      version_index = 0
-      last_move_time = Time.now
-
       loop do
         ANSI.clear
-        puts [
-          "\e[6;1H",
-          LOGO,
-          PLAYER.lines.map.with_index do |line, i|
-            "\e[#{i+1};#{x+OFFSET}H" + line
-          end.join,
-          "\e[4;1H",
-          " Press Space to start...",
-        ]
-        RoadToRubykaigi::VERSIONS.each_with_index do |ver, i|
-          cursor = i == version_index ? " -> " : "    "
-          print "\e[#{VERSION_ROW + i};1H#{cursor}ver. #{ver}"
-        end
-
+        render
         $stdin.raw do
-          input = $stdin.read_nonblock(3, exception: false)
-          case input
-          when ANSI::UP
-            version_index = (version_index - 1) % RoadToRubykaigi::VERSIONS.size
-          when ANSI::DOWN
-            version_index = (version_index + 1) % RoadToRubykaigi::VERSIONS.size
-          when " "
-            break version_index
-          when ANSI::ETX
-            raise Interrupt
+          if handle_input == :SELECTED
+            return @version_index
           end
-
-          if Time.now - last_move_time >= DELAY
-            x += direction
-            if x >= WIDTH || x <= 0
-              direction = -direction
-            end
-            last_move_time = Time.now
-          end
+          move_player
           sleep Manager::GameManager::FRAME_RATE
         end
+      end
+    end
+
+    private
+
+    def initialize
+      @player_x = 0
+      @direction = 1
+      @last_move_time = Time.now
+      @version_index = 0
+    end
+
+    def render
+      puts [
+        "\e[6;1H",
+        LOGO,
+        PLAYER.lines.map.with_index do |line, i|
+          "\e[#{i+1};#{@player_x+OFFSET}H" + line
+        end.join,
+        "\e[4;1H",
+        " Press Space to start...",
+      ]
+      RoadToRubykaigi::VERSIONS.each_with_index do |ver, i|
+        cursor = i == @version_index ? " -> " : "    "
+        print "\e[#{VERSION_ROW + i};1H#{cursor}ver. #{ver}"
+      end
+    end
+
+    def handle_input
+      case $stdin.read_nonblock(3, exception: false)
+      when ANSI::UP
+        @version_index = (@version_index - 1) % RoadToRubykaigi::VERSIONS.size
+      when ANSI::DOWN
+        @version_index = (@version_index + 1) % RoadToRubykaigi::VERSIONS.size
+      when " "
+        :SELECTED
+      when ANSI::ETX
+        raise Interrupt
+      end
+    end
+
+    def move_player
+      if Time.now - @last_move_time >= DELAY
+        @player_x += @direction
+        if @player_x >= WIDTH || @player_x <= 0
+          @direction = -@direction
+        end
+        @last_move_time = Time.now
       end
     end
   end
