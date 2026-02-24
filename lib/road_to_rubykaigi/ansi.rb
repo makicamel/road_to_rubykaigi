@@ -12,6 +12,8 @@ module RoadToRubykaigi
     DEFAULT_TEXT_COLOR = "\e[38;5;238m"
     RESULT_DATA = ["\e[4;18H", "\e[5;18H", "\e[6;18H"]
     NULL = "\0"
+    UP = "\e[A"
+    DOWN = "\e[B"
 
     self.constants(false).each do |constant|
       ANSI.define_singleton_method(constant.to_s.downcase) {

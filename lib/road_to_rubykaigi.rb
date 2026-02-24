@@ -32,7 +32,7 @@ require "io/console"
 module RoadToRubykaigi
   class Error < StandardError; end
   END_POSITION = Map::VIEWPORT_HEIGHT + 2
-  VERSIONS = [2025].freeze
+  VERSIONS = [2026, 2025].freeze
 
   class << self
     def start(game_mode = :normal)
@@ -47,7 +47,8 @@ module RoadToRubykaigi
       if demo?
         Game.new.run
       else
-        OpeningScreen.new.display && Game.new.run
+        self.version = VERSIONS[OpeningScreen.new.display]
+        Game.new.run
       end
     end
 
