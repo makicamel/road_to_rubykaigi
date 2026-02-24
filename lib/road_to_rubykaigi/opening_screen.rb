@@ -50,21 +50,23 @@ module RoadToRubykaigi
           print "\e[#{VERSION_ROW + i};1H#{cursor}ver. #{ver}"
         end
 
-        input = $stdin.raw { $stdin.read_nonblock(3, exception: false) }
-        case input
-        when ANSI::UP
-          version_index = (version_index - 1) % RoadToRubykaigi::VERSIONS.size
-        when ANSI::DOWN
-          version_index = (version_index + 1) % RoadToRubykaigi::VERSIONS.size
-        when " "
-          break version_index
-        end
+        $stdin.raw do
+          input = $stdin.read_nonblock(3, exception: false)
+          case input
+          when ANSI::UP
+            version_index = (version_index - 1) % RoadToRubykaigi::VERSIONS.size
+          when ANSI::DOWN
+            version_index = (version_index + 1) % RoadToRubykaigi::VERSIONS.size
+          when " "
+            break version_index
+          end
 
-        x += direction
-        if x >= WIDTH || x <= 0
-          direction = -direction
+          x += direction
+          if x >= WIDTH || x <= 0
+            direction = -direction
+          end
+          sleep DELAY
         end
-        sleep DELAY
       end
     end
   end
