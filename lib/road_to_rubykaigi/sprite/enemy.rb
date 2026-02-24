@@ -6,26 +6,33 @@ module RoadToRubykaigi
       extend Forwardable
       def_delegators :@enemies, :to_a, :find, :delete, :each
       ENEMIES_DATA = {
-        FixedPatrol: [
-          { x: 55, y: 6, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
-          { x: 125, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
-          { x: 293, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
-        ],
-        HorizontalPatrol: [
-          { x: 123, y: 26, left_bound: 114, right_bound: 123, speed: 1.5, character: :bee },
-          { x: 171, y: 26, left_bound: 162, right_bound: 171, speed: 1.5, character: :bee },
-          { x: 278, y: 15, left_bound: 270, right_bound: 278, speed: 1.5, character: :bug },
-          { x: 291, y: 15, left_bound: 283, right_bound: 291, speed: 1.5, character: :bug },
-          { x: 302, y: 15, left_bound: 297, right_bound: 302, speed: 1.5, character: :bug },
-        ],
-        ScreenEntryPatrol: [
-          { x: 63, y: 27, left_bound: 0, right_bound: 63, speed: 4.0, character: :bug },
-          { x: 76, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
-          { x: 87, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
-          { x: 221, y: 23, left_bound: 0, right_bound: 151, speed: 6.0, character: :bee },
-          { x: 240, y: 19, left_bound: 0, right_bound: 170, speed: 6.0, character: :bee },
-          { x: 256, y: 16, left_bound: 0, right_bound: 186, speed: 6.0, character: :bee },
-        ],
+        2025 => {
+          FixedPatrol: [
+            { x: 55, y: 6, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
+            { x: 125, y: 8, left_bound: 0, right_bound: 0, speed: 0, character: :ladybug },
+            { x: 293, y: 23, left_bound: 0, right_bound: 0, speed: 0, character: :spider },
+          ],
+          HorizontalPatrol: [
+            { x: 123, y: 26, left_bound: 114, right_bound: 123, speed: 1.5, character: :bee },
+            { x: 171, y: 26, left_bound: 162, right_bound: 171, speed: 1.5, character: :bee },
+            { x: 278, y: 15, left_bound: 270, right_bound: 278, speed: 1.5, character: :bug },
+            { x: 291, y: 15, left_bound: 283, right_bound: 291, speed: 1.5, character: :bug },
+            { x: 302, y: 15, left_bound: 297, right_bound: 302, speed: 1.5, character: :bug },
+          ],
+          ScreenEntryPatrol: [
+            { x: 63, y: 27, left_bound: 0, right_bound: 63, speed: 4.0, character: :bug },
+            { x: 76, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
+            { x: 87, y: 27, left_bound: 0, right_bound: 76, speed: 4.0, character: :bug },
+            { x: 221, y: 23, left_bound: 0, right_bound: 151, speed: 6.0, character: :bee },
+            { x: 240, y: 19, left_bound: 0, right_bound: 170, speed: 6.0, character: :bee },
+            { x: 256, y: 16, left_bound: 0, right_bound: 186, speed: 6.0, character: :bee },
+          ],
+        },
+        2026 => {
+          FixedPatrol: [],
+          HorizontalPatrol: [],
+          ScreenEntryPatrol: [],
+        },
       }
 
       def build_buffer(offset_x:)
@@ -62,7 +69,7 @@ module RoadToRubykaigi
       private
 
       def initialize
-        @enemies = ENEMIES_DATA.map do |key, enemies|
+        @enemies = ENEMIES_DATA[RoadToRubykaigi.version].map do |key, enemies|
           strategy = RoadToRubykaigi::Sprite.const_get("#{key}Strategy")
           enemies.map do |enemy|
             Enemy.new(

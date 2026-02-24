@@ -3,7 +3,7 @@ module RoadToRubykaigi
     class GameManager
       UPDATE_RATE = 1.0 / 10
       FRAME_RATE = 1.0 / 60
-      GOAL_X = 650
+      GOAL_X = { 2025 => 650 }
       DEMO_GOAL_X = 540
       STATE = {
         playing: 0,
@@ -15,7 +15,7 @@ module RoadToRubykaigi
       attr_reader :fireworks
 
       def self.goal_x
-        @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X
+        @goal_x ||= RoadToRubykaigi.demo? ? DEMO_GOAL_X : GOAL_X[RoadToRubykaigi.version]
       end
 
       def offset_x

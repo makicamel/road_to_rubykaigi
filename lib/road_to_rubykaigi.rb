@@ -32,31 +32,43 @@ require "io/console"
 module RoadToRubykaigi
   class Error < StandardError; end
   END_POSITION = Map::VIEWPORT_HEIGHT + 2
+  VERSIONS = [2025].freeze
 
-  def self.start(game_mode = :normal)
-    ANSI.cursor_off
-    at_exit do
-      print "\e[#{END_POSITION};1H"
-      ANSI.cursor_on
+  class << self
+    def start(game_mode = :normal)
+      ANSI.cursor_off
+      at_exit do
+        print "\e[#{END_POSITION};1H"
+        ANSI.cursor_on
+      end
+
+      @game_mode = game_mode
+      @version = VERSIONS.first
+      if demo?
+        Game.new.run
+      else
+        OpeningScreen.new.display && Game.new.run
+      end
     end
 
-    @game_mode = game_mode
-    if demo?
-      Game.new.run
-    else
-      OpeningScreen.new.display && Game.new.run
+    def demo?
+      @game_mode != :normal
     end
-  end
 
-  def self.demo?
-    @game_mode != :normal
-  end
+    def version
+      @version
+    end
 
-  def self.debug
-    @debug ||= []
-  end
+    def version=(version)
+      @version = version
+    end
 
-  def self.debug_add(string)
-    debug << "\e[#{END_POSITION+debug.size};1H" + string
+    def debug
+      @debug ||= []
+    end
+
+    def debug_add(string)
+      debug << "\e[#{END_POSITION+debug.size};1H" + string
+    end
   end
 end

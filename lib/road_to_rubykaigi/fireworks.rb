@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Fireworks
-    START_X = 632
+    START_X = { 2025 => 632 }
     DEMO_START_X = 524
     DURATION_SECOND = 0.1
 
@@ -39,7 +39,7 @@ module RoadToRubykaigi
     private
 
     def initialize
-      @x = RoadToRubykaigi.demo? ? DEMO_START_X : START_X
+      @x = RoadToRubykaigi.demo? ? DEMO_START_X : START_X[RoadToRubykaigi.version]
       @y = 3
       @start_time = Time.now
       @frame_index = 0

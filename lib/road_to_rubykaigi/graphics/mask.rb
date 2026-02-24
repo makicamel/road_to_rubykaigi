@@ -10,7 +10,7 @@ module RoadToRubykaigi
       end
 
       def self.file_path
-        @file_path ||= RoadToRubykaigi.demo? ? DEMO_FILE_PATH : FILE_PATH
+        @file_path ||= [RoadToRubykaigi.version, RoadToRubykaigi.demo? ? DEMO_FILE_PATH : FILE_PATH].join('/')
       end
     end
   end
