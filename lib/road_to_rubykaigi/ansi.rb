@@ -14,6 +14,7 @@ module RoadToRubykaigi
     NULL = "\0"
     UP = "\e[A"
     DOWN = "\e[B"
+    ETX = "\x03"
 
     self.constants(false).each do |constant|
       ANSI.define_singleton_method(constant.to_s.downcase) {

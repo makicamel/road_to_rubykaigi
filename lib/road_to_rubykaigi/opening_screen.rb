@@ -59,6 +59,8 @@ module RoadToRubykaigi
             version_index = (version_index + 1) % RoadToRubykaigi::VERSIONS.size
           when " "
             break version_index
+          when ANSI::ETX
+            raise Interrupt
           end
 
           x += direction
