@@ -33,6 +33,7 @@ module RoadToRubykaigi
       x = 0
       direction = 1
       version_index = 0
+      last_move_time = Time.now
 
       loop do
         ANSI.clear
@@ -63,11 +64,14 @@ module RoadToRubykaigi
             raise Interrupt
           end
 
-          x += direction
-          if x >= WIDTH || x <= 0
-            direction = -direction
+          if Time.now - last_move_time >= DELAY
+            x += direction
+            if x >= WIDTH || x <= 0
+              direction = -direction
+            end
+            last_move_time = Time.now
           end
-          sleep DELAY
+          sleep Manager::GameManager::FRAME_RATE
         end
       end
     end
