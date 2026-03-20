@@ -13,10 +13,10 @@ module RoadToRubykaigi
     private
 
     def build_server
-      null_logger = WEBrick::Log.new(File.open(File::NULL, 'w'))
+      log_file = ENV['DEBUG'] ? File.join(__dir__.sub('lib/road_to_rubykaigi', ''), 'tmp/signal_server.log') : File.open(File::NULL, 'w')
       server = WEBrick::HTTPServer.new(
         Port: PORT,
-        Logger: null_logger,
+        Logger: WEBrick::Log.new(log_file),
         AccessLog: [],
       )
       server.mount_proc(ENDPOINT) { |req, res| handle(req, res) }
