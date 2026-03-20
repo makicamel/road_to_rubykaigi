@@ -12,9 +12,9 @@ module RoadToRubykaigi
       private
 
       def pick
-        return if SignalServer.queue.empty?
+        return if GameServer.queue.empty?
 
-        SignalServer.queue.pop(true)
+        GameServer.queue.pop(true)
       end
 
       def interpret(data)

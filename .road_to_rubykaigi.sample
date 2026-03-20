@@ -1,7 +1,7 @@
 # Configuration file for Road to RubyKaigi
 # Copy this file to .road_to_rubykaigi and uncomment the settings you want to enable.
 #
-# Start the signal server
-# SIGNAL_SERVER=1
-# Enable debug logging to tmp/signal_server.log
+# Start the game server
+# GAME_SERVER=1
+# Enable debug logging to tmp/game_server.log
 # DEBUG=1

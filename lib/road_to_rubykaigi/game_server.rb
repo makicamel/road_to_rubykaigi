@@ -2,7 +2,7 @@ require 'singleton'
 require 'webrick'
 
 module RoadToRubykaigi
-  class SignalServer
+  class GameServer
     include Singleton
 
     PORT = 2026
@@ -23,7 +23,7 @@ module RoadToRubykaigi
 
     def initialize
       @queue = Thread::Queue.new
-      log_file = Config.debug? ? File.join(Config.project_root, 'tmp/signal_server.log') : File.open(File::NULL, 'w')
+      log_file = Config.debug? ? File.join(Config.project_root, 'tmp/game_server.log') : File.open(File::NULL, 'w')
       @logger = WEBrick::Log.new(log_file)
     end
 

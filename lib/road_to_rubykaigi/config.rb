@@ -9,15 +9,15 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :signal_server?, :debug?, :project_root
+      def_delegators :instance, :game_server?, :debug?, :project_root
     end
 
     def initialize
       @settings = load
     end
 
-    def signal_server?
-      @settings['SIGNAL_SERVER']
+    def game_server?
+      @settings['GAME_SERVER']
     end
 
     def debug?
