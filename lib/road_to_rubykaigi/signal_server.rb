@@ -1,9 +1,17 @@
+require 'singleton'
 require 'webrick'
 
 module RoadToRubykaigi
   class SignalServer
+    include Singleton
+
     PORT = 2026
     ENDPOINT = '/road_to_rubykaigi'
+
+    class << self
+      extend Forwardable
+      def_delegators :instance, :start
+    end
 
     def start
       Thread.new { build_server.start }
