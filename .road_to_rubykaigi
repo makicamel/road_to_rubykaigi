@@ -1,0 +1,3 @@
+# Configuration file for Road to RubyKaigi
+# Uncomment the following line to enable debug logging to tmp/signal_server.log
+# DEBUG=1
