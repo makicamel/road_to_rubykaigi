@@ -10,8 +10,10 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :start
+      def_delegators :instance, :start, :queue
     end
+
+    attr_reader :queue
 
     def start
       Thread.new { build_server.start }
@@ -20,6 +22,7 @@ module RoadToRubykaigi
     private
 
     def initialize
+      @queue = Thread::Queue.new
       log_file = Config.debug? ? File.join(Config.project_root, 'tmp/signal_server.log') : File.open(File::NULL, 'w')
       @logger = WEBrick::Log.new(log_file)
     end
@@ -37,7 +40,10 @@ module RoadToRubykaigi
     def handle(req, res)
       res['Access-Control-Allow-Origin'] = '*'
       res['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+
       @logger.info("#{req.request_method} #{req.path} #{req.query}")
+      @queue.push(req.query) unless req.query.empty?
+
       res.status = 200
     end
   end
