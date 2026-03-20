@@ -13,7 +13,7 @@ module RoadToRubykaigi
     private
 
     def build_server
-      log_file = debug? ? File.join(project_root, 'tmp/signal_server.log') : File.open(File::NULL, 'w')
+      log_file = Config.debug? ? File.join(Config.project_root, 'tmp/signal_server.log') : File.open(File::NULL, 'w')
       server = WEBrick::HTTPServer.new(
         Port: PORT,
         Logger: WEBrick::Log.new(log_file),
@@ -21,17 +21,6 @@ module RoadToRubykaigi
       )
       server.mount_proc(ENDPOINT) { |req, res| handle(req, res) }
       server
-    end
-
-    def debug?
-      config_path = File.join(project_root, '.road_to_rubykaigi')
-      return false unless File.exist?(config_path)
-
-      File.readlines(config_path, chomp: true).any? { |line| line.strip.match?(/\ADEBUG=/) }
-    end
-
-    def project_root
-      __dir__.sub('lib/road_to_rubykaigi', '')
     end
 
     def handle(req, res)
