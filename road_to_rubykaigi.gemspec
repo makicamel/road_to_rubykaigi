@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "ffi-portaudio"
   spec.add_dependency "wavefile"
+  spec.add_dependency "webrick"
 end
