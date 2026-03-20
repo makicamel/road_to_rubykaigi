@@ -63,7 +63,7 @@ module RoadToRubykaigi
         attacks: attacks, bonuses: bonuses, effects: effects, enemies: enemies, player: player, game_manager: @game_manager,
       )
       Manager::AudioManager.instance
-      SignalServer.new.start
+      SignalServer.new.start if Config.signal_server?
     end
 
     def process_input(input)
