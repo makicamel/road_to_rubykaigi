@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Road to RubyKaigi Controller</title>
+    <style>
+      textarea {
+        width: 100%;
+        height: 240px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Road to RubyKaigi Controller</h1>
+
+    <div>
+      <label>Device name prefix</label><br>
+      <input id="device-name-prefix" value="RtR" size="30">
+    </div>
+
+    <div>
+      <label>Service UUID</label><br>
+      <input id="svc-uuid" value="6e400001-b5a3-f393-e0a9-e50e24dcca9e" size="48">
+    </div>
+
+    <div>
+      <label>TX UUID (browser → Pico write)</label><br>
+      <input id="tx-uuid" value="6e400002-b5a3-f393-e0a9-e50e24dcca9e" size="48">
+    </div>
+
+    <div>
+      <label>RX UUID (Pico → browser notify)</label><br>
+      <input id="rx-uuid" value="6e400003-b5a3-f393-e0a9-e50e24dcca9e" size="48">
+    </div>
+
+    <div>
+      <button id="btn-connect">Connect</button>
+      <button id="btn-disconnect" disabled>Disconnect</button>
+    </div>
+
+    <div>
+      <label>Status</label><br>
+      <div id="status">Disconnected</div>
+    </div>
+
+    <div>
+      <label>Log</label><br>
+      <textarea id="log" readonly></textarea>
+    </div>
+
+    <script src="./controller.rb" type="text/ruby"></script>
+    <script src="./init.iife.js"></script>
+  </body>
+</html>

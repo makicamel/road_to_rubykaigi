@@ -34,6 +34,10 @@ module RoadToRubykaigi
         AccessLog: [],
       )
       server.mount_proc(ENDPOINT) { |req, res| handle(req, res) }
+
+      public_dir = File.join(Config.project_root, 'public')
+      server.mount('/', WEBrick::HTTPServlet::FileHandler, public_dir)
+
       server
     end
 
