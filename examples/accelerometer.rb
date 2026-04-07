@@ -40,11 +40,43 @@ class Accelerometer
   end
 end
 
+class Blinker
+  LED_PIN = CYW43::GPIO::LED_PIN
+  FAST_INTERVAL_MS = 200
+  SLOW_INTERVAL_MS = 500
+  INTERVALS = {
+    fast: FAST_INTERVAL_MS / BLE::POLLING_UNIT_MS,
+    slow: SLOW_INTERVAL_MS / BLE::POLLING_UNIT_MS,
+  }
+
+  attr_writer :mode
+
+  def initialize
+    @led = CYW43::GPIO.new(LED_PIN)
+    @on = false
+    @tick = 0
+    @mode = :fast
+  end
+
+  def tick
+    @tick += 1
+    return if @tick < INTERVALS[@mode]
+
+    @tick = 0
+    @on = !@on
+    @led.write(@on ? 1 : 0)
+  end
+end
+
 accelerometer = Accelerometer.new
 uart = BLE::UART.new(name: 'RtR')
 uart.debug = true
+blinker = Blinker.new
 
 uart.start do
   uart.puts(accelerometer.read)
   # puts("#{Time.now} #{accelerometer.read}")
+
+  blinker.mode = uart.connected? ? :slow : :fast
+  blinker.tick
 end
