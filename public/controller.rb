@@ -11,6 +11,14 @@ class Controller
   def bind_events
     element('btn-connect').addEventListener('click') { |_event| connect }
     element('btn-disconnect').addEventListener('click') { |_event| disconnect }
+    JS.global.addEventListener('beforeunload') { |_event| force_disconnect }
+  end
+
+  def force_disconnect
+    return unless @uart
+    @uart.device.js_device[:gatt].disconnect
+  rescue
+    # best effort: ignore any errors during page unload
   end
 
   def element(id)
