@@ -47,5 +47,4 @@ uart.debug = true
 uart.start do
   uart.puts(accelerometer.read)
   # puts("#{Time.now} #{accelerometer.read}")
-  sleep_ms Accelerometer::INTERVAL_MS
 end
