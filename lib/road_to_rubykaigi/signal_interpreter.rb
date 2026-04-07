@@ -4,6 +4,10 @@ module RoadToRubykaigi
   class SignalInterpreter
     include Singleton
 
+    WINDOW_SIZE = 10
+    RUN_ENTER_THRESHOLD = 0.4
+    RUN_EXIT_THRESHOLD = 0.2
+
     class << self
       extend Forwardable
       def_delegators :instance, :process
@@ -20,6 +24,13 @@ module RoadToRubykaigi
 
     private
 
+    def initialize
+      @buffer = []
+      @direction = :right
+      @running = false
+      @has_started = false
+    end
+
     def pick
       return if GameServer.queue.empty?
 
@@ -29,18 +40,36 @@ module RoadToRubykaigi
     def interpret(data)
       return unless %w[x y z].all? { |key| data.key?(key) }
 
-      x = data['x'].to_f
-      y = data['y'].to_f
-      z = data['z'].to_f
+      slide_window(data['x'].to_f, data['y'].to_f, data['z'].to_f)
+      return unless window_full?
 
-      # TODO: implement
-      case
-      when y < -5 then :jump
-      when y > 5 then :crouch
-      when x < -3 then :left
-      when x > 3 then :right
-      when z < -5 then :attack
+      update_running_state
+      @direction if @running
+    end
+
+    def slide_window(x, y, z)
+      magnitude = Math.sqrt(x * x + y * y + z * z)
+      deviation = (magnitude - 1.0).abs
+      @buffer << deviation
+      @buffer = @buffer.last(WINDOW_SIZE)
+    end
+
+    def window_full?
+      @buffer.size == WINDOW_SIZE
+    end
+
+    def update_running_state
+      average = @buffer.sum / @buffer.size
+      now_running = average > (@running ? RUN_EXIT_THRESHOLD : RUN_ENTER_THRESHOLD)
+
+      if now_running && !@running
+        if @has_started
+          @direction = (@direction == :right ? :left : :right)
+        else
+          @has_started = true
+        end
       end
+      @running = now_running
     end
   end
 end
