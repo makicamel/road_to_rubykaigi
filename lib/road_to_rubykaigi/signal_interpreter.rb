@@ -4,9 +4,9 @@ module RoadToRubykaigi
   class SignalInterpreter
     include Singleton
 
-    WINDOW_SIZE = 10
-    RUN_ENTER_THRESHOLD = 0.4
-    RUN_EXIT_THRESHOLD = 0.2
+    WINDOW_SIZE = 5
+    RUN_ENTER_THRESHOLD = 0.05
+    RUN_EXIT_THRESHOLD = 0.025
 
     class << self
       extend Forwardable
@@ -48,9 +48,7 @@ module RoadToRubykaigi
     end
 
     def slide_window(x, y, z)
-      magnitude = Math.sqrt(x * x + y * y + z * z)
-      deviation = (magnitude - 1.0).abs
-      @buffer << deviation
+      @buffer << [x, y, z]
       @buffer = @buffer.last(WINDOW_SIZE)
     end
 
@@ -59,8 +57,7 @@ module RoadToRubykaigi
     end
 
     def update_running_state
-      average = @buffer.sum / @buffer.size
-      now_running = average > (@running ? RUN_EXIT_THRESHOLD : RUN_ENTER_THRESHOLD)
+      now_running = window_motion_intensity > (@running ? RUN_EXIT_THRESHOLD : RUN_ENTER_THRESHOLD)
 
       if now_running && !@running
         if @has_started
@@ -70,6 +67,18 @@ module RoadToRubykaigi
         end
       end
       @running = now_running
+    end
+
+    # Returns how far samples in the window spread from their mean position
+    # (RMS distance across all 3 axes).
+    def window_motion_intensity
+      Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
+    end
+
+    def axis_variance(index)
+      values = @buffer.map { |sample| sample[index] }
+      mean = values.sum / values.size
+      values.sum { |value| (value - mean) ** 2 } / values.size
     end
   end
 end
