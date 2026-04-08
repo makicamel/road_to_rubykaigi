@@ -5,3 +5,5 @@
 # GAME_SERVER=1
 # Enable debug logging to tmp/game_server.log
 # DEBUG=1
+# Mute BGM (sound effects play)
+# BGM_OFF=1

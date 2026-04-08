@@ -69,6 +69,10 @@ module RoadToRubykaigi
         @melody_sequencer = Audio::MelodySequencer.new
         @fanfare_sequencer = Audio::FanfareSequencer.new
         @audio_engine = Audio::AudioEngine.new(@bass_sequencer, @melody_sequencer)
+        if Config.bgm_off?
+          @audio_engine.remove_source(@bass_sequencer)
+          @audio_engine.remove_source(@melody_sequencer)
+        end
         @sources = SOUND_FILES
         dir = __dir__.sub("lib/road_to_rubykaigi/manager", "")
         @sources.each do |action, file_paths|

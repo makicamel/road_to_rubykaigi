@@ -9,7 +9,7 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :game_server?, :debug?, :project_root
+      def_delegators :instance, :game_server?, :debug?, :bgm_off?, :project_root
     end
 
     def initialize
@@ -22,6 +22,10 @@ module RoadToRubykaigi
 
     def debug?
       @settings['DEBUG']
+    end
+
+    def bgm_off?
+      @settings['BGM_OFF']
     end
 
     def project_root
