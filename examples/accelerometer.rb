@@ -15,7 +15,6 @@ class Accelerometer
   VDD = 3.3
   ZERO = VDD / 2.0 # zero-g output voltage
   SENSITIVITY = VDD / 5.0 # output voltage per 1g
-  INTERVAL_MS = 100
 
   def initialize
     GPIO.new(19, GPIO::OUT).write(1)
