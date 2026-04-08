@@ -50,17 +50,9 @@ module RoadToRubykaigi
       @direction if @running
     end
 
-    def warmed_up?
-      @warmed_up ||= window_motion_intensity < REST_THRESHOLD
-    end
-
     def slide_window(x, y, z)
       @buffer << [x, y, z]
       @buffer = @buffer.last(WINDOW_SIZE)
-    end
-
-    def window_full?
-      @buffer.size == WINDOW_SIZE
     end
 
     def update_running_state
@@ -76,10 +68,15 @@ module RoadToRubykaigi
       @running = now_running
     end
 
+    def window_full? = @buffer.size == WINDOW_SIZE
+    def warmed_up? = @warmed_up ||= window_motion_intensity < REST_THRESHOLD
+
     # Returns how far samples in the window spread from their mean position
     # (RMS distance across all 3 axes).
-    def window_motion_intensity
-      Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
+    def window_motion_intensity = motion_intensity(@buffer)
+
+    def motion_intensity
+      Math.sqrt(axis_variance(@buffer, 0) + axis_variance(@buffer, 1) + axis_variance(@buffer, 2))
     end
 
     def axis_variance(index)
