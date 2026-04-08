@@ -59,25 +59,38 @@ module RoadToRubykaigi
     end
 
     def update_running_state
-      @flip_cooldown -= 1 if @flip_cooldown.positive?
-
-      if @running
-        if motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
-          @running = false
-          @flip_cooldown = DIRECTION_FLIP_COOLDOWN
-        end
-      elsif window_motion_intensity > RUN_ENTER_THRESHOLD
-        if @has_started
-          @direction = (@direction == :right ? :left : :right) if @flip_cooldown.zero?
-        else
-          @has_started = true
-        end
-        @running = true
+      tick_flip_cooldown
+      case
+      when running? && motion_stopped?
+        stop
+      when !running? && motion_started?
+        start
       end
+    end
+
+    def stop
+      @running = false
+      @flip_cooldown = DIRECTION_FLIP_COOLDOWN
+    end
+
+    def start
+      if @has_started && flip_allowed?
+        @direction = (@direction == :right ? :left : :right)
+      end
+      @has_started = true
+      @running = true
+    end
+
+    def tick_flip_cooldown
+      @flip_cooldown -= 1 if @flip_cooldown.positive?
     end
 
     def window_full? = @buffer.size == WINDOW_SIZE
     def warmed_up? = @warmed_up ||= window_motion_intensity < REST_THRESHOLD
+    def running? = @running
+    def motion_started? = window_motion_intensity > RUN_ENTER_THRESHOLD
+    def motion_stopped? = motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
+    def flip_allowed? = @flip_cooldown.zero?
 
     # Returns how far samples in the window spread from their mean position
     # (RMS distance across all 3 axes).
