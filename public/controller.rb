@@ -2,6 +2,7 @@ require 'js'
 
 class Controller
   LOCAL_ENDPOINT = 'http://127.0.0.1:2026/road_to_rubykaigi'
+  POLL_INTERVAL_MS = 1000 / 60 # Manager::GameManager::FRAME_RATE
 
   def initialize
     bind_events
@@ -81,7 +82,7 @@ class Controller
   def schedule_auto_read
     return unless @auto_read
 
-    @read_timer = JS.global.setTimeout(100) do
+    @read_timer = JS.global.setTimeout(POLL_INTERVAL_MS) do
       poll_uart
       schedule_auto_read
     end
