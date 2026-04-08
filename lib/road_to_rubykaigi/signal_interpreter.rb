@@ -9,7 +9,6 @@ module RoadToRubykaigi
     DIRECTION_FLIP_COOLDOWN = 5 # samples
     RUN_ENTER_THRESHOLD = 0.05
     RUN_EXIT_THRESHOLD = 0.025
-    REST_THRESHOLD = RUN_EXIT_THRESHOLD
 
     class << self
       extend Forwardable
@@ -31,7 +30,6 @@ module RoadToRubykaigi
       @buffer = []
       @direction = :right
       @running = false
-      @warmed_up = false
       @has_started = false
       @flip_cooldown = 0
     end
@@ -47,7 +45,6 @@ module RoadToRubykaigi
 
       slide_window(data['x'].to_f, data['y'].to_f, data['z'].to_f)
       return unless window_full?
-      return unless warmed_up?
 
       update_running_state
       @direction if @running
@@ -86,7 +83,6 @@ module RoadToRubykaigi
     end
 
     def window_full? = @buffer.size == WINDOW_SIZE
-    def warmed_up? = @warmed_up ||= window_motion_intensity < REST_THRESHOLD
     def running? = @running
     def motion_started? = window_motion_intensity > RUN_ENTER_THRESHOLD
     def motion_stopped? = motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
