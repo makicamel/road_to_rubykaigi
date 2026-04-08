@@ -5,6 +5,8 @@ module RoadToRubykaigi
     include Singleton
 
     WINDOW_SIZE = 5
+    EXIT_WINDOW_SIZE = 2
+    DIRECTION_FLIP_COOLDOWN = 5 # samples
     RUN_ENTER_THRESHOLD = 0.05
     RUN_EXIT_THRESHOLD = 0.025
     REST_THRESHOLD = RUN_EXIT_THRESHOLD
@@ -31,6 +33,7 @@ module RoadToRubykaigi
       @running = false
       @warmed_up = false
       @has_started = false
+      @flip_cooldown = 0
     end
 
     def pick
@@ -56,16 +59,21 @@ module RoadToRubykaigi
     end
 
     def update_running_state
-      now_running = window_motion_intensity > (@running ? RUN_EXIT_THRESHOLD : RUN_ENTER_THRESHOLD)
+      @flip_cooldown -= 1 if @flip_cooldown.positive?
 
-      if now_running && !@running
+      if @running
+        if motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
+          @running = false
+          @flip_cooldown = DIRECTION_FLIP_COOLDOWN
+        end
+      elsif window_motion_intensity > RUN_ENTER_THRESHOLD
         if @has_started
-          @direction = (@direction == :right ? :left : :right)
+          @direction = (@direction == :right ? :left : :right) if @flip_cooldown.zero?
         else
           @has_started = true
         end
+        @running = true
       end
-      @running = now_running
     end
 
     def window_full? = @buffer.size == WINDOW_SIZE
@@ -75,12 +83,12 @@ module RoadToRubykaigi
     # (RMS distance across all 3 axes).
     def window_motion_intensity = motion_intensity(@buffer)
 
-    def motion_intensity
-      Math.sqrt(axis_variance(@buffer, 0) + axis_variance(@buffer, 1) + axis_variance(@buffer, 2))
+    def motion_intensity(samples)
+      Math.sqrt(axis_variance(samples, 0) + axis_variance(samples, 1) + axis_variance(samples, 2))
     end
 
-    def axis_variance(index)
-      values = @buffer.map { |sample| sample[index] }
+    def axis_variance(samples, index)
+      values = samples.map { |sample| sample[index] }
       mean = values.sum / values.size
       values.sum { |value| (value - mean) ** 2 } / values.size
     end
