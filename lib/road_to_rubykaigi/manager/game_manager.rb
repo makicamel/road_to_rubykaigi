@@ -3,7 +3,7 @@ module RoadToRubykaigi
     class GameManager
       UPDATE_RATE = 1.0 / 10
       FRAME_RATE = 1.0 / 60
-      GOAL_X = { 2025 => 650 }
+      GOAL_X = { 2025 => 650, 2026 => 650 }
       DEMO_GOAL_X = 540
       STATE = {
         playing: 0,
