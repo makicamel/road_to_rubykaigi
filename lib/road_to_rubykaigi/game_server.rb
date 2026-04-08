@@ -5,6 +5,7 @@ module RoadToRubykaigi
   class GameServer
     include Singleton
 
+    HOST = 'http://127.0.0.1'
     PORT = 2026
     ENDPOINT = '/road_to_rubykaigi'
 
@@ -16,10 +17,30 @@ module RoadToRubykaigi
     attr_reader :queue
 
     def start
-      Thread.new { build_server.start }
+      @server = build_server
+      @thread = Thread.new { @server.start }
+      at_exit do
+        @server.shutdown rescue nil
+        @thread.kill
+      end
+      open_controller
     end
 
     private
+
+    def open_controller
+      url = "#{HOST}:#{PORT}/controller.html"
+      command =
+        case RbConfig::CONFIG['host_os']
+        when /darwin/ then ['open', url]
+        when /mswin|mingw|cygwin/ then ['cmd', '/c', 'start', '', url]
+        else ['xdg-open', url]
+        end
+      pid = spawn(*command, out: File::NULL, err: File::NULL)
+      Process.detach(pid)
+    rescue
+      # best effort: don't crash the server if the browser can't be opened
+    end
 
     def initialize
       @queue = Thread::Queue.new
