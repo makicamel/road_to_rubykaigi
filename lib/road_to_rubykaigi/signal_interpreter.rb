@@ -6,7 +6,7 @@ module RoadToRubykaigi
 
     WINDOW_SIZE = 5
     EXIT_WINDOW_SIZE = 2
-    DIRECTION_FLIP_COOLDOWN = 5 # samples
+    FLIP_COOLDOWN_SIZE = 5 # samples after a stop during which direction flip is suppressed
     RUN_ENTER_THRESHOLD = 0.05
     RUN_EXIT_THRESHOLD = 0.025
 
@@ -31,7 +31,7 @@ module RoadToRubykaigi
       @direction = :right
       @running = false
       @has_started = false
-      @flip_cooldown = 0
+      @flip_cooldown_remaining = 0
     end
 
     def pick
@@ -67,7 +67,7 @@ module RoadToRubykaigi
 
     def stop
       @running = false
-      @flip_cooldown = DIRECTION_FLIP_COOLDOWN
+      @flip_cooldown_remaining = FLIP_COOLDOWN_SIZE
     end
 
     def start
@@ -79,14 +79,14 @@ module RoadToRubykaigi
     end
 
     def tick_flip_cooldown
-      @flip_cooldown -= 1 if @flip_cooldown.positive?
+      @flip_cooldown_remaining -= 1 if @flip_cooldown_remaining.positive?
     end
 
     def window_full? = @buffer.size == WINDOW_SIZE
     def running? = @running
     def motion_started? = window_motion_intensity > RUN_ENTER_THRESHOLD
     def motion_stopped? = motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
-    def flip_allowed? = @flip_cooldown.zero?
+    def flip_allowed? = @flip_cooldown_remaining.zero?
 
     # Returns how far samples in the window spread from their mean position
     # (RMS distance across all 3 axes).
