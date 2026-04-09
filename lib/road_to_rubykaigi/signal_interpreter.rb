@@ -6,14 +6,13 @@ module RoadToRubykaigi
 
     WINDOW_SIZE = 5
     PEAK_DETECTION_WINDOW_SIZE = 2 # short window used for peak detection to avoid tail smoothing
-    PEAK_TIMEOUT_SIZE = 3 # samples without a peak before declaring a stop
+    PEAK_TIMEOUT_SIZE = 8 # samples without a peak before declaring a stop
     PEAK_THRESHOLD = 0.025
-    FLIP_COOLDOWN_SIZE = 5 # samples after a stop during which direction flip is suppressed
 
     # Run states
-    STOPPED = :stopped # no run in progress
+    STOPPED = :stopped # no run in progress; next start flips direction
     RUNNING = :running # peaks arriving
-    PAUSED = :paused   # peaks briefly absent; next peak -> RUNNING, timeout -> STOPPED
+    PAUSED = :paused   # peaks briefly absent; next peak -> RUNNING (same direction), timeout -> STOPPED
 
     class << self
       extend Forwardable
@@ -37,7 +36,6 @@ module RoadToRubykaigi
       @state = STOPPED
       @has_started = false
       @samples_since_peak = 0
-      @flip_cooldown_remaining = 0
     end
 
     def pick
@@ -63,7 +61,6 @@ module RoadToRubykaigi
 
     def update_running_state
       track_samples_since_peak
-      tick_flip_cooldown
       case
       when stopped? && run_started?    then start
       when running? && !peak?          then pause
@@ -80,19 +77,8 @@ module RoadToRubykaigi
       end
     end
 
-    def tick_flip_cooldown
-      @flip_cooldown_remaining -= 1 if @flip_cooldown_remaining.positive?
-    end
-
-    def stop
-      @state = STOPPED
-      @flip_cooldown_remaining = FLIP_COOLDOWN_SIZE
-    end
-
     def start
-      if @has_started && flip_allowed?
-        @direction = (@direction == :right ? :left : :right)
-      end
+      @direction = (@direction == :right ? :left : :right) if @has_started
       @has_started = true
       @state = RUNNING
     end
@@ -103,8 +89,8 @@ module RoadToRubykaigi
     def unpause = @state = RUNNING
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
+    def stop = @state = STOPPED
     def peak_timed_out? = @samples_since_peak > PEAK_TIMEOUT_SIZE
-    def flip_allowed? = @flip_cooldown_remaining.zero?
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
