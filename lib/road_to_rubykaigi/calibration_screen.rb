@@ -20,9 +20,9 @@ module RoadToRubykaigi
 
     def show_intro
       ANSI.clear
-      print "\e[3;5H=== Sensor Calibration ==="
-      print "\e[7;5H[Enter/Space] start  [ESC] return"
-      $stdout.flush
+      draw [5, 3, '=== Sensor Calibration ==='],
+           [5, 7, '[Enter/Space] start'],
+           [5, 8, '[ESC]         return']
     end
 
     def wait_for_key
@@ -41,9 +41,8 @@ module RoadToRubykaigi
 
     def run_measure
       ANSI.clear
-      print "\e[3;5H=== Sensor Calibration ==="
-      print "\e[10;5H[ESC] back"
-      $stdout.flush
+      draw [5, 3, '=== Sensor Calibration ==='],
+           [5, 10, '[ESC] back']
       window = SignalWindow.new
       metric = 0.0
       loop do
@@ -73,7 +72,11 @@ module RoadToRubykaigi
     def render_metric(metric)
       filled = (metric / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
       bar = '█' * filled + '░' * (BAR_WIDTH - filled)
-      print "\e[7;5H[#{bar}] #{format('%.4f', metric)}"
+      draw [5, 7, "[#{bar}] #{format('%.4f', metric)}"]
+    end
+
+    def draw(*lines)
+      lines.each { |x, y, text| print "\e[#{y};#{x}H#{text}" }
       $stdout.flush
     end
   end
