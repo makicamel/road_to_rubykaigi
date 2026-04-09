@@ -5,10 +5,10 @@ module RoadToRubykaigi
     include Singleton
 
     WINDOW_SIZE = 5
-    EXIT_WINDOW_SIZE = 2
+    PEAK_DETECTION_WINDOW_SIZE = 2 # short window used for peak detection to avoid tail smoothing
+    PEAK_TIMEOUT_SIZE = 3 # samples without a peak before declaring a stop
+    PEAK_THRESHOLD = 0.025
     FLIP_COOLDOWN_SIZE = 5 # samples after a stop during which direction flip is suppressed
-    RUN_ENTER_THRESHOLD = 0.05
-    RUN_EXIT_THRESHOLD = 0.025
 
     class << self
       extend Forwardable
@@ -31,6 +31,7 @@ module RoadToRubykaigi
       @direction = :right
       @running = false
       @has_started = false
+      @samples_since_peak = 0
       @flip_cooldown_remaining = 0
     end
 
@@ -47,7 +48,7 @@ module RoadToRubykaigi
       return unless window_full?
 
       update_running_state
-      @direction if @running
+      @direction if peak?
     end
 
     def slide_window(x, y, z)
@@ -56,12 +57,21 @@ module RoadToRubykaigi
     end
 
     def update_running_state
+      track_samples_since_peak
       tick_flip_cooldown
       case
-      when running? && motion_stopped?
+      when running? && peak_timed_out?
         stop
-      when !running? && motion_started?
+      when !running? && run_started?
         start
+      end
+    end
+
+    def track_samples_since_peak
+      if peak?
+        @samples_since_peak = 0
+      else
+        @samples_since_peak += 1
       end
     end
 
@@ -84,14 +94,20 @@ module RoadToRubykaigi
 
     def window_full? = @buffer.size == WINDOW_SIZE
     def running? = @running
-    def motion_started? = window_motion_intensity > RUN_ENTER_THRESHOLD
-    def motion_stopped? = motion_intensity(@buffer.last(EXIT_WINDOW_SIZE)) < RUN_EXIT_THRESHOLD
+    def peak_timed_out? = @samples_since_peak > PEAK_TIMEOUT_SIZE
     def flip_allowed? = @flip_cooldown_remaining.zero?
+          
+    # Start detection uses the full window so that a single noisy sample
+    # cannot trigger a fake run start.
+    def run_started? = motion_intensity(@buffer) > PEAK_THRESHOLD
+
+    # Short-window intensity used for peak detection. Shorter than the main
+    # window so that the signal drops quickly after motion stops, making
+    # stop detection responsive.
+    def peak? = motion_intensity(@buffer.last(PEAK_DETECTION_WINDOW_SIZE)) > PEAK_THRESHOLD
 
     # Returns how far samples in the window spread from their mean position
     # (RMS distance across all 3 axes).
-    def window_motion_intensity = motion_intensity(@buffer)
-
     def motion_intensity(samples)
       Math.sqrt(axis_variance(samples, 0) + axis_variance(samples, 1) + axis_variance(samples, 2))
     end
