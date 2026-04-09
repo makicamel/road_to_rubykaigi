@@ -31,6 +31,10 @@ module RoadToRubykaigi
         move(LEFT)
       end
 
+      def stop
+        @vx = 0
+      end
+
       def jump
         unless jumping? || crouching?
           @jumping = true

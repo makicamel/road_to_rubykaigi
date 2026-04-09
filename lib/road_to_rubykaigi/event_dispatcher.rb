@@ -58,6 +58,7 @@ module RoadToRubykaigi
         Manager::AudioManager.instance.crouch
       when :right; @player.right
       when :left; @player.left
+      when :stop; @player.stop
       when :attack
         if @player.can_attack?(@attacks)
           @player.attack(@attacks)

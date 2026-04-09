@@ -50,8 +50,13 @@ module RoadToRubykaigi
       slide_window(data['x'].to_f, data['y'].to_f, data['z'].to_f)
       return unless window_full?
 
+      was_running = running?
       update_running_state
-      @direction if running?
+      if was_running && !running?
+        :stop 
+      elsif running?
+        @direction
+      end
     end
 
     def slide_window(x, y, z)
