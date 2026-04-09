@@ -1,5 +1,8 @@
 module RoadToRubykaigi
   class CalibrationScreen
+    BAR_WIDTH = 100
+    BAR_MAX = 1.0
+
     def display
       GameServer.start
       $stdin.raw do
@@ -41,14 +44,16 @@ module RoadToRubykaigi
       print "\e[3;5H=== Sensor Calibration ==="
       print "\e[10;5H[ESC] back"
       $stdout.flush
-      latest = nil
+      window = SignalWindow.new
+      metric = 0.0
       loop do
         case $stdin.read_nonblock(3, exception: false)
         when ANSI::ESC; return
         when ANSI::ETX; raise Interrupt
         end
-        latest = drain_queue.last || latest
-        render_sample(latest)
+        drain_queue.each { |sample| window.buffer_sample(sample) }
+        metric = window.motion_intensity if window.full?
+        render_metric(metric)
         sleep Manager::GameManager::FRAME_RATE
       end
     end
@@ -65,13 +70,10 @@ module RoadToRubykaigi
       samples
     end
 
-    def render_sample(latest)
-      if latest
-        x, y, z = latest
-        print "\e[7;5Hx=#{format('%+.4f', x)}  y=#{format('%+.4f', y)}  z=#{format('%+.4f', z)}  "
-      else
-        print "\e[7;5H(waiting for data...)                   "
-      end
+    def render_metric(metric)
+      filled = (metric / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
+      bar = '█' * filled + '░' * (BAR_WIDTH - filled)
+      print "\e[7;5H[#{bar}] #{format('%.4f', metric)}"
       $stdout.flush
     end
   end
