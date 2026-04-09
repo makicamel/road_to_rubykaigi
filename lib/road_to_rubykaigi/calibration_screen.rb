@@ -1,6 +1,7 @@
 module RoadToRubykaigi
   class CalibrationScreen
     def display
+      GameServer.start
       ANSI.clear
       render
       $stdin.raw do

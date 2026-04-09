@@ -17,6 +17,7 @@ module RoadToRubykaigi
     attr_reader :queue
 
     def start
+      return if @server
       @server = build_server
       @thread = Thread.new { @server.start }
       at_exit do
