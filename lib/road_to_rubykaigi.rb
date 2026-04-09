@@ -9,6 +9,7 @@ require_relative "road_to_rubykaigi/event_dispatcher"
 require_relative "road_to_rubykaigi/fireworks"
 require_relative "road_to_rubykaigi/game"
 require_relative "road_to_rubykaigi/map"
+require_relative "road_to_rubykaigi/calibration_screen"
 require_relative "road_to_rubykaigi/opening_screen"
 require_relative "road_to_rubykaigi/signal_interpreter"
 require_relative "road_to_rubykaigi/game_server"
@@ -50,7 +51,7 @@ module RoadToRubykaigi
       if demo?
         Game.new.run
       else
-        self.version = VERSIONS[OpeningScreen.new.display]
+        self.version = OpeningScreen.new.display
         Game.new.run
       end
     end

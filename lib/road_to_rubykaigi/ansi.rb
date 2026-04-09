@@ -14,6 +14,7 @@ module RoadToRubykaigi
     NULL = "\0"
     UP = "\e[A"
     DOWN = "\e[B"
+    ESC = "\e"
     ETX = "\x03"
 
     self.constants(false).each do |constant|

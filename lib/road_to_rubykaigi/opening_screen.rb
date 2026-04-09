@@ -35,7 +35,12 @@ module RoadToRubykaigi
         render
         $stdin.raw do
           if handle_input == :SELECTED
-            return @version_index
+            item = menu_items[@menu_index]
+            if item == :calibrate
+              CalibrationScreen.new.display
+            else
+              return item
+            end
           end
           move_player
           sleep Manager::GameManager::FRAME_RATE
@@ -49,7 +54,13 @@ module RoadToRubykaigi
       @player_x = 0
       @direction = 1
       @last_move_time = Time.now
-      @version_index = 0
+      @menu_index = 0
+    end
+
+    def menu_items
+      return @menu_items if @menu_items
+      @menu_items = RoadToRubykaigi::VERSIONS
+      @menu_items = @menu_items + [:calibrate] if Config.game_server?
     end
 
     def render
@@ -62,18 +73,24 @@ module RoadToRubykaigi
         "\e[4;1H",
         " Press Space to start...",
       ]
-      RoadToRubykaigi::VERSIONS.each_with_index do |ver, i|
-        cursor = i == @version_index ? " -> " : "    "
-        print "\e[#{VERSION_ROW + i};1H#{cursor}ver. #{ver}"
+      menu_items.each_with_index do |item, i|
+        cursor = i == @menu_index ? " -> " : "    "
+        row_offset = item == :calibrate ? 1 : 0
+        label =
+          case item
+          when :calibrate then 'Calibrate sensor'
+          else "ver. #{RoadToRubykaigi::VERSIONS[i]}"
+          end
+        print "\e[#{VERSION_ROW + i + row_offset};1H#{cursor}#{label}"
       end
     end
 
     def handle_input
       case $stdin.read_nonblock(3, exception: false)
       when ANSI::UP
-        @version_index = (@version_index - 1) % RoadToRubykaigi::VERSIONS.size
+        @menu_index = (@menu_index - 1) % menu_items.size
       when ANSI::DOWN
-        @version_index = (@version_index + 1) % RoadToRubykaigi::VERSIONS.size
+        @menu_index = (@menu_index + 1) % menu_items.size
       when " "
         :SELECTED
       when ANSI::ETX
