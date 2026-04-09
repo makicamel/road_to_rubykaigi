@@ -10,6 +10,11 @@ module RoadToRubykaigi
     PEAK_THRESHOLD = 0.025
     FLIP_COOLDOWN_SIZE = 5 # samples after a stop during which direction flip is suppressed
 
+    # Run states
+    STOPPED = :stopped # no run in progress
+    RUNNING = :running # peaks arriving
+    PAUSED = :paused   # peaks briefly absent; next peak -> RUNNING, timeout -> STOPPED
+
     class << self
       extend Forwardable
       def_delegators :instance, :process
@@ -29,7 +34,7 @@ module RoadToRubykaigi
     def initialize
       @buffer = []
       @direction = :right
-      @running = false
+      @state = STOPPED
       @has_started = false
       @samples_since_peak = 0
       @flip_cooldown_remaining = 0
@@ -48,7 +53,7 @@ module RoadToRubykaigi
       return unless window_full?
 
       update_running_state
-      @direction if peak?
+      @direction if running?
     end
 
     def slide_window(x, y, z)
@@ -60,10 +65,10 @@ module RoadToRubykaigi
       track_samples_since_peak
       tick_flip_cooldown
       case
-      when running? && peak_timed_out?
-        stop
-      when !running? && run_started?
-        start
+      when stopped? && run_started?    then start
+      when running? && !peak?          then pause
+      when paused?  && peak?           then unpause
+      when paused?  && peak_timed_out? then stop
       end
     end
 
@@ -75,8 +80,12 @@ module RoadToRubykaigi
       end
     end
 
+    def tick_flip_cooldown
+      @flip_cooldown_remaining -= 1 if @flip_cooldown_remaining.positive?
+    end
+
     def stop
-      @running = false
+      @state = STOPPED
       @flip_cooldown_remaining = FLIP_COOLDOWN_SIZE
     end
 
@@ -85,18 +94,18 @@ module RoadToRubykaigi
         @direction = (@direction == :right ? :left : :right)
       end
       @has_started = true
-      @running = true
-    end
-
-    def tick_flip_cooldown
-      @flip_cooldown_remaining -= 1 if @flip_cooldown_remaining.positive?
+      @state = RUNNING
     end
 
     def window_full? = @buffer.size == WINDOW_SIZE
-    def running? = @running
+    def stopped? = @state == STOPPED
+    def running? = @state == RUNNING
+    def unpause = @state = RUNNING
+    def paused? = @state == PAUSED
+    def pause = @state = PAUSED
     def peak_timed_out? = @samples_since_peak > PEAK_TIMEOUT_SIZE
     def flip_allowed? = @flip_cooldown_remaining.zero?
-          
+
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
     def run_started? = motion_intensity(@buffer) > PEAK_THRESHOLD
