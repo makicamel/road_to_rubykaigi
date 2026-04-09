@@ -14,6 +14,9 @@ module RoadToRubykaigi
     NULL = "\0"
     UP = "\e[A"
     DOWN = "\e[B"
+    ENTER = "\r"
+    LF = "\n"
+    SPACE = " "
     ESC = "\e"
     ETX = "\x03"
 
