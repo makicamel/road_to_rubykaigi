@@ -17,6 +17,7 @@ module RoadToRubykaigi
     attr_reader :queue
 
     def start
+      @queue.clear
       return if @server
 
       @server = build_server
