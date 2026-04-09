@@ -10,7 +10,7 @@ module RoadToRubykaigi
         loop do
           show_intro
           case wait_for_key
-          when :back; return
+          when :cancel; return
           when :proceed; run_measure
           end
         end
@@ -27,17 +27,10 @@ module RoadToRubykaigi
     end
 
     def wait_for_key
-      loop do
-        case $stdin.read_nonblock(3, exception: false)
-        when ANSI::ENTER, ANSI::LF, ANSI::SPACE
-          return :proceed
-        when ANSI::ESC
-          return :back
-        when ANSI::ETX
-          raise Interrupt
-        end
+      until (action = read_action)
         sleep Manager::GameManager::FRAME_RATE
       end
+      action
     end
 
     def run_measure
@@ -100,11 +93,13 @@ module RoadToRubykaigi
 
     def phase_seconds = CalibrationSampler::PHASE_SECONDS
 
-    def cancelled?
+    def cancelled? = read_action == :cancel
+
+    def read_action
       case $stdin.read_nonblock(3, exception: false)
-      when ANSI::ESC then true
       when ANSI::ETX then raise Interrupt
-      else false
+      when ANSI::ENTER, ANSI::LF, ANSI::SPACE then :proceed
+      when ANSI::ESC then :cancel
       end
     end
 
