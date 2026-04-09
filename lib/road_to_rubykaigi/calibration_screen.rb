@@ -2,7 +2,6 @@ module RoadToRubykaigi
   class CalibrationScreen
     BAR_WIDTH = 100
     BAR_MAX = 1.0
-    PHASE_DURATION = 3.0
     COUNTDOWN_FROM = 5
 
     def display
@@ -45,8 +44,8 @@ module RoadToRubykaigi
       ANSI.clear
       draw [5, 3, '=== Sensor Calibration ==='],
            [5, 10, '[ESC] cancel'],
-           [5, 12, 'Hold still for 3s'],
-           [5, 13, 'Then walk for 3s']
+           [5, 12, "Hold still for #{phase_seconds}s"],
+           [5, 13, "Then walk for #{phase_seconds}s"]
       return unless run_countdown
       clear_instructions
       static = collect_phase('Hold still 🧍')
@@ -72,31 +71,22 @@ module RoadToRubykaigi
     end
 
     def collect_phase(label)
-      window = SignalWindow.new
-      samples = []
-      started_at = Time.now
-      metric = 0.0
-      loop do
+      sampler = CalibrationSampler.new
+      until sampler.finished?
         return nil if cancelled?
-        elapsed = Time.now - started_at
-        break if elapsed >= PHASE_DURATION
-        drain_queue.each { |sample| window.buffer_sample(sample) }
-        if window.full?
-          metric = window.motion_intensity
-          samples << metric
-        end
-        render_phase(label, metric, PHASE_DURATION - elapsed)
+        sampler.tick
+        render_phase(label, sampler.intensity, sampler.remaining)
         sleep Manager::GameManager::FRAME_RATE
       end
-      samples
+      sampler.samples
     end
 
-    def render_phase(label, metric, remaining)
-      filled = (metric / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
+    def render_phase(label, intensity, remaining)
+      filled = (intensity / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
       bar = '█' * filled + '░' * (BAR_WIDTH - filled)
       header = "▶ #{label}".ljust(20)
       draw [5, 6, "\e[1m#{header}\e[0m  #{format('%.1fs', remaining)}"],
-           [5, 7, "[#{bar}] #{format('%.4f', metric)}"]
+           [5, 7, "[#{bar}] #{format('%.4f', intensity)}"]
     end
 
     def show_done(static_count, walk_count)
@@ -108,24 +98,14 @@ module RoadToRubykaigi
       wait_for_key
     end
 
+    def phase_seconds = CalibrationSampler::PHASE_SECONDS
+
     def cancelled?
       case $stdin.read_nonblock(3, exception: false)
       when ANSI::ESC then true
       when ANSI::ETX then raise Interrupt
       else false
       end
-    end
-
-    def drain_queue
-      samples = []
-      until GameServer.queue.empty?
-        data = GameServer.queue.pop(true)
-        next unless %w[x y z].all? { |key| data.key?(key) }
-        samples << [data['x'].to_f, data['y'].to_f, data['z'].to_f]
-      end
-      samples
-    rescue ThreadError
-      samples
     end
 
     def draw(*lines)

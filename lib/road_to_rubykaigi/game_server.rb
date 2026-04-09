@@ -11,10 +11,18 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :start, :queue
+      def_delegators :instance, :start, :queue, :drain
     end
 
     attr_reader :queue
+
+    def drain
+      until @queue.empty?
+        yield @queue.pop(true)
+      end
+    rescue ThreadError
+      # pop(true) raises if the queue empties mid-drain
+    end
 
     def start
       @queue.clear
