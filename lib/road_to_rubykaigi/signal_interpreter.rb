@@ -4,7 +4,6 @@ module RoadToRubykaigi
   class SignalInterpreter
     include Singleton
 
-    WINDOW_SIZE = 5
     PEAK_DETECTION_WINDOW_SIZE = 2 # short window used for peak detection to avoid tail smoothing
     PEAK_TIMEOUT_SIZE = 8 # samples without a peak before declaring a stop
     PEAK_THRESHOLD = 0.025
@@ -31,7 +30,7 @@ module RoadToRubykaigi
     private
 
     def initialize
-      @buffer = []
+      @window = SignalWindow.new
       @direction = :right
       @state = STOPPED
       @has_started = false
@@ -47,7 +46,7 @@ module RoadToRubykaigi
     def interpret(data)
       return unless %w[x y z].all? { |key| data.key?(key) }
 
-      slide_window(data['x'].to_f, data['y'].to_f, data['z'].to_f)
+      buffer_sample(data)
       return unless window_full?
 
       was_running = running?
@@ -59,9 +58,8 @@ module RoadToRubykaigi
       end
     end
 
-    def slide_window(x, y, z)
-      @buffer << [x, y, z]
-      @buffer = @buffer.last(WINDOW_SIZE)
+    def buffer_sample(data)
+      @window.buffer_sample([data['x'].to_f, data['y'].to_f, data['z'].to_f])
     end
 
     def update_running_state
@@ -88,7 +86,7 @@ module RoadToRubykaigi
       @state = RUNNING
     end
 
-    def window_full? = @buffer.size == WINDOW_SIZE
+    def window_full? = @window.full?
     def stopped? = @state == STOPPED
     def running? = @state == RUNNING
     def unpause = @state = RUNNING
@@ -99,23 +97,11 @@ module RoadToRubykaigi
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
-    def run_started? = motion_intensity(@buffer) > PEAK_THRESHOLD
+    def run_started? = @window.motion_intensity > PEAK_THRESHOLD
 
     # Short-window intensity used for peak detection. Shorter than the main
     # window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def peak? = motion_intensity(@buffer.last(PEAK_DETECTION_WINDOW_SIZE)) > PEAK_THRESHOLD
-
-    # Returns how far samples in the window spread from their mean position
-    # (RMS distance across all 3 axes).
-    def motion_intensity(samples)
-      Math.sqrt(axis_variance(samples, 0) + axis_variance(samples, 1) + axis_variance(samples, 2))
-    end
-
-    def axis_variance(samples, index)
-      values = samples.map { |sample| sample[index] }
-      mean = values.sum / values.size
-      values.sum { |value| (value - mean) ** 2 } / values.size
-    end
+    def peak? = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity > PEAK_THRESHOLD
   end
 end
