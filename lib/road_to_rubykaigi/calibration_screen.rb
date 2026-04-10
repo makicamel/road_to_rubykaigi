@@ -4,11 +4,37 @@ module RoadToRubykaigi
     BAR_MAX = 1.0
     COUNTDOWN_FROM = 5
 
+    MESSAGES = {
+      title: [5, 3, '=== Sensor Calibration ==='],
+      intro: [
+        [5, 7, '[Enter/Space] start'],
+        [5, 8, '[ESC]         return'],
+      ],
+      measure: [
+        [5, 10, '[ESC] cancel'],
+        [5, 12, "Hold still for #{CalibrationSampler::PHASE_SECONDS}s"],
+        [5, 13, "Then walk for #{CalibrationSampler::PHASE_SECONDS}s"],
+      ],
+      clear_instructions: [
+        [5, 12, ' ' * 30],
+        [5, 13, ' ' * 30],
+      ],
+      countdown:    [5, 8, 'Starting in %d...'],
+      countdown_clear: [5, 8, ' ' * 20],
+      phase_header: [5, 6, "#{ANSI::BOLD}%-20s#{ANSI::RESET}  %.1fs"],
+      phase_bar:    [5, 7, '[%s] %.4f'],
+      done_static:  [5, 6, 'Static: %d samples'],
+      done_walk:    [5, 7, 'Walk:   %d samples'],
+      done_return:  [5, 10, '[Enter/ESC] return'],
+    }.freeze
+
     def display
       GameServer.start
       $stdin.raw do
         loop do
-          show_intro
+          ANSI.clear
+          draw MESSAGES[:title], *MESSAGES[:intro]
+
           case wait_for_key
           when :cancel; return
           when :proceed; run_measure
@@ -19,13 +45,6 @@ module RoadToRubykaigi
 
     private
 
-    def show_intro
-      ANSI.clear
-      draw [5, 3, '=== Sensor Calibration ==='],
-           [5, 7, '[Enter/Space] start'],
-           [5, 8, '[ESC]         return']
-    end
-
     def wait_for_key
       until (action = read_action)
         sleep Manager::GameManager::FRAME_RATE
@@ -35,12 +54,9 @@ module RoadToRubykaigi
 
     def run_measure
       ANSI.clear
-      draw [5, 3, '=== Sensor Calibration ==='],
-           [5, 10, '[ESC] cancel'],
-           [5, 12, "Hold still for #{phase_seconds}s"],
-           [5, 13, "Then walk for #{phase_seconds}s"]
+      draw MESSAGES[:title], *MESSAGES[:measure]
       return unless run_countdown
-      clear_instructions
+      draw *MESSAGES[:clear_instructions]
       static = collect_phase('Hold still 🧍')
       return unless static
       walk = collect_phase('Walk 🏃')
@@ -51,16 +67,11 @@ module RoadToRubykaigi
     def run_countdown
       COUNTDOWN_FROM.downto(1) do |n|
         return false if cancelled?
-        draw [5, 8, "Starting in #{n}..."]
+        draw format_line(MESSAGES[:countdown], n)
         sleep 1.0
       end
-      draw [5, 8, ' ' * 20]
+      draw MESSAGES[:countdown_clear]
       true
-    end
-
-    def clear_instructions
-      draw [5, 12, ' ' * 30],
-           [5, 13, ' ' * 30]
     end
 
     def collect_phase(label)
@@ -77,21 +88,23 @@ module RoadToRubykaigi
     def render_phase(label, intensity, remaining)
       filled = (intensity / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
       bar = '█' * filled + '░' * (BAR_WIDTH - filled)
-      header = "▶ #{label}".ljust(20)
-      draw [5, 6, "\e[1m#{header}\e[0m  #{format('%.1fs', remaining)}"],
-           [5, 7, "[#{bar}] #{format('%.4f', intensity)}"]
+      draw format_line(MESSAGES[:phase_header], "▶ #{label}", remaining),
+           format_line(MESSAGES[:phase_bar], bar, intensity)
     end
 
     def show_done(static_count, walk_count)
       ANSI.clear
-      draw [5, 3, '=== Sensor Calibration ==='],
-           [5, 6, "Static: #{static_count} samples"],
-           [5, 7, "Walk:   #{walk_count} samples"],
-           [5, 10, '[Enter/ESC] return']
+      draw MESSAGES[:title],
+           format_line(MESSAGES[:done_static], static_count),
+           format_line(MESSAGES[:done_walk], walk_count),
+           MESSAGES[:done_return]
       wait_for_key
     end
 
-    def phase_seconds = CalibrationSampler::PHASE_SECONDS
+    def format_line(line, *args)
+      x, y, template = line
+      [x, y, format(template, *args)]
+    end
 
     def cancelled? = read_action == :cancel
 

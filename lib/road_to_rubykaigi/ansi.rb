@@ -5,6 +5,7 @@ module RoadToRubykaigi
     CURSOR_ON = "\e[?25h"
     HOME = "\e[H"
     RESET = "\e[0m"
+    BOLD = "\e[1m"
     RED = "\e[31m"
     BLUE = "\e[38;5;39m"
     YELLOW = "\e[33m"
