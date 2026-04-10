@@ -28,85 +28,123 @@ module RoadToRubykaigi
       done_return:  [5, 10, '[Enter/ESC] return'],
     }.freeze
 
+    CALIBRATION_LABELS = {
+      static: 'Hold still 🧍',
+      walk:   'Walk 🏃',
+    }.freeze
+
     def display
       GameServer.start
+      @state = :intro
+      @results = {}
+      @remaining_keys = CALIBRATION_LABELS.keys.dup
       $stdin.raw do
         loop do
-          ANSI.clear
-          draw MESSAGES[:title], *MESSAGES[:intro]
-
-          case wait_for_key
-          when :cancel; return
-          when :proceed; run_measure
+          case tick
+          when :done then return
           end
+          sleep Manager::GameManager::FRAME_RATE
         end
       end
     end
 
     private
 
-    def wait_for_key
-      until (action = read_action)
-        sleep Manager::GameManager::FRAME_RATE
+    def tick
+      action = read_action
+      if action == :cancel
+        if @state == :intro || @state == :done
+          return :done 
+        else
+          enter_intro && return
+        end
       end
-      action
+
+      case @state
+      when :intro     then action == :proceed && enter_countdown
+      when :countdown then tick_countdown
+      when :collect   then tick_collect
+      when :done      then action == :proceed && enter_intro
+      end
     end
 
-    def run_measure
+    def enter_intro
+      @state = :intro
+      @results = {}
+      @remaining_keys = CALIBRATION_LABELS.keys.dup
+      ANSI.clear
+      draw MESSAGES[:title], *MESSAGES[:intro]
+    end
+
+    def enter_countdown
+      @state = :countdown
+      @countdown_remaining = COUNTDOWN_FROM
+      @countdown_last_tick = nil
       ANSI.clear
       draw MESSAGES[:title], *MESSAGES[:measure]
-      return unless run_countdown
+    end
+
+    def tick_countdown
+      now = Time.now
+      @countdown_last_tick ||= now
+
+      if now - @countdown_last_tick >= 1.0
+        @countdown_remaining -= 1
+        @countdown_last_tick = now
+      end
+
+      if @countdown_remaining <= 0
+        draw MESSAGES[:countdown_clear]
+        enter_collect
+      else
+        draw format_line(MESSAGES[:countdown], @countdown_remaining)
+      end
+    end
+
+    def enter_collect
+      @state = :collect
+      @current_key = @remaining_keys.first
+      @collect_label = CALIBRATION_LABELS[@current_key]
+      @sampler = CalibrationSampler.new
       draw *MESSAGES[:clear_instructions]
-      static = collect_phase('Hold still 🧍')
-      return unless static
-      walk = collect_phase('Walk 🏃')
-      return unless walk
-      show_done(static.size, walk.size)
     end
 
-    def run_countdown
-      COUNTDOWN_FROM.downto(1) do |n|
-        return false if cancelled?
-        draw format_line(MESSAGES[:countdown], n)
-        sleep 1.0
+    def tick_collect
+      @sampler.tick
+      draw_collect_bar
+
+      return unless @sampler.finished?
+
+      @results[@current_key] = @sampler.samples
+      @remaining_keys.shift
+
+      if @remaining_keys.empty?
+        enter_done
+      else
+        enter_collect
       end
-      draw MESSAGES[:countdown_clear]
-      true
     end
 
-    def collect_phase(label)
-      sampler = CalibrationSampler.new
-      until sampler.finished?
-        return nil if cancelled?
-        sampler.tick
-        render_phase(label, sampler.intensity, sampler.remaining)
-        sleep Manager::GameManager::FRAME_RATE
-      end
-      sampler.samples
-    end
-
-    def render_phase(label, intensity, remaining)
-      filled = (intensity / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
+    def draw_collect_bar
+      filled = (@sampler.intensity / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
       bar = '█' * filled + '░' * (BAR_WIDTH - filled)
       draw format_line(MESSAGES[:phase_header], "▶ #{label}", remaining),
            format_line(MESSAGES[:phase_bar], bar, intensity)
     end
 
-    def show_done(static_count, walk_count)
+    def enter_done
+      @state = :done
       ANSI.clear
       draw MESSAGES[:title],
-           format_line(MESSAGES[:done_static], static_count),
-           format_line(MESSAGES[:done_walk], walk_count),
+           format_line(MESSAGES[:done_static], @results[:static].size),
+           format_line(MESSAGES[:done_walk], @results[:walk].size),
            MESSAGES[:done_return]
-      wait_for_key
     end
 
     def format_line(line, *args)
       x, y, template = line
       [x, y, format(template, *args)]
     end
-
-    def cancelled? = read_action == :cancel
 
     def read_action
       case $stdin.read_nonblock(3, exception: false)
