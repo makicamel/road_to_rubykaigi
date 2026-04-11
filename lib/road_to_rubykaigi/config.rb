@@ -29,6 +29,14 @@ module RoadToRubykaigi
       @settings['BGM_OFF']
     end
 
+    def peak_threshold
+      @settings['PEAK_THRESHOLD']&.to_f
+    end
+
+    def walk_intensity
+      @settings['WALK_INTENSITY']&.to_f
+    end
+
     def save_calibration(peak_threshold:, walk_intensity:)
       @settings['PEAK_THRESHOLD'] = peak_threshold.to_s
       @settings['WALK_INTENSITY'] = walk_intensity.to_s
