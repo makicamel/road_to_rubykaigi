@@ -26,9 +26,7 @@ module RoadToRubykaigi
 
     def display
       GameServer.start
-      @state = :intro
-      @results = {}
-      @remaining_keys = CalibrationBar.states
+      enter_intro
       $stdin.raw do
         loop do
           case tick
