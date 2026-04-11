@@ -134,7 +134,7 @@ module RoadToRubykaigi
       # Median walking motion_intensity, representing individual walking strength.
       walk_sorted = @results[:walk].sort
       walk_intensity = walk_sorted[walk_sorted.size / 2]
-      Config.save_calibration(peak_threshold: peak_threshold.round(5), walk_intensity: walk_intensity.round(5))
+      Config.save_calibration(peak_threshold: peak_threshold.round(6), walk_intensity: walk_intensity.round(6))
     end
 
     def format_line(line, *args)
