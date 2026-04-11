@@ -50,6 +50,7 @@ module RoadToRubykaigi
       buffer_sample(data)
       return unless window_full?
 
+      log_signal
       was_running = running?
       update_running_state
       if was_running && !running?
@@ -104,5 +105,17 @@ module RoadToRubykaigi
     # window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
     def peak? = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity > @peak_threshold
+
+    def log_signal
+      return unless ENV['SIG_LOG'] == '1'
+
+      full = @window.motion_intensity
+      tail = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity
+      axes = @window.axis_intensities
+      sum = axes.sum
+      ratio = sum.zero? ? 0.0 : axes.max / sum
+      ax, ay, az = axes.map { |value| value.round(6) }
+      $stderr.puts "[sig] t=#{Time.now.to_f} full=#{full.round(6)} tail=#{tail.round(6)} ratio=#{ratio.round(4)} x=#{ax} y=#{ay} z=#{az} state=#{@state}"
+    end
   end
 end

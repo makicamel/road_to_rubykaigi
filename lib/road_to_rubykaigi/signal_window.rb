@@ -16,6 +16,12 @@ module RoadToRubykaigi
       Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
     end
 
+    # Per-axis RMS spread. Same unit as motion_intensity but kept separate so
+    # callers can compare how energy is distributed across axes.
+    def axis_intensities
+      [0, 1, 2].map { |index| Math.sqrt(axis_variance(index)) }
+    end
+
     # Sub-window of the most recent n samples, for peak detection.
     def tail(n)
       SignalWindow.new(@samples.last(n))
