@@ -6,7 +6,7 @@ module RoadToRubykaigi
 
     PEAK_DETECTION_WINDOW_SIZE = 2 # short window used for peak detection to avoid tail smoothing
     PEAK_TIMEOUT_SIZE = 8 # samples without a peak before declaring a stop
-    PEAK_THRESHOLD = 0.025
+    DEFAULT_PEAK_THRESHOLD = 0.025
 
     # Run states
     STOPPED = :stopped # no run in progress; next start flips direction
@@ -35,6 +35,7 @@ module RoadToRubykaigi
       @state = STOPPED
       @has_started = false
       @samples_since_peak = 0
+      @peak_threshold = Config.peak_threshold || DEFAULT_PEAK_THRESHOLD
     end
 
     def pick
@@ -97,11 +98,11 @@ module RoadToRubykaigi
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
-    def run_started? = @window.motion_intensity > PEAK_THRESHOLD
+    def run_started? = @window.motion_intensity > @peak_threshold
 
     # Short-window intensity used for peak detection. Shorter than the main
     # window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def peak? = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity > PEAK_THRESHOLD
+    def peak? = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity > @peak_threshold
   end
 end
