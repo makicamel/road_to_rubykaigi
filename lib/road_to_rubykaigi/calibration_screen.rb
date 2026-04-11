@@ -5,17 +5,17 @@ module RoadToRubykaigi
     MESSAGES = {
       title: [5, 3, '=== Sensor Calibration ==='],
       intro: [
-        [5, 7, '[Enter/Space] start'],
-        [5, 8, '[ESC]         return'],
+        [5, 10, '[Enter/Space] start'],
+        [5, 11, '[ESC]         return'],
       ],
-      measure: [
-        [5, 10, '[ESC] cancel'],
-        [5, 12, "Hold still for #{CalibrationSampler::PHASE_SECONDS}s"],
-        [5, 13, "Then walk for #{CalibrationSampler::PHASE_SECONDS}s"],
+      cancel: [5, 11, '[ESC] cancel'],
+      instructions: [
+        [5, 13, "Hold still for #{CalibrationSampler::PHASE_SECONDS}s"],
+        [5, 14, "Then walk for #{CalibrationSampler::PHASE_SECONDS}s"],
       ],
       clear_instructions: [
-        [5, 12, ' ' * 30],
         [5, 13, ' ' * 30],
+        [5, 14, ' ' * 30],
       ],
       countdown:    [5, 8, 'Starting in %d...'],
       countdown_clear: [5, 8, ' ' * 20],
@@ -62,7 +62,7 @@ module RoadToRubykaigi
       @results = {}
       @remaining_keys = CalibrationBar.states
       ANSI.clear
-      draw MESSAGES[:title], *MESSAGES[:intro]
+      draw MESSAGES[:title], *MESSAGES[:intro], *MESSAGES[:instructions]
     end
 
     def enter_countdown
@@ -70,7 +70,7 @@ module RoadToRubykaigi
       @countdown_remaining = COUNTDOWN_FROM
       @countdown_last_tick = nil
       ANSI.clear
-      draw MESSAGES[:title], *MESSAGES[:measure]
+      draw MESSAGES[:title], MESSAGES[:cancel], *MESSAGES[:instructions]
     end
 
     def tick_countdown
