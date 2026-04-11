@@ -22,6 +22,11 @@ module RoadToRubykaigi
       done_static:  [5, 6, 'Static: %.6f (%d samples)'],
       done_walk:    [5, 7, 'Walk:   %.6f (%d samples)'],
       done_return:  [5, 10, '[Enter/ESC] return'],
+      not_connected: [
+        [5, 6, 'Sensor not connected.'],
+        [5, 7, 'Connect the sensor and try again.'],
+        [5, 10, '[Enter/ESC] return'],
+      ],
     }.freeze
 
     def display
@@ -90,7 +95,17 @@ module RoadToRubykaigi
       end
     end
 
+    def enter_not_connected
+      @state = :done
+      ANSI.clear
+      draw MESSAGES[:title], *MESSAGES[:not_connected]
+    end
+
     def enter_collect
+      if @results.empty? && GameServer.queue.empty?
+        enter_not_connected && return
+      end
+
       @state = :collect
       @current_key = @remaining_keys.first
       @sampler = CalibrationSampler.new
