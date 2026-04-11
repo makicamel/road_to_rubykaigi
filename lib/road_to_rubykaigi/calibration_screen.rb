@@ -19,8 +19,8 @@ module RoadToRubykaigi
       ],
       countdown:    [5, 8, 'Starting in %d...'],
       countdown_clear: [5, 8, ' ' * 20],
-      done_static:  [5, 6, 'Static: %d samples'],
-      done_walk:    [5, 7, 'Walk:   %d samples'],
+      done_static:  [5, 6, 'Static: %.6f (%d samples)'],
+      done_walk:    [5, 7, 'Walk:   %.6f (%d samples)'],
       done_return:  [5, 10, '[Enter/ESC] return'],
     }.freeze
 
@@ -45,7 +45,7 @@ module RoadToRubykaigi
       action = read_action
       if action == :cancel
         if @state == :intro || @state == :done
-          return :done 
+          return :done
         else
           enter_intro && return
         end
@@ -118,11 +118,11 @@ module RoadToRubykaigi
 
     def enter_done
       @state = :done
-      save_calibration
+      peak_threshold, walk_intensity = save_calibration
       ANSI.clear
       draw MESSAGES[:title],
-           format_line(MESSAGES[:done_static], @results[:static].size),
-           format_line(MESSAGES[:done_walk], @results[:walk].size),
+           format_line(MESSAGES[:done_static], peak_threshold, @results[:static].size),
+           format_line(MESSAGES[:done_walk], walk_intensity, @results[:walk].size),
            MESSAGES[:done_return]
     end
 
@@ -135,6 +135,7 @@ module RoadToRubykaigi
       walk_sorted = @results[:walk].sort
       walk_intensity = walk_sorted[walk_sorted.size / 2]
       Config.save_calibration(peak_threshold: peak_threshold.round(6), walk_intensity: walk_intensity.round(6))
+      [peak_threshold, walk_intensity]
     end
 
     def format_line(line, *args)
