@@ -1,7 +1,5 @@
 module RoadToRubykaigi
   class CalibrationScreen
-    BAR_WIDTH = 100
-    BAR_MAX = 1.0
     COUNTDOWN_FROM = 5
 
     MESSAGES = {
@@ -21,23 +19,16 @@ module RoadToRubykaigi
       ],
       countdown:    [5, 8, 'Starting in %d...'],
       countdown_clear: [5, 8, ' ' * 20],
-      remaining: [5, 5, "#{ANSI::BOLD}%-20s#{ANSI::RESET}  %5.1fs"],
-      intensity: [5, 8, '[%s] %.4f'],
       done_static:  [5, 6, 'Static: %d samples'],
       done_walk:    [5, 7, 'Walk:   %d samples'],
       done_return:  [5, 10, '[Enter/ESC] return'],
-    }.freeze
-
-    CALIBRATION_LABELS = {
-      static: { text: 'Hold still', emoji: '🧍' },
-      walk:   { text: 'Walk',       emoji: '🏃‍➡️', emoji_ground: '🚶‍➡️' },
     }.freeze
 
     def display
       GameServer.start
       @state = :intro
       @results = {}
-      @remaining_keys = CALIBRATION_LABELS.keys.dup
+      @remaining_keys = CalibrationBar.states
       $stdin.raw do
         loop do
           case tick
@@ -71,7 +62,7 @@ module RoadToRubykaigi
     def enter_intro
       @state = :intro
       @results = {}
-      @remaining_keys = CALIBRATION_LABELS.keys.dup
+      @remaining_keys = CalibrationBar.states
       ANSI.clear
       draw MESSAGES[:title], *MESSAGES[:intro]
     end
@@ -105,13 +96,13 @@ module RoadToRubykaigi
       @state = :collect
       @current_key = @remaining_keys.first
       @sampler = CalibrationSampler.new
-      @prev_emoji_x = COLLECT_BAR_BASE_X + 1
+      @bar = CalibrationBar.new(@sampler, state: @current_key)
       draw *MESSAGES[:clear_instructions]
     end
 
     def tick_collect
       @sampler.tick
-      draw_collect_bar
+      draw *@bar.render
 
       return unless @sampler.finished?
 
@@ -123,45 +114,6 @@ module RoadToRubykaigi
       else
         enter_collect
       end
-    end
-
-    EMOJI_WIDTH = 2
-    BOUNCE_HZ = 4
-
-    COLLECT_BAR_BASE_X = 5
-    EMOJI_BOUNCE_ROW = 6
-    EMOJI_BASE_ROW = EMOJI_BOUNCE_ROW + 1
-
-    def draw_collect_bar
-      filled = (@sampler.intensity / BAR_MAX * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
-      bar = '█' * filled + '░' * (BAR_WIDTH - filled)
-      current_label = CALIBRATION_LABELS[@current_key]
-      lines = [
-        format_line(MESSAGES[:remaining], "▶ #{current_label[:text]}", @sampler.remaining),
-        format_line(MESSAGES[:intensity], bar, @sampler.intensity),
-      ]
-
-      if @current_key == :walk
-        emoji_x = COLLECT_BAR_BASE_X + 1 + (@sampler.progress * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
-        bouncing = (Time.now.to_f * BOUNCE_HZ).to_i.odd?
-        unless @prev_emoji_x == emoji_x
-          lines << [@prev_emoji_x, EMOJI_BASE_ROW, ' ' * EMOJI_WIDTH]
-          lines << [@prev_emoji_x, EMOJI_BOUNCE_ROW, ' ' * EMOJI_WIDTH]
-          @prev_emoji_x = emoji_x
-        end
-        if bouncing
-          lines << [emoji_x, EMOJI_BOUNCE_ROW, current_label[:emoji]]
-          lines << [emoji_x, EMOJI_BASE_ROW, ' ' * EMOJI_WIDTH]
-        else
-          lines << [emoji_x, EMOJI_BASE_ROW, current_label[:emoji_ground]]
-          lines << [emoji_x, EMOJI_BOUNCE_ROW, ' ' * EMOJI_WIDTH]
-        end
-      else
-        emoji_x = COLLECT_BAR_BASE_X + 1
-        lines << [emoji_x, EMOJI_BASE_ROW, current_label[:emoji]]
-      end
-
-      draw *lines
     end
 
     def enter_done
