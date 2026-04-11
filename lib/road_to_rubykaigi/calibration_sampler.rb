@@ -22,6 +22,10 @@ module RoadToRubykaigi
       PHASE_SECONDS - elapsed
     end
 
+    def progress
+      (elapsed / PHASE_SECONDS.to_f).clamp(0.0, 1.0)
+    end
+
     private
 
     def initialize
