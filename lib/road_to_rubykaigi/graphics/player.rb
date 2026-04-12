@@ -15,58 +15,64 @@ module RoadToRubykaigi
       end
       DIRECTIONS = [Direction.new(RIGHT), Direction.new(LEFT)].freeze
 
-      Variant = Data.define(:posture, :status, :direction, :frame) do
-        def face_key = :"face_#{posture}_#{status}_#{direction.name}"
-        def foot_key = :"foot_#{status}_#{frame}"
-        def crouching? = posture == :crouching
+      Variant = Data.define(:posture, :status, :direction, :default_frames, :attack_frames) do
+        class << self
+          def build(posture:, status:, direction:, parts:)
+            new(
+              posture: posture,
+              status: status,
+              direction: direction,
+              default_frames: FRAMES.map { |frame| default_frame(posture, status, direction, frame, parts) },
+              attack_frames:  FRAMES.map { |frame| attack_frame(posture, status, direction, frame, parts) },
+            )
+          end
 
-        def default_frame(parts)
-          [
-            parts[:head],
-            parts[face_key],
-            crouching? ? nil : parts[foot_key],
-          ].compact
-        end
+          private
 
-        def attack_frame(parts)
-          head = parts[:head]
-          face = parts[face_key]
-          foot = crouching? ? nil : parts[foot_key]
+          def face_key(posture, status, direction) = :"face_#{posture}_#{status}_#{direction.name}"
+          def foot_key(status, frame) = :"foot_#{status}_#{frame}"
+          def crouching?(posture) = posture == :crouching
 
-          if direction.right?
-            [head + "   ".chars, face + "_◢◤".chars, foot && foot + "   ".chars].compact
-          else
-            ["   ".chars + head, "◥◣_".chars + face, foot && "   ".chars + foot].compact
+          def default_frame(posture, status, direction, frame, parts)
+            [
+              parts[:head],
+              parts[face_key(posture, status, direction)],
+              crouching?(posture) ? nil : parts[foot_key(status, frame)],
+            ].compact
+          end
+
+          def attack_frame(posture, status, direction, frame, parts)
+            head = parts[:head]
+            face = parts[face_key(posture, status, direction)]
+            foot = crouching?(posture) ? nil : parts[foot_key(status, frame)]
+
+            if direction.right?
+              [head + "   ".chars, face + "_◢◤".chars, foot && foot + "   ".chars].compact
+            else
+              ["   ".chars + head, "◥◣_".chars + face, foot && "   ".chars + foot].compact
+            end
           end
         end
       end
 
       class << self
         def character(posture:, status:, direction:, attack_mode:)
-          load_data unless @default_characters
+          load_data unless @variants
 
-          characters = attack_mode ? @attack_characters : @default_characters
-          characters[posture][status][direction]
+          variant = @variants[[posture, status, direction]]
+          attack_mode ? variant.attack_frames : variant.default_frames
         end
 
         private
 
         def load_data
-          @default_characters = empty_store
-          @attack_characters = empty_store
           parts = load_parts
-
-          POSTURES.product(STATUSES, DIRECTIONS, FRAMES).each do |posture, status, direction, frame|
-            variant = Variant.new(posture:, status:, direction:, frame:)
-            @default_characters[posture][status][direction.value] << variant.default_frame(parts)
-            @attack_characters[posture][status][direction.value] << variant.attack_frame(parts)
+          @variants = POSTURES.product(STATUSES, DIRECTIONS).to_h do |posture, status, direction|
+            [
+              [posture, status, direction.value],
+              Variant.build(posture:, status:, direction:, parts:),
+            ]
           end
-        end
-
-        # @return [Hash] {standup: {normal: {}, stunned: {}}, crouching: {normal: {}, stunned: {}}}
-        def empty_store
-          store_template = Hash.new { |h, k| h[k] = [] }
-          POSTURES.to_h { |posture| [posture, STATUSES.to_h { |status| [status, store_template.dup] }] }
         end
 
         # @return [Hash{Symbol => Array<String>}]
