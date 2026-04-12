@@ -1,5 +1,14 @@
 # Sample PicoRuby script for reading acceleration data from KXR94-2050 module
-# and sending it via BLE UART.
+# and sending it via BLE UART and hardware UART (serial).
+#
+# Data is always sent to both channels simultaneously:
+#   - BLE UART: received by browser controller -> GameServer
+#   - Hardware UART (GP0): received by USB-TTL cable -> SerialReader on the host
+# Switch SERIAL=1 in .road_to_rubykaigi on the host side to choose which to use.
+#
+# Wiring (USB-TTL cable -> Pico W):
+#   Cable RX  -> GP0 (UART0 TX)
+#   Cable GND -> GND
 #
 # KXR94-2050 datasheet: https://akizukidenshi.com/goodsaffix/KXR94_2025_06_25.pdf
 #   Sensitivity: Vdd / 5 (V/g)
@@ -8,6 +17,7 @@
 # Flash this script to a Raspberry Pi Pico (2) W with PicoRuby.
 
 require 'adc'
+require 'uart'
 require 'ble'
 require 'ble-uart'
 
@@ -68,8 +78,9 @@ class Blinker
 end
 
 accelerometer = Accelerometer.new
-uart = BLE::UART.new(name: 'RtR')
-uart.debug = true
+serial = UART.new(unit: :RP2040_UART0, txd_pin: 0, baudrate: 115200)
+ble_uart = BLE::UART.new(name: 'RtR')
+ble_uart.debug = true
 blinker = Blinker.new
 
 # uart.start block fires every BLE::POLLING_UNIT_MS (100ms). Taking multiple
@@ -78,14 +89,15 @@ blinker = Blinker.new
 SAMPLES_PER_BLOCK = 3
 SAMPLE_INTERVAL_MS = 30
 
-uart.start do
+ble_uart.start do
   SAMPLES_PER_BLOCK.times do |i|
-    uart.puts(accelerometer.read)
+    ble_uart.puts(accelerometer.read)
+    serial.puts(data)
     # puts("#{Time.now} #{accelerometer.read}")
     next if i == SAMPLES_PER_BLOCK - 1
     sleep_ms SAMPLE_INTERVAL_MS
   end
 
-  blinker.mode = uart.connected? ? :slow : :fast
+  blinker.mode = ble_uart.connected? ? :slow : :fast
   blinker.tick
 end

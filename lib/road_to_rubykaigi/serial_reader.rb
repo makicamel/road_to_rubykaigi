@@ -35,6 +35,7 @@ module RoadToRubykaigi
     end
 
     def read_loop
+      system('stty', '-f', @port, 'raw', '115200')
       File.open(@port, 'r') do |serial|
         serial.each_line do |line|
           data = parse_line(line.strip)
