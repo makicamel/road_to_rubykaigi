@@ -30,7 +30,7 @@ module RoadToRubykaigi
     }.freeze
 
     def display
-      GameServer.start
+      Config.signal_source.start
       enter_intro
       $stdin.raw do
         loop do
@@ -102,7 +102,7 @@ module RoadToRubykaigi
     end
 
     def enter_collect
-      if @results.empty? && GameServer.queue.empty?
+      if @results.empty? && Config.signal_source.queue.empty?
         enter_not_connected && return
       end
 

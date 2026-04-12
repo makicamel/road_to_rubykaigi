@@ -11,7 +11,7 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :game_server?, :debug?, :bgm_off?, :project_root,
+      def_delegators :instance, :game_server?, :serial?, :serial_port, :signal_source, :debug?, :bgm_off?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity, :save_calibration
     end
 
@@ -21,6 +21,18 @@ module RoadToRubykaigi
 
     def game_server?
       @settings['GAME_SERVER']
+    end
+
+    def serial?
+      @settings['SERIAL']
+    end
+
+    def serial_port
+      @settings['SERIAL_PORT'] || '/dev/cu.usbserial-ABCDEFGH'
+    end
+
+    def signal_source
+      GameServer
     end
 
     def debug?

@@ -57,9 +57,9 @@ module RoadToRubykaigi
     end
 
     def pick
-      return if GameServer.queue.empty?
+      return if Config.signal_source.queue.empty?
 
-      GameServer.queue.pop(true)
+      Config.signal_source.queue.pop(true)
     end
 
     def interpret(data)

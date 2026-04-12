@@ -5,7 +5,7 @@ module RoadToRubykaigi
     attr_reader :intensities, :cadences, :intensity
 
     def tick
-      GameServer.drain do |data|
+      Config.signal_source.drain do |data|
         sample = parse_sample(data)
         @window.buffer_sample(sample) if sample
       end

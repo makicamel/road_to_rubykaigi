@@ -15,3 +15,7 @@
 # WALK_CADENCE=2.6
 # Walking motion intensity median (set by calibration)
 # WALK_INTENSITY=0.6
+# Use USB serial (CDC) instead of BLE game server
+# SERIAL=1
+# Serial port device path (default: /dev/tty.usbmodem0001)
+# SERIAL_PORT=/dev/tty.usbmodem0001
