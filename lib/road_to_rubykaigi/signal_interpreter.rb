@@ -109,6 +109,11 @@ module RoadToRubykaigi
     def log_signal
       return unless ENV['SIG_LOG'] == '1'
 
+      unless @log_header_printed
+        $stderr.puts "t,full,tail,ratio,x,y,z,amp,tempo,intensity,interval,state"
+        @log_header_printed = true
+      end
+
       full = @window.motion_intensity
       tail = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity
       axes = @window.axis_intensities
@@ -119,7 +124,7 @@ module RoadToRubykaigi
       tempo = tempo_ratio.round(4)
       intensity = intensity_ratio.round(4)
       interval = @last_peak_interval || 0
-      $stderr.puts "[sig] t=#{Time.now.to_f} full=#{full.round(6)} tail=#{tail.round(6)} ratio=#{ratio.round(4)} x=#{ax} y=#{ay} z=#{az} amp=#{amp} tempo=#{tempo} intensity=#{intensity} interval=#{interval} state=#{@state}"
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{amp},#{tempo},#{intensity},#{interval},#{@state}"
     end
   end
 end
