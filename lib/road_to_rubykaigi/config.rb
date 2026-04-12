@@ -32,7 +32,7 @@ module RoadToRubykaigi
     end
 
     def signal_source
-      GameServer
+      serial? ? SerialReader : GameServer
     end
 
     def debug?
