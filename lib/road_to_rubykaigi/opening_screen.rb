@@ -61,6 +61,7 @@ module RoadToRubykaigi
       return @menu_items if @menu_items
       @menu_items = RoadToRubykaigi::VERSIONS
       @menu_items = @menu_items + [:calibrate] if Config.game_server?
+      @menu_items
     end
 
     def render
