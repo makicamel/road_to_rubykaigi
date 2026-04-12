@@ -12,6 +12,10 @@
 │｡・◡・│
 # face_standup_normal_LEFT
 │・◡・｡│
+# face_standup_running_RIGHT
+│｡> ◡ <│
+# face_standup_running_LEFT
+│> ◡ <｡│
 # face_standup_stunned_RIGHT
 │ ´×⌓× │
 # face_standup_stunned_LEFT

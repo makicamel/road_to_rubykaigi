@@ -5,8 +5,10 @@ module RoadToRubykaigi
       LEFT = RoadToRubykaigi::Sprite::Player::LEFT
       FILE_PATH = "player.txt"
 
-      POSTURES = %i[standup crouching].freeze
-      STATUSES = %i[normal stunned].freeze
+      STATUSES_BY_POSTURE = {
+        standup: %i[normal stunned running],
+        crouching: %i[normal stunned],
+      }.freeze
       FRAMES = [1, 2].freeze
 
       Direction = Data.define(:value) do
@@ -30,7 +32,7 @@ module RoadToRubykaigi
           private
 
           def face_key(posture, status, direction) = :"face_#{posture}_#{status}_#{direction.name}"
-          def foot_key(status, frame) = :"foot_#{status}_#{frame}"
+          def foot_key(status, frame) = :"foot_#{status == :running ? :normal : status}_#{frame}"
           def crouching?(posture) = posture == :crouching
 
           def default_frame(posture, status, direction, frame, parts)
@@ -67,12 +69,14 @@ module RoadToRubykaigi
 
         def load_data
           parts = load_parts
-          @variants = POSTURES.product(STATUSES, DIRECTIONS).to_h do |posture, status, direction|
-            [
-              [posture, status, direction.value],
-              Variant.build(posture:, status:, direction:, parts:),
-            ]
-          end
+          @variants = STATUSES_BY_POSTURE.flat_map do |posture, statuses|
+            statuses.product(DIRECTIONS).map do |status, direction|
+              [
+                [posture, status, direction.value],
+                Variant.build(posture:, status:, direction:, parts:),
+              ]
+            end
+          end.to_h
         end
 
         # @return [Hash{Symbol => Array<String>}]
