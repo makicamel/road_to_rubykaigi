@@ -7,6 +7,7 @@ module RoadToRubykaigi
       WALK_ACCEL = 15.0
       WALK_MAX_SPEED = 20.0
       WALK_FRICTION = 1.0
+      RUNNING_INTENSITY_THRESHOLD = 1.3
 
       INITIAL_X = 10
       BASE_Y = 26
@@ -23,16 +24,17 @@ module RoadToRubykaigi
       RIGHT = 1
       LEFT = -1
 
-      def right
-        move(RIGHT)
+      def right(intensity_ratio = 1.0)
+        move(RIGHT, intensity_ratio)
       end
 
-      def left
-        move(LEFT)
+      def left(intensity_ratio = 1.0)
+        move(LEFT, intensity_ratio)
       end
 
       def stop
         @vx = 0
+        @last_intensity_ratio = 1.0
       end
 
       def jump
@@ -202,14 +204,17 @@ module RoadToRubykaigi
         @stunned_until = Time.now
         @attack_mode = false
         @last_attack_time = Time.now
+        @last_intensity_ratio = 1.0
       end
 
-      def move(dx)
+      def move(dx, intensity_ratio = 1.0)
         unless current_direction == dx
           @vx = 0
         end
         @vx += WALK_ACCEL * dx
-        @vx = @vx.clamp(-WALK_MAX_SPEED, WALK_MAX_SPEED)
+        max_speed = WALK_MAX_SPEED * intensity_ratio
+        @vx = @vx.clamp(-max_speed, max_speed)
+        @last_intensity_ratio = intensity_ratio
         Manager::AudioManager.instance.walk
       end
 
@@ -241,11 +246,13 @@ module RoadToRubykaigi
 
       def current_character
         posture = crouching? ? :crouching : :standup
-        status = stunned? ? :stunned : :normal
+        status = stunned? ? :stunned : running? ? :running : :normal
         Graphics::Player.character(
-          posture: posture, status: status, direction: current_direction, attack_mode: @attack_mode
+          posture:, status:, direction: current_direction, attack_mode: @attack_mode
         )
       end
+
+      def running? = !crouching? && @last_intensity_ratio >= RUNNING_INTENSITY_THRESHOLD
 
       def jumping?
         @jumping
