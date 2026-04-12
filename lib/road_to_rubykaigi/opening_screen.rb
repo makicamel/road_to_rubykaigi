@@ -60,7 +60,7 @@ module RoadToRubykaigi
     def menu_items
       return @menu_items if @menu_items
       @menu_items = RoadToRubykaigi::VERSIONS
-      @menu_items = @menu_items + [:calibrate] if Config.game_server?
+      @menu_items = @menu_items + [:calibrate] if Config.game_server? || Config.serial?
       @menu_items
     end
 
