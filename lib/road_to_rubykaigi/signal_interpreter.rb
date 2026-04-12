@@ -115,7 +115,11 @@ module RoadToRubykaigi
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
       ax, ay, az = axes.map { |value| value.round(6) }
-      $stderr.puts "[sig] t=#{Time.now.to_f} full=#{full.round(6)} tail=#{tail.round(6)} ratio=#{ratio.round(4)} x=#{ax} y=#{ay} z=#{az} state=#{@state}"
+      amp = motion_intensity_ratio.round(4)
+      tempo = tempo_ratio.round(4)
+      intensity = intensity_ratio.round(4)
+      interval = @last_peak_interval || 0
+      $stderr.puts "[sig] t=#{Time.now.to_f} full=#{full.round(6)} tail=#{tail.round(6)} ratio=#{ratio.round(4)} x=#{ax} y=#{ay} z=#{az} amp=#{amp} tempo=#{tempo} intensity=#{intensity} interval=#{interval} state=#{@state}"
     end
   end
 end
