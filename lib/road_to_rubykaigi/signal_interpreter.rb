@@ -124,7 +124,9 @@ module RoadToRubykaigi
       tempo = tempo_ratio.round(4)
       intensity = intensity_ratio.round(4)
       interval = @last_peak_interval || 0
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{amp},#{tempo},#{intensity},#{interval},#{@state}"
+      mag = @window.last_magnitude.round(6)
+      jerk = @window.mag_jerk.round(6)
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{amp},#{tempo},#{intensity},#{interval},#{@state},#{mag},#{jerk}"
     end
   end
 end
