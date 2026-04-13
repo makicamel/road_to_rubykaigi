@@ -131,10 +131,10 @@ module RoadToRubykaigi
 
     def enter_done
       @state = :done
-      peak_threshold, walk_intensity = save_calibration
+      continuation_threshold, walk_intensity = save_calibration
       ANSI.clear
       draw MESSAGES[:title],
-           format_line(MESSAGES[:done_static], peak_threshold, @results[:static].size),
+           format_line(MESSAGES[:done_static], continuation_threshold, @results[:static].size),
            format_line(MESSAGES[:done_walk], walk_intensity, @results[:walk].size),
            MESSAGES[:done_return]
     end
@@ -143,12 +143,12 @@ module RoadToRubykaigi
       # Noise ceiling * 2.5 as the threshold separating noise from walking.
       # Stays above noise even in short-window valleys between steps.
       #   2.5 is an empirical factor derived from real calibration data.
-      peak_threshold = @results[:static].max * 2.5
+      continuation_threshold = @results[:static].max * 2.5
       # Median walking motion_intensity, representing individual walking strength.
       walk_sorted = @results[:walk].sort
       walk_intensity = walk_sorted[walk_sorted.size / 2]
-      Config.save_calibration(peak_threshold: peak_threshold.round(6), walk_intensity: walk_intensity.round(6))
-      [peak_threshold, walk_intensity]
+      Config.save_calibration(continuation_threshold: continuation_threshold.round(6), walk_intensity: walk_intensity.round(6))
+      [continuation_threshold, walk_intensity]
     end
 
     def format_line(line, *args)

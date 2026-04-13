@@ -4,14 +4,14 @@ module RoadToRubykaigi
   class SignalInterpreter
     include Singleton
 
-    PEAK_DETECTION_WINDOW_SIZE = 2 # short window used for peak detection to avoid tail smoothing
-    PEAK_TIMEOUT_SIZE = 8 # samples without a peak before declaring a stop
-    DEFAULT_PEAK_THRESHOLD = 0.025
+    CONTINUATION_WINDOW_SIZE = 2 # short window used for continuation detection to avoid tail smoothing
+    CONTINUATION_TIMEOUT_SIZE = 8 # samples without a continuation event before declaring a stop
+    DEFAULT_CONTINUATION_THRESHOLD = 0.025
 
     # Run states
     STOPPED = :stopped # no run in progress; next start flips direction
-    RUNNING = :running # peaks arriving
-    PAUSED = :paused   # peaks briefly absent; next peak -> RUNNING (same direction), timeout -> STOPPED
+    RUNNING = :running # continuation events arriving
+    PAUSED = :paused   # continuation briefly absent; next event -> RUNNING (same direction), timeout -> STOPPED
 
     class << self
       extend Forwardable
@@ -34,8 +34,8 @@ module RoadToRubykaigi
       @direction = :right
       @state = STOPPED
       @has_started = false
-      @samples_since_peak = 0
-      @peak_threshold = Config.peak_threshold || DEFAULT_PEAK_THRESHOLD
+      @samples_since_continuation = 0
+      @continuation_threshold = Config.continuation_threshold || DEFAULT_CONTINUATION_THRESHOLD
     end
 
     def pick
@@ -65,20 +65,20 @@ module RoadToRubykaigi
     end
 
     def update_running_state
-      track_samples_since_peak
+      track_samples_since_continuation
       case
-      when stopped? && run_started?    then start
-      when running? && !peak?          then pause
-      when paused?  && peak?           then unpause
-      when paused?  && peak_timed_out? then stop
+      when stopped? && run_started?            then start
+      when running? && !continuing?            then pause
+      when paused?  && continuing?             then unpause
+      when paused?  && continuation_timed_out? then stop
       end
     end
 
-    def track_samples_since_peak
-      if peak?
-        @samples_since_peak = 0
+    def track_samples_since_continuation
+      if continuing?
+        @samples_since_continuation = 0
       else
-        @samples_since_peak += 1
+        @samples_since_continuation += 1
       end
     end
 
@@ -95,16 +95,16 @@ module RoadToRubykaigi
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
-    def peak_timed_out? = @samples_since_peak > PEAK_TIMEOUT_SIZE
+    def continuation_timed_out? = @samples_since_continuation > CONTINUATION_TIMEOUT_SIZE
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
-    def run_started? = @window.motion_intensity > @peak_threshold
+    def run_started? = @window.motion_intensity > @continuation_threshold
 
-    # Short-window intensity used for peak detection. Shorter than the main
-    # window so that the signal drops quickly after motion stops, making
+    # Short-window intensity used for continuation detection. Shorter than the
+    # main window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def peak? = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity > @peak_threshold
+    def continuing? = @window.tail(CONTINUATION_WINDOW_SIZE).motion_intensity > @continuation_threshold
 
     def log_signal
       return unless ENV['SIG_LOG'] == '1'
@@ -115,7 +115,7 @@ module RoadToRubykaigi
       end
 
       full = @window.motion_intensity
-      tail = @window.tail(PEAK_DETECTION_WINDOW_SIZE).motion_intensity
+      tail = @window.tail(CONTINUATION_WINDOW_SIZE).motion_intensity
       axes = @window.axis_intensities
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
@@ -123,7 +123,7 @@ module RoadToRubykaigi
       amp = motion_intensity_ratio.round(4)
       tempo = tempo_ratio.round(4)
       intensity = intensity_ratio.round(4)
-      interval = @last_peak_interval || 0
+      interval = @last_continuation_interval || 0
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
       $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{amp},#{tempo},#{intensity},#{interval},#{@state},#{mag},#{jerk}"
