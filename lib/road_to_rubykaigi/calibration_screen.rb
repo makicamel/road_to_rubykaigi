@@ -151,24 +151,12 @@ module RoadToRubykaigi
       # Median walking motion_intensity, representing individual walking strength.
       walk_sorted = @results[:walk].sort
       walk_intensity = walk_sorted[walk_sorted.size / 2]
-      # Median walking intensity range over a rolling 1s window; baseline for
-      # the regularity ratio. Walking is metronome-like (narrow range); running
-      # swings widely across steps.
-      walk_regularity = median_rolling_range(@results[:walk], SignalInterpreter::REGULARITY_WINDOW_SIZE)
       Config.save_calibration(
         start_threshold: start_threshold.round(6),
         continuation_threshold: continuation_threshold.round(6),
         walk_intensity: walk_intensity.round(6),
-        walk_regularity: walk_regularity.round(6)
       )
       [continuation_threshold, walk_intensity]
-    end
-
-    def median_rolling_range(samples, window)
-      return 0.0 if samples.size < window
-
-      ranges = samples.each_cons(window).map { |w| w.max - w.min }.sort
-      ranges[ranges.size / 2]
     end
 
     def format_line(line, *args)

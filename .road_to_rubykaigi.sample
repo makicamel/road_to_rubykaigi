@@ -13,5 +13,3 @@
 # CONTINUATION_THRESHOLD=0.05
 # Walking intensity median (set by calibration)
 # WALK_INTENSITY=0.6
-# Walking intensity range (max-min over ~1s window) median; baseline for regularity ratio
-# WALK_REGULARITY=0.1
