@@ -23,6 +23,7 @@ module RoadToRubykaigi
         ],
       }
       WALK_SOUND_INTERVAL = 0.25
+      RUN_SOUND_INTERVAL = 0.11
 
       SOUND_FILES.keys.each do |action|
         define_method(action) {
@@ -53,9 +54,10 @@ module RoadToRubykaigi
         end
       end
 
-      def walk
+      def walk(running: false)
         now = Time.now
-        if (now - @last_walk_time) >= WALK_SOUND_INTERVAL
+        interval = running ? RUN_SOUND_INTERVAL : WALK_SOUND_INTERVAL
+        if (now - @last_walk_time) >= interval
           @audio_engine.add_source(@sources[:walk][@walk_index])
           @last_walk_time = now
           @walk_index = (@walk_index + 1) % @sources[:walk].size

@@ -223,7 +223,7 @@ module RoadToRubykaigi
         else
           @fast_speed_since = nil
         end
-        Manager::AudioManager.instance.walk
+        Manager::AudioManager.instance.walk(running: running?)
       end
 
       def fall
