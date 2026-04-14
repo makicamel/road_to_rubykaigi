@@ -11,6 +11,8 @@ module RoadToRubykaigi
       RUNNING_SUSTAIN_SECOND = 0.3
 
       INITIAL_X = 10
+      WARMUP_END_X = 18
+      WARMUP_SPEED_RATIO_CAP = 1.0
       BASE_Y = 26
       BASE_HEIGHT = 3
       JUMP_INITIAL_VELOCITY = -40.0
@@ -30,7 +32,7 @@ module RoadToRubykaigi
       end
 
       def left(speed_ratio = 1.0)
-        move(LEFT, speed_ratio)
+        move(in_warmup? ? RIGHT : LEFT, speed_ratio)
       end
 
       def stop
@@ -211,6 +213,7 @@ module RoadToRubykaigi
       end
 
       def move(dx, speed_ratio = 1.0)
+        speed_ratio = [speed_ratio, WARMUP_SPEED_RATIO_CAP].min if in_warmup?
         unless current_direction == dx
           @vx = 0
         end
@@ -261,6 +264,17 @@ module RoadToRubykaigi
       end
 
       def running? = !crouching? && @fast_speed_since && (Time.now - @fast_speed_since) >= RUNNING_SUSTAIN_SECOND
+
+      def in_warmup?
+        if @warmed_up || !Config.game_server?
+          false
+        elsif @x > WARMUP_END_X
+          @warmed_up = true
+          false
+        else
+          true
+        end
+      end
 
       def jumping?
         @jumping
