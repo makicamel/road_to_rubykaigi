@@ -11,5 +11,7 @@
 # START_THRESHOLD=0.025
 # Continuation threshold for step detection (set by calibration)
 # CONTINUATION_THRESHOLD=0.05
-# Walking intensity median (set by calibration)
+# Walking step cadence in Hz (set by calibration)
+# WALK_CADENCE=2.6
+# Walking motion intensity median (set by calibration)
 # WALK_INTENSITY=0.6

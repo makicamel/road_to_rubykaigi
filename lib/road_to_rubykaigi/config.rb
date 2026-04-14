@@ -12,7 +12,7 @@ module RoadToRubykaigi
     class << self
       extend Forwardable
       def_delegators :instance, :game_server?, :debug?, :bgm_off?, :project_root,
-                     :start_threshold, :continuation_threshold, :walk_intensity, :save_calibration
+                     :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity, :save_calibration
     end
 
     def initialize
@@ -39,15 +39,20 @@ module RoadToRubykaigi
       (@settings['CONTINUATION_THRESHOLD'] || DEFAULT_CONTINUATION_THRESHOLD).to_f
     end
 
+    def walk_cadence
+      @settings['WALK_CADENCE']&.to_f
+    end
+
     def walk_intensity
       @settings['WALK_INTENSITY']&.to_f
     end
 
-    def save_calibration(start_threshold:, continuation_threshold:, walk_intensity:)
+    def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:)
       @settings['START_THRESHOLD'] = start_threshold.to_s
       @settings['CONTINUATION_THRESHOLD'] = continuation_threshold.to_s
+      @settings['WALK_CADENCE'] = walk_cadence.to_s
       @settings['WALK_INTENSITY'] = walk_intensity.to_s
-      save(%w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_INTENSITY])
+      save(%w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_CADENCE WALK_INTENSITY])
     end
 
     def project_root

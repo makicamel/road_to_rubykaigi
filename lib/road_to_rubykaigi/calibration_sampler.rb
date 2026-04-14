@@ -1,8 +1,8 @@
 module RoadToRubykaigi
   class CalibrationSampler
-    PHASE_SECONDS = 3
+    PHASE_SECONDS = 5
 
-    attr_reader :samples, :intensity
+    attr_reader :samples, :cadences, :intensity
 
     def tick
       GameServer.drain do |data|
@@ -12,6 +12,7 @@ module RoadToRubykaigi
       return unless @window.full?
       @intensity = @window.motion_intensity
       @samples << @intensity
+      @cadences << @window.cadence_hz if @window.cadence_ready?
     end
 
     def finished?
@@ -31,6 +32,7 @@ module RoadToRubykaigi
     def initialize
       @window = SignalWindow.new
       @samples = []
+      @cadences = []
       @intensity = 0.0
       @started_at = Time.now
     end
