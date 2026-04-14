@@ -7,7 +7,7 @@ module RoadToRubykaigi
       WALK_ACCEL = 15.0
       WALK_MAX_SPEED = 20.0
       WALK_FRICTION = 1.0
-      RUNNING_INTENSITY_THRESHOLD = 1.3
+      RUNNING_SPEED_THRESHOLD = 1.3
 
       INITIAL_X = 10
       BASE_Y = 26
@@ -24,17 +24,17 @@ module RoadToRubykaigi
       RIGHT = 1
       LEFT = -1
 
-      def right(intensity_ratio = 1.0)
-        move(RIGHT, intensity_ratio)
+      def right(speed_ratio = 1.0)
+        move(RIGHT, speed_ratio)
       end
 
-      def left(intensity_ratio = 1.0)
-        move(LEFT, intensity_ratio)
+      def left(speed_ratio = 1.0)
+        move(LEFT, speed_ratio)
       end
 
       def stop
         @vx = 0
-        @last_intensity_ratio = 1.0
+        @last_speed_ratio = 1.0
       end
 
       def jump
@@ -204,17 +204,17 @@ module RoadToRubykaigi
         @stunned_until = Time.now
         @attack_mode = false
         @last_attack_time = Time.now
-        @last_intensity_ratio = 1.0
+        @last_speed_ratio = 1.0
       end
 
-      def move(dx, intensity_ratio = 1.0)
+      def move(dx, speed_ratio = 1.0)
         unless current_direction == dx
           @vx = 0
         end
         @vx += WALK_ACCEL * dx
-        max_speed = WALK_MAX_SPEED * intensity_ratio
+        max_speed = WALK_MAX_SPEED * speed_ratio
         @vx = @vx.clamp(-max_speed, max_speed)
-        @last_intensity_ratio = intensity_ratio
+        @last_speed_ratio = speed_ratio
         Manager::AudioManager.instance.walk
       end
 
@@ -252,7 +252,7 @@ module RoadToRubykaigi
         )
       end
 
-      def running? = !crouching? && @last_intensity_ratio >= RUNNING_INTENSITY_THRESHOLD
+      def running? = !crouching? && @last_speed_ratio >= RUNNING_SPEED_THRESHOLD
 
       def jumping?
         @jumping
