@@ -140,14 +140,22 @@ module RoadToRubykaigi
     end
 
     def save_calibration
+      noise_max = @results[:static].max
       # Noise ceiling * 2.5 as the threshold separating noise from walking.
       # Stays above noise even in short-window valleys between steps.
       #   2.5 is an empirical factor derived from real calibration data.
-      continuation_threshold = @results[:static].max * 2.5
+      start_threshold = noise_max * 2.5
+      # Continuation uses a short window (fast stop detection) which is noise-sensitive,
+      # so use a higher threshold for noise tolerance.
+      continuation_threshold = noise_max * 5.0
       # Median walking motion_intensity, representing individual walking strength.
       walk_sorted = @results[:walk].sort
       walk_intensity = walk_sorted[walk_sorted.size / 2]
-      Config.save_calibration(continuation_threshold: continuation_threshold.round(6), walk_intensity: walk_intensity.round(6))
+      Config.save_calibration(
+        start_threshold: start_threshold.round(6),
+        continuation_threshold: continuation_threshold.round(6),
+        walk_intensity: walk_intensity.round(6)
+      )
       [continuation_threshold, walk_intensity]
     end
 
