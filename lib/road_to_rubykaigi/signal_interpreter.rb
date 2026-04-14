@@ -6,15 +6,13 @@ module RoadToRubykaigi
 
     CONTINUATION_WINDOW_SIZE = 2 # short window used for continuation detection to avoid tail smoothing
     CONTINUATION_TIMEOUT_SIZE = 8 # samples without a continuation event before declaring a stop
-    REGULARITY_WINDOW_SIZE = 10 # ~1s at 10Hz polling; wide enough to capture run's swing, narrow enough to stay responsive
     DEFAULT_START_THRESHOLD = 0.025
     DEFAULT_CONTINUATION_THRESHOLD = 0.05
     SPEED_RATIO_MIN = 0.7
-    SPEED_RATIO_MAX = 2.2
-    MOTION_INTENSITY_RATIO_MIN = 0.7
-    MOTION_INTENSITY_RATIO_MAX = 1.6
-    REGULARITY_RATIO_MIN = 0.8
-    REGULARITY_RATIO_MAX = 1.6
+    SPEED_RATIO_MAX = 2.0
+    SPEED_RATIO_PIVOT = 1.2 # ratio below this passes through; above, linear gain kicks in
+    SPEED_RATIO_GAIN = 2.0 # linear gain above the pivot
+    SPEED_SMOOTHING_ALPHA = 0.4 # EMA weight on the newest sample; lower = smoother, laggier
 
     # Run states
     STOPPED = :stopped # no run in progress; next start flips direction
@@ -43,11 +41,10 @@ module RoadToRubykaigi
       @state = STOPPED
       @has_started = false
       @samples_since_last_continuation = 0
-      @recent_intensities = []
+      @smoothed_speed_ratio = nil
       @start_threshold = Config.start_threshold || DEFAULT_START_THRESHOLD
       @continuation_threshold = Config.continuation_threshold || DEFAULT_CONTINUATION_THRESHOLD
       @walk_intensity = Config.walk_intensity
-      @walk_regularity = Config.walk_regularity
     end
 
     def pick
@@ -62,48 +59,49 @@ module RoadToRubykaigi
       buffer_sample(data)
       return unless window_full?
 
-      log_signal
       was_running = running?
-      track_recent_intensities
       track_samples_since_last_continuation
+      update_speed_ratio
       update_running_state
+      log_signal
       if was_running && !running?
         :stop
       elsif running?
-        [@direction, speed_ratio]
+        [@direction, @smoothed_speed_ratio]
       end
-    end
-
-    # motion_intensity_ratio picks up small motions like in-place running;
-    # regularity_ratio distinguishes walking (metronome-like, narrow intensity
-    # range) from running (intensity swings widely across steps).
-    def speed_ratio
-      (motion_intensity_ratio * regularity_ratio).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
-    end
-
-    # Current motion strength relative to the walking strength captured at calibration.
-    def motion_intensity_ratio
-      return 1.0 unless @walk_intensity && @walk_intensity > 0
-
-      tail = @window.tail(CONTINUATION_WINDOW_SIZE).motion_intensity
-      (tail / @walk_intensity).clamp(MOTION_INTENSITY_RATIO_MIN, MOTION_INTENSITY_RATIO_MAX)
-    end
-
-    # Current intensity amplitude (max - min over a ~1s window) relative to
-    # baseline walking amplitude. Walking holds intensity near-constant;
-    # running swings it widely.
-    def regularity_ratio
-      return 1.0 unless @walk_regularity && @walk_regularity > 0 && @recent_intensities.size >= REGULARITY_WINDOW_SIZE
-
-      (intensity_amplitude / @walk_regularity).clamp(REGULARITY_RATIO_MIN, REGULARITY_RATIO_MAX)
-    end
-
-    def intensity_amplitude
-      @recent_intensities.max - @recent_intensities.min
     end
 
     def buffer_sample(data)
       @window.buffer_sample([data['x'].to_f, data['y'].to_f, data['z'].to_f])
+    end
+
+    def track_samples_since_last_continuation
+      if continuing?
+        @samples_since_last_continuation = 0
+      else
+        @samples_since_last_continuation += 1
+      end
+    end
+
+    # EMA-smoothed mapping of motion strength to output speed. Without
+    # smoothing, small frame-to-frame bumps make the speed flicker.
+    def update_speed_ratio
+      instant = instantaneous_speed_ratio
+      @smoothed_speed_ratio ||= instant
+      @smoothed_speed_ratio = @smoothed_speed_ratio * (1 - SPEED_SMOOTHING_ALPHA) + instant * SPEED_SMOOTHING_ALPHA
+    end
+
+    # Current motion strength relative to the walking strength captured at calibration.
+    # Uses the full window (matching the calibration source) instead of the
+    # short tail window, since the short window is noise-sensitive and causes
+    # speed to flicker. Walking (ratio ≤ pivot) passes through; only running
+    # (ratio > pivot) gets the gain, so walk stays calm and run pulls ahead.
+    def instantaneous_speed_ratio
+      return 1.0 unless @walk_intensity && @walk_intensity > 0
+
+      ratio = @window.motion_intensity / @walk_intensity
+      amplified = ratio > SPEED_RATIO_PIVOT ? SPEED_RATIO_PIVOT + (ratio - SPEED_RATIO_PIVOT) * SPEED_RATIO_GAIN : ratio
+      amplified.clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
     def update_running_state
@@ -112,18 +110,6 @@ module RoadToRubykaigi
       when running? && !continuing?            then pause
       when paused?  && continuing?             then unpause
       when paused?  && continuation_timed_out? then stop
-      end
-    end
-
-    def track_recent_intensities
-      @recent_intensities = (@recent_intensities << @window.motion_intensity).last(REGULARITY_WINDOW_SIZE)
-    end
-
-    def track_samples_since_last_continuation
-      if continuing?
-        @samples_since_last_continuation = 0
-      else
-        @samples_since_last_continuation += 1
       end
     end
 
@@ -155,7 +141,7 @@ module RoadToRubykaigi
       return unless ENV['SIG_LOG'] == '1'
 
       unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,x,y,z,amp,reg,speed,range,state,mag,jerk"
+        $stderr.puts "t,full,tail,ratio,x,y,z,instant,speed,state,mag,jerk"
         @log_header_printed = true
       end
 
@@ -165,13 +151,11 @@ module RoadToRubykaigi
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
       ax, ay, az = axes.map { |value| value.round(6) }
-      amp = motion_intensity_ratio.round(4)
-      reg = regularity_ratio.round(4)
-      speed = speed_ratio.round(4)
-      amp_range = @recent_intensities.size >= REGULARITY_WINDOW_SIZE ? intensity_amplitude.round(6) : 0
+      instant = instantaneous_speed_ratio.round(4)
+      speed = @smoothed_speed_ratio.round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{amp},#{reg},#{speed},#{amp_range},#{@state},#{mag},#{jerk}"
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{instant},#{speed},#{@state},#{mag},#{jerk}"
     end
   end
 end
