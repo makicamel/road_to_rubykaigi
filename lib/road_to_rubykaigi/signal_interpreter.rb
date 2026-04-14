@@ -7,9 +7,19 @@ module RoadToRubykaigi
     CONTINUATION_WINDOW_SIZE = 2 # short window used for continuation detection to avoid tail smoothing
     CONTINUATION_TIMEOUT_SIZE = 8 # samples without a continuation event before declaring a stop
     SPEED_RATIO_MIN = 0.7
-    SPEED_RATIO_MAX = 2.0
-    SPEED_RATIO_PIVOT = 1.2 # ratio below this passes through; above, linear gain kicks in
-    SPEED_RATIO_GAIN = 2.0 # linear gain above the pivot
+    SPEED_RATIO_MAX = 2.3
+    # Assumed motions:
+    #   - in-place running (high intensity, walk-level cadence)
+    #   - forward running (moderate intensity, high cadence)
+    # Forward running raises cadence; in-place running raises intensity.
+    # Speed = cadence_amp + intensity_boost.
+    # cadence_amp is dominant; lifts forward-run.
+    # intensity_boost is supplementary; lifts in-place-run, whose cadence
+    # stays near walk and so cannot be picked up by cadence_amp alone.
+    CADENCE_PIVOT = 1.0     # walking reference; below passes through, above gets gain
+    CADENCE_GAIN = 4.5      # cadence ratios are narrow (~1.0-1.3), so amplify aggressively
+    INTENSITY_PIVOT = 1.1   # intensity must clearly exceed walking before contributing
+    INTENSITY_WEIGHT = 1.6  # additive boost weight for in-place run
     SPEED_SMOOTHING_ALPHA = 0.4 # EMA weight on the newest sample; lower = smoother, laggier
 
     # Run states
@@ -42,6 +52,7 @@ module RoadToRubykaigi
       @smoothed_speed_ratio = nil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
+      @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
     end
 
@@ -89,17 +100,14 @@ module RoadToRubykaigi
       @smoothed_speed_ratio = @smoothed_speed_ratio * (1 - SPEED_SMOOTHING_ALPHA) + instant * SPEED_SMOOTHING_ALPHA
     end
 
-    # Current motion strength relative to the walking strength captured at calibration.
-    # Uses the full window (matching the calibration source) instead of the
-    # short tail window, since the short window is noise-sensitive and causes
-    # speed to flicker. Walking (ratio ≤ pivot) passes through; only running
-    # (ratio > pivot) gets the gain, so walk stays calm and run pulls ahead.
     def instantaneous_speed_ratio
-      return 1.0 unless @walk_intensity && @walk_intensity > 0
+      return 1.0 unless @walk_cadence && @walk_cadence > 0 && @walk_intensity && @walk_intensity > 0
 
-      ratio = @window.motion_intensity / @walk_intensity
-      amplified = ratio > SPEED_RATIO_PIVOT ? SPEED_RATIO_PIVOT + (ratio - SPEED_RATIO_PIVOT) * SPEED_RATIO_GAIN : ratio
-      amplified.clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
+      cadence_ratio = @window.cadence_hz / @walk_cadence
+      cadence_amp = cadence_ratio > CADENCE_PIVOT ? CADENCE_PIVOT + (cadence_ratio - CADENCE_PIVOT) * CADENCE_GAIN : cadence_ratio
+      intensity_ratio = @window.motion_intensity / @walk_intensity
+      intensity_boost = [intensity_ratio - INTENSITY_PIVOT, 0].max * INTENSITY_WEIGHT
+      (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
     def update_running_state
@@ -139,7 +147,7 @@ module RoadToRubykaigi
       return unless ENV['SIG_LOG'] == '1'
 
       unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,x,y,z,instant,speed,state,mag,jerk"
+        $stderr.puts "t,full,tail,ratio,x,y,z,cadence,instant,speed,state,mag,jerk"
         @log_header_printed = true
       end
 
@@ -149,11 +157,12 @@ module RoadToRubykaigi
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
       ax, ay, az = axes.map { |value| value.round(6) }
+      cadence = @window.cadence_hz.round(4)
       instant = instantaneous_speed_ratio.round(4)
       speed = @smoothed_speed_ratio.round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{instant},#{speed},#{@state},#{mag},#{jerk}"
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk}"
     end
   end
 end
