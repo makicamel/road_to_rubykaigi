@@ -6,6 +6,8 @@ module RoadToRubykaigi
     include Singleton
 
     CONFIG_FILE = '.road_to_rubykaigi'
+    DEFAULT_START_THRESHOLD = 0.025
+    DEFAULT_CONTINUATION_THRESHOLD = 0.05
 
     class << self
       extend Forwardable
@@ -30,11 +32,11 @@ module RoadToRubykaigi
     end
 
     def start_threshold
-      @settings['START_THRESHOLD']&.to_f
+      (@settings['START_THRESHOLD'] || DEFAULT_START_THRESHOLD).to_f
     end
 
     def continuation_threshold
-      @settings['CONTINUATION_THRESHOLD']&.to_f
+      (@settings['CONTINUATION_THRESHOLD'] || DEFAULT_CONTINUATION_THRESHOLD).to_f
     end
 
     def walk_intensity

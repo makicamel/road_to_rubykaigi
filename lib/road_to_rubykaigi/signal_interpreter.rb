@@ -6,8 +6,6 @@ module RoadToRubykaigi
 
     CONTINUATION_WINDOW_SIZE = 2 # short window used for continuation detection to avoid tail smoothing
     CONTINUATION_TIMEOUT_SIZE = 8 # samples without a continuation event before declaring a stop
-    DEFAULT_START_THRESHOLD = 0.025
-    DEFAULT_CONTINUATION_THRESHOLD = 0.05
     SPEED_RATIO_MIN = 0.7
     SPEED_RATIO_MAX = 2.0
     SPEED_RATIO_PIVOT = 1.2 # ratio below this passes through; above, linear gain kicks in
@@ -42,8 +40,8 @@ module RoadToRubykaigi
       @has_started = false
       @samples_since_last_continuation = 0
       @smoothed_speed_ratio = nil
-      @start_threshold = Config.start_threshold || DEFAULT_START_THRESHOLD
-      @continuation_threshold = Config.continuation_threshold || DEFAULT_CONTINUATION_THRESHOLD
+      @start_threshold = Config.start_threshold
+      @continuation_threshold = Config.continuation_threshold
       @walk_intensity = Config.walk_intensity
     end
 
