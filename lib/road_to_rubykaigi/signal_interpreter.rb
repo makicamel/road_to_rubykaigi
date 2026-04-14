@@ -22,10 +22,10 @@ module RoadToRubykaigi
     INTENSITY_WEIGHT = 1.6  # additive boost weight for in-place run
     SPEED_SMOOTHING_ALPHA = 0.4 # EMA weight on the newest sample; lower = smoother, laggier
 
-    # Run states
-    STOPPED = :stopped # no run in progress; next start flips direction
-    RUNNING = :running # continuation events arriving
-    PAUSED = :paused   # continuation briefly absent; next event -> RUNNING (same direction), timeout -> STOPPED
+    # Walk states
+    STOPPED = :stopped # no walk in progress; next start flips direction
+    WALKING = :walking # continuation events arriving
+    PAUSED = :paused   # continuation briefly absent; next event -> WALKING (same direction), timeout -> STOPPED
 
     class << self
       extend Forwardable
@@ -68,14 +68,14 @@ module RoadToRubykaigi
       buffer_sample(data)
       return unless window_full?
 
-      was_running = running?
+      was_walking = walking?
       track_samples_since_last_continuation
       update_speed_ratio
-      update_running_state
+      update_walking_state
       log_signal
-      if was_running && !running?
+      if was_walking && !walking?
         :stop
-      elsif running?
+      elsif walking?
         [@direction, @smoothed_speed_ratio]
       end
     end
@@ -110,10 +110,10 @@ module RoadToRubykaigi
       (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
-    def update_running_state
+    def update_walking_state
       case
-      when stopped? && run_started?            then start
-      when running? && !continuing?            then pause
+      when stopped? && walk_started?           then start
+      when walking? && !continuing?            then pause
       when paused?  && continuing?             then unpause
       when paused?  && continuation_timed_out? then stop
       end
@@ -122,21 +122,21 @@ module RoadToRubykaigi
     def start
       @direction = (@direction == :right ? :left : :right) if @has_started
       @has_started = true
-      @state = RUNNING
+      @state = WALKING
     end
 
     def window_full? = @window.full?
     def stopped? = @state == STOPPED
-    def running? = @state == RUNNING
-    def unpause = @state = RUNNING
+    def walking? = @state == WALKING
+    def unpause = @state = WALKING
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
     def continuation_timed_out? = @samples_since_last_continuation > CONTINUATION_TIMEOUT_SIZE
 
     # Start detection uses the full window so that a single noisy sample
-    # cannot trigger a fake run start.
-    def run_started? = @window.full.motion_intensity > @start_threshold
+    # cannot trigger a fake walk start.
+    def walk_started? = @window.full.motion_intensity > @start_threshold
 
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making
