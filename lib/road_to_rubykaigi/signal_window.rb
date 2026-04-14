@@ -37,6 +37,10 @@ module RoadToRubykaigi
       deltas.sum / deltas.size
     end
 
+    def full
+      self
+    end
+
     # Sub-window of the most recent n samples, for continuation detection.
     def tail(n)
       SignalWindow.new(@samples.last(n))
