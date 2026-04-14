@@ -4,6 +4,10 @@ module RoadToRubykaigi
       @score += 1
     end
 
+    def start_timer
+      @start_time ||= Time.now
+    end
+
     def render_score_board
       "Score: #{@score}".ljust(10).rjust(Map::VIEWPORT_WIDTH)
     end
@@ -24,10 +28,11 @@ module RoadToRubykaigi
 
     def initialize
       @score = 0
-      @start_time = Time.now
+      @start_time = Config.game_server? ? nil : Time.now
     end
 
     def result_time
+      return 0.0 unless @start_time
       (Time.now - @start_time).round(2)
     end
   end

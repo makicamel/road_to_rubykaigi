@@ -25,6 +25,7 @@ module RoadToRubykaigi
       def update
         @deadline.activate(player_x: @player.x)
         @enemies.activate if player_moved?
+        @score_board.start_timer if @player.x > Sprite::Player::WARMUP_END_X
         if @player.x >= GameManager.goal_x && playing?
           EventDispatcher.publish(:ending)
         end
