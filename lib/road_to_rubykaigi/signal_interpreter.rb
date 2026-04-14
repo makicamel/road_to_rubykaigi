@@ -34,7 +34,7 @@ module RoadToRubykaigi
       @direction = :right
       @state = STOPPED
       @has_started = false
-      @samples_since_continuation = 0
+      @samples_since_last_continuation = 0
       @continuation_threshold = Config.continuation_threshold || DEFAULT_CONTINUATION_THRESHOLD
     end
 
@@ -65,7 +65,7 @@ module RoadToRubykaigi
     end
 
     def update_running_state
-      track_samples_since_continuation
+      track_samples_since_last_continuation
       case
       when stopped? && run_started?            then start
       when running? && !continuing?            then pause
@@ -74,11 +74,11 @@ module RoadToRubykaigi
       end
     end
 
-    def track_samples_since_continuation
+    def track_samples_since_last_continuation
       if continuing?
-        @samples_since_continuation = 0
+        @samples_since_last_continuation = 0
       else
-        @samples_since_continuation += 1
+        @samples_since_last_continuation += 1
       end
     end
 
@@ -95,7 +95,7 @@ module RoadToRubykaigi
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
-    def continuation_timed_out? = @samples_since_continuation > CONTINUATION_TIMEOUT_SIZE
+    def continuation_timed_out? = @samples_since_last_continuation > CONTINUATION_TIMEOUT_SIZE
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake run start.
