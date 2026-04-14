@@ -119,7 +119,7 @@ module RoadToRubykaigi
 
       return unless @sampler.finished?
 
-      @results[@current_key] = { samples: @sampler.samples, cadences: @sampler.cadences }
+      @results[@current_key] = { intensities: @sampler.intensities, cadences: @sampler.cadences }
       @remaining_keys.shift
 
       if @remaining_keys.empty?
@@ -134,13 +134,13 @@ module RoadToRubykaigi
       continuation_threshold, walk_cadence, walk_cadence_samples_size = save_calibration
       ANSI.clear
       draw MESSAGES[:title],
-           format_line(MESSAGES[:done_static], continuation_threshold, @results[:static][:samples].size),
+           format_line(MESSAGES[:done_static], continuation_threshold, @results[:static][:intensities].size),
            format_line(MESSAGES[:done_walk], walk_cadence, walk_cadence_samples_size),
            MESSAGES[:done_return]
     end
 
     def save_calibration
-      noise_max = @results[:static][:samples].max
+      noise_max = @results[:static][:intensities].max
       # Noise ceiling * 2.5 as the threshold separating noise from walking.
       # Stays above noise even in short-window valleys between steps.
       #   2.5 is an empirical factor derived from real calibration data.
@@ -153,7 +153,7 @@ module RoadToRubykaigi
       median_cadence = sorted_cadences[sorted_cadences.size / 2] || 0.0
       # Median walking motion_intensity, used by the intensity-boost path that
       # lifts in-place running (elevated intensity, walk-level cadence).
-      sorted_intensities = @results[:walk][:samples].sort
+      sorted_intensities = @results[:walk][:intensities].sort
       median_intensity = sorted_intensities[sorted_intensities.size / 2] || 0.0
       Config.save_calibration(
         start_threshold: start_threshold.round(6),
