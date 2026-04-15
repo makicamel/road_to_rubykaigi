@@ -1,8 +1,11 @@
 require 'singleton'
+require 'uart'
 
 module RoadToRubykaigi
   class SerialReader
     include Singleton
+
+    BAUD = 115200
 
     class << self
       extend Forwardable
@@ -35,15 +38,17 @@ module RoadToRubykaigi
     end
 
     def read_loop
-      system('stty', '-f', @port, 'raw', '115200')
-      File.open(@port, 'r') do |serial|
-        serial.each_line do |line|
-          data = parse_line(line.strip)
-          @queue.push(data) unless data.empty?
-        end
+      serial = UART.open(@port, BAUD)
+      loop do
+        line = serial.gets
+        next unless line
+        data = parse_line(line.strip)
+        @queue.push(data) unless data.empty?
       end
     rescue => e
       $stderr.puts "[SerialReader] #{e.message}"
+    ensure
+      serial&.close
     end
 
     def parse_line(line)
