@@ -7,6 +7,8 @@
 /spec/reports/
 /tmp/*
 !/tmp/.keep
+/bin/*
+/docs/*
 .road_to_rubykaigi
 Gemfile.lock
 # rspec failure tracking
