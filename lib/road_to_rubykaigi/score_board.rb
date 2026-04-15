@@ -28,7 +28,7 @@ module RoadToRubykaigi
 
     def initialize
       @score = 0
-      @start_time = Config.game_server? ? nil : Time.now
+      @start_time = Config.external_input? ? nil : Time.now
     end
 
     def result_time

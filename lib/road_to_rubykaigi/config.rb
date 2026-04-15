@@ -11,21 +11,25 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :game_server?, :serial?, :serial_port, :signal_source, :debug?, :bgm_off?, :project_root,
+      def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :serial_port, :signal_source,
+                     :debug?, :bgm_off?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity, :save_calibration
     end
+
+    INPUT_SOURCES = %i[ble serial].freeze
 
     def initialize
       @settings = load
     end
 
-    def game_server?
-      @settings['GAME_SERVER']
+    def input_source
+      value = @settings['INPUT_SOURCE']&.to_sym
+      INPUT_SOURCES.include?(value) ? value : nil
     end
 
-    def serial?
-      @settings['SERIAL']
-    end
+    def ble? = input_source == :ble
+    def serial? = input_source == :serial
+    def external_input? = !input_source.nil?
 
     def serial_port
       @settings['SERIAL_PORT'] || '/dev/cu.usbserial-ABCDEFGH'

@@ -266,7 +266,7 @@ module RoadToRubykaigi
       def running? = !crouching? && @fast_speed_since && (Time.now - @fast_speed_since) >= RUNNING_SUSTAIN_SECOND
 
       def in_warmup?
-        if @warmed_up || !Config.game_server?
+        if @warmed_up || !Config.external_input?
           false
         elsif @x > WARMUP_END_X
           @warmed_up = true

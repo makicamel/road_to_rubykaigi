@@ -1,8 +1,9 @@
 # Configuration file for Road to RubyKaigi
 # Copy this file to .road_to_rubykaigi and uncomment the settings you want to enable.
 #
-# Start the game server
-# GAME_SERVER=1
+# Input source for the accelerometer signal: `ble` or `serial`.
+# Leave unset to play with keyboard only.
+# INPUT_SOURCE=ble
 # Enable debug logging to tmp/game_server.log
 # DEBUG=1
 # Mute BGM (sound effects play)
@@ -15,7 +16,5 @@
 # WALK_CADENCE=2.6
 # Walking motion intensity median (set by calibration)
 # WALK_INTENSITY=0.6
-# Use USB serial (CDC) instead of BLE game server
-# SERIAL=1
 # Serial port device path (default: /dev/tty.usbmodem0001)
 # SERIAL_PORT=/dev/tty.usbmodem0001
