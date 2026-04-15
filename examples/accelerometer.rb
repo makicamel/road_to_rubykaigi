@@ -72,9 +72,19 @@ uart = BLE::UART.new(name: 'RtR')
 uart.debug = true
 blinker = Blinker.new
 
+# uart.start block fires every BLE::POLLING_UNIT_MS (100ms). Taking multiple
+# samples per block lifts the effective sampling rate above that polling rate.
+# Targeting roughly 30Hz: 3 samples spaced by 30ms within each 100ms block.
+SAMPLES_PER_BLOCK = 3
+SAMPLE_INTERVAL_MS = 30
+
 uart.start do
-  uart.puts(accelerometer.read)
-  # puts("#{Time.now} #{accelerometer.read}")
+  SAMPLES_PER_BLOCK.times do |i|
+    uart.puts(accelerometer.read)
+    # puts("#{Time.now} #{accelerometer.read}")
+    next if i == SAMPLES_PER_BLOCK - 1
+    sleep_ms SAMPLE_INTERVAL_MS
+  end
 
   blinker.mode = uart.connected? ? :slow : :fast
   blinker.tick
