@@ -98,8 +98,8 @@ module RoadToRubykaigi
       File.readlines(config_path, chomp: true)
         .reject { |line| line.strip.empty? || line.strip.start_with?('#') }
         .each_with_object({}) do |line, hash|
-          key, value = line.split('=')
-          hash[key.strip] = value.strip
+          key, value = line.split('=', 2)
+          hash[key.strip] = value.strip if value
         end
     end
 
