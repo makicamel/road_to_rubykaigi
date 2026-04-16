@@ -11,7 +11,8 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :cycle_input_source, :serial_port,
+      def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :cycle_input_source,
+                     :serial_port, :detect_serial_port!,
                      :signal_source, :debug?, :bgm_off?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity, :save_calibration
     end
@@ -40,10 +41,22 @@ module RoadToRubykaigi
     def cycle_input_source
       current_index = INPUT_SOURCE_CYCLE.index(input_source) || 0
       self.input_source = INPUT_SOURCE_CYCLE[(current_index + 1) % INPUT_SOURCE_CYCLE.size]
+      detect_serial_port! if serial?
     end
 
     def serial_port
-      @settings['SERIAL_PORT'] || '/dev/cu.usbserial-ABCDEFGH'
+      @settings['SERIAL_PORT'] || detect_serial_port
+    end
+
+    def detect_serial_port!
+      return serial_port if File.exist?(serial_port)
+
+      port = detect_serial_port
+      if port
+        @settings['SERIAL_PORT'] = port
+        save(['SERIAL_PORT'])
+      end
+      port
     end
 
     def signal_source
@@ -87,6 +100,10 @@ module RoadToRubykaigi
     end
 
     private
+
+    def detect_serial_port
+      Dir.glob('/dev/cu.usbserial-*').first
+    end
 
     def config_path
       File.join(project_root, CONFIG_FILE)

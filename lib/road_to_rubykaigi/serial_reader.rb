@@ -25,6 +25,8 @@ module RoadToRubykaigi
 
     def start
       @queue.clear
+      Config.detect_serial_port!
+      @port = Config.serial_port
       return if @thread
 
       @thread = Thread.new { read_loop }
@@ -35,7 +37,6 @@ module RoadToRubykaigi
 
     def initialize
       @queue = Thread::Queue.new
-      @port = Config.serial_port
       log_path = Config.debug? ? File.join(Config.project_root, 'tmp/serial_reader.log') : File::NULL
       @logger = Logger.new(log_path)
     end
