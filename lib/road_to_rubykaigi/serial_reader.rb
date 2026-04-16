@@ -42,14 +42,22 @@ module RoadToRubykaigi
 
     def read_loop
       serial = UART.open(@port, BAUD)
+      buf = +''
       loop do
-        line = serial.gets
-        next unless line
-        data = parse_line(line.strip)
-        unless data.empty?
-          @logger.info(data.inspect)
-          @queue.push(data)
+        chunk = serial.sysread(256)
+        buf << chunk
+        while (idx = buf.index("\n"))
+          line = buf.slice!(0..idx).strip
+          next if line.empty?
+
+          data = parse_line(line)
+          unless data.empty?
+            @logger.info(data.inspect)
+            @queue.push(data)
+          end
         end
+      rescue EOFError
+        sleep 0.05
       end
     rescue => e
       $stderr.puts "[SerialReader] #{e.message}"
