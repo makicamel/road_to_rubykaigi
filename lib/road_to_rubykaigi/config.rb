@@ -108,9 +108,11 @@ module RoadToRubykaigi
 
       lines = File.readlines(config_path, chomp: true)
       keys.each do |key|
-        index = lines.index { |line| line.match?(/\A\s*#?\s*#{key}\s*=/) }
+        pattern = /\A\s*#?\s*#{key}\s*=/
         entry = "#{key}=#{@settings[key]}"
+        index = lines.index { |line| line.match?(pattern) }
         index ? lines[index] = entry : lines << entry
+        lines.reject! { |line| line.match?(pattern) && line != entry }
       end
       File.write(config_path, lines.join("\n") + "\n")
     end
