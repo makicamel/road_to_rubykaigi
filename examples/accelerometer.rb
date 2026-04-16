@@ -83,11 +83,12 @@ ble_uart = BLE::UART.new(name: 'RtR')
 ble_uart.debug = true
 blinker = Blinker.new
 
-# uart.start block fires every BLE::POLLING_UNIT_MS (100ms). Taking multiple
-# samples per block lifts the effective sampling rate above that polling rate.
-# Targeting roughly 30Hz: 3 samples spaced by 30ms within each 100ms block.
-SAMPLES_PER_BLOCK = 3
-SAMPLE_INTERVAL_MS = 30
+# BLE::UART#start loop period = user_block duration + BLE::POLLING_UNIT_MS (100ms).
+# Measured per-sample processing ≈ 4-5ms; packing 5 samples per block hits ~30Hz:
+#   user_block ≈ 4 * 5ms (inter-sample sleep) + 5 * ~4.5ms ≈ 42ms
+#   loop period ≈ 42 + 100 = 142ms → 5 / 0.142 ≈ 35Hz nominal, ~30Hz realistic
+SAMPLES_PER_BLOCK = 5
+SAMPLE_INTERVAL_MS = 5
 
 ble_uart.start do
   SAMPLES_PER_BLOCK.times do |i|
