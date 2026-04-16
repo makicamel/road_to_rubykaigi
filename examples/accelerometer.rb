@@ -92,7 +92,7 @@ SAMPLE_INTERVAL_MS = 30
 ble_uart.start do
   SAMPLES_PER_BLOCK.times do |i|
     data = accelerometer.read
-    ble_uart.puts(data)
+    ble_uart.puts(data) if ble_uart.connected?
     serial.puts(data)
     # puts("#{Time.now} #{data}")
     next if i == SAMPLES_PER_BLOCK - 1
