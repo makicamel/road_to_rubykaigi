@@ -36,8 +36,13 @@ module RoadToRubykaigi
         $stdin.raw do
           if handle_input == :SELECTED
             item = menu_items[@menu_index]
-            if item == :calibrate
+            case item
+            when :calibrate
               CalibrationScreen.new.display
+            when :input_source
+              Config.cycle_input_source
+              @menu_items = nil
+              @menu_index = menu_items.index(:input_source) || 0
             else
               return item
             end
@@ -59,10 +64,12 @@ module RoadToRubykaigi
 
     def menu_items
       return @menu_items if @menu_items
-      @menu_items = RoadToRubykaigi::VERSIONS
+      @menu_items = RoadToRubykaigi::VERSIONS + [:input_source]
       @menu_items = @menu_items + [:calibrate] if Config.external_input?
       @menu_items
     end
+
+    INPUT_SOURCE_LABELS = { ble: 'BLE', serial: 'Serial', nil => 'Keyboard' }.freeze
 
     def render
       puts [
@@ -76,10 +83,14 @@ module RoadToRubykaigi
       ]
       menu_items.each_with_index do |item, i|
         cursor = i == @menu_index ? " -> " : "    "
-        row_offset = item == :calibrate ? 1 : 0
+        row_offset = case item
+                     when :input_source, :calibrate then 1
+                     else 0
+                     end
         label =
           case item
           when :calibrate then 'Calibrate sensor'
+          when :input_source then "Input: #{INPUT_SOURCE_LABELS[Config.input_source]}"
           else "ver. #{RoadToRubykaigi::VERSIONS[i]}"
           end
         print "\e[#{VERSION_ROW + i + row_offset};1H#{cursor}#{label}"
