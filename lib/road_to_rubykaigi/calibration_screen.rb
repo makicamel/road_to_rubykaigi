@@ -30,8 +30,12 @@ module RoadToRubykaigi
     }.freeze
 
     def display
-      Config.signal_source.start
-      enter_intro
+      if Config.serial? && !File.exist?(Config.serial_port)
+        enter_not_connected
+      else
+        Config.signal_source.start
+        enter_intro
+      end
       $stdin.raw do
         loop do
           case tick
