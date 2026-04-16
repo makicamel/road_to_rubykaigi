@@ -103,7 +103,7 @@ module RoadToRubykaigi
         @menu_index = (@menu_index - 1) % menu_items.size
       when ANSI::DOWN
         @menu_index = (@menu_index + 1) % menu_items.size
-      when " "
+      when " ", ANSI::ENTER, ANSI::LF
         :SELECTED
       when ANSI::ETX
         raise Interrupt
