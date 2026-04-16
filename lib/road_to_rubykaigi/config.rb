@@ -8,6 +8,10 @@ module RoadToRubykaigi
     CONFIG_FILE = '.road_to_rubykaigi'
     DEFAULT_START_THRESHOLD = 0.025
     DEFAULT_CONTINUATION_THRESHOLD = 0.05
+    # Sampling rate of the accelerometer stream coming from the Pico side.
+    # examples/accelerometer.rb sends SAMPLES_PER_BLOCK samples per BLE poll
+    # block; keep this in sync with that setting.
+    SAMPLING_RATE_HZ = 30
 
     class << self
       extend Forwardable

@@ -4,8 +4,8 @@ module RoadToRubykaigi
   class SignalInterpreter
     include Singleton
 
-    CONTINUATION_WINDOW_SIZE = 2 # short window used for continuation detection to avoid tail smoothing
-    CONTINUATION_TIMEOUT_SIZE = 8 # samples without a continuation event before declaring a stop
+    CONTINUATION_WINDOW_SECONDS = 0.2 # short window used for continuation detection to avoid tail smoothing
+    CONTINUATION_TIMEOUT_SECONDS = 0.8 # time without a continuation event before declaring a stop
     SPEED_RATIO_MIN = 0.7
     SPEED_RATIO_MAX = 2.3
     # Assumed motions:
@@ -50,6 +50,8 @@ module RoadToRubykaigi
       @has_started = false
       @samples_since_last_continuation = 0
       @smoothed_speed_ratio = nil
+      @continuation_window_samples = (CONTINUATION_WINDOW_SECONDS * Config::SAMPLING_RATE_HZ).ceil
+      @continuation_timeout_samples = (CONTINUATION_TIMEOUT_SECONDS * Config::SAMPLING_RATE_HZ).ceil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
@@ -132,7 +134,7 @@ module RoadToRubykaigi
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
-    def continuation_timed_out? = @samples_since_last_continuation > CONTINUATION_TIMEOUT_SIZE
+    def continuation_timed_out? = @samples_since_last_continuation > @continuation_timeout_samples
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake walk start.
@@ -141,7 +143,7 @@ module RoadToRubykaigi
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def continuing? = @window.tail(CONTINUATION_WINDOW_SIZE).motion_intensity > @continuation_threshold
+    def continuing? = @window.tail(@continuation_window_samples).motion_intensity > @continuation_threshold
 
     def log_signal
       return unless ENV['SIG_LOG'] == '1'
@@ -152,7 +154,7 @@ module RoadToRubykaigi
       end
 
       full = @window.motion_intensity
-      tail = @window.tail(CONTINUATION_WINDOW_SIZE).motion_intensity
+      tail = @window.tail(@continuation_window_samples).motion_intensity
       axes = @window.axis_intensities
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
