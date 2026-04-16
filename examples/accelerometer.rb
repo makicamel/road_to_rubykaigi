@@ -91,9 +91,10 @@ SAMPLE_INTERVAL_MS = 30
 
 ble_uart.start do
   SAMPLES_PER_BLOCK.times do |i|
-    ble_uart.puts(accelerometer.read)
+    data = accelerometer.read
+    ble_uart.puts(data)
     serial.puts(data)
-    # puts("#{Time.now} #{accelerometer.read}")
+    # puts("#{Time.now} #{data}")
     next if i == SAMPLES_PER_BLOCK - 1
     sleep_ms SAMPLE_INTERVAL_MS
   end
