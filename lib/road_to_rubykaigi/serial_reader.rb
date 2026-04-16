@@ -1,4 +1,5 @@
 require 'singleton'
+require 'logger'
 require 'uart'
 
 module RoadToRubykaigi
@@ -35,6 +36,8 @@ module RoadToRubykaigi
     def initialize
       @queue = Thread::Queue.new
       @port = Config.serial_port
+      log_path = Config.debug? ? File.join(Config.project_root, 'tmp/serial_reader.log') : File::NULL
+      @logger = Logger.new(log_path)
     end
 
     def read_loop
@@ -43,7 +46,10 @@ module RoadToRubykaigi
         line = serial.gets
         next unless line
         data = parse_line(line.strip)
-        @queue.push(data) unless data.empty?
+        unless data.empty?
+          @logger.info(data.inspect)
+          @queue.push(data)
+        end
       end
     rescue => e
       $stderr.puts "[SerialReader] #{e.message}"
