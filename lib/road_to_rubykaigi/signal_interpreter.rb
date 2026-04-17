@@ -32,12 +32,15 @@ module RoadToRubykaigi
       def_delegators :instance, :process
     end
 
+    # Drain every queued sample per tick so the pipeline rate matches the
+    # sensor rate instead of being capped at frame rate. NOTE: :input events
+    # may fire multiple times per tick — action handlers must be safe under
+    # repeated same-tick calls (idempotent or self-gated).
     def process
-      data = pick
-      return unless data
-
-      if (action = interpret(data))
-        EventDispatcher.publish(:input, action)
+      Config.signal_source.drain do |data|
+        if (action = interpret(data))
+          EventDispatcher.publish(:input, action)
+        end
       end
     end
 
@@ -56,12 +59,6 @@ module RoadToRubykaigi
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
-    end
-
-    def pick
-      return if Config.signal_source.queue.empty?
-
-      Config.signal_source.queue.pop(true)
     end
 
     def interpret(data)
