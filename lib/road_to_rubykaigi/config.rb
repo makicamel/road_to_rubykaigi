@@ -8,17 +8,15 @@ module RoadToRubykaigi
     CONFIG_FILE = '.road_to_rubykaigi'
     DEFAULT_START_THRESHOLD = 0.025
     DEFAULT_CONTINUATION_THRESHOLD = 0.05
-    # Sampling rate of the accelerometer stream coming from the Pico side.
-    # examples/accelerometer.rb sends SAMPLES_PER_BLOCK samples per BLE poll
-    # block; keep this in sync with that setting.
-    SAMPLING_RATE_HZ = 30
+    DEFAULT_SAMPLING_RATE_HZ = 30
 
     class << self
       extend Forwardable
       def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :cycle_input_source,
                      :serial_port, :detect_serial_port!,
                      :signal_source, :debug?, :bgm_off?, :project_root,
-                     :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity, :save_calibration
+                     :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity,
+                     :sampling_rate_hz, :save_calibration
     end
 
     INPUT_SOURCES = %i[ble serial].freeze
@@ -91,12 +89,17 @@ module RoadToRubykaigi
       @settings['WALK_INTENSITY']&.to_f
     end
 
-    def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:)
+    def sampling_rate_hz
+      (@settings['SAMPLING_RATE_HZ'] || DEFAULT_SAMPLING_RATE_HZ).to_f
+    end
+
+    def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:, sampling_rate_hz:)
       @settings['START_THRESHOLD'] = start_threshold.to_s
       @settings['CONTINUATION_THRESHOLD'] = continuation_threshold.to_s
       @settings['WALK_CADENCE'] = walk_cadence.to_s
       @settings['WALK_INTENSITY'] = walk_intensity.to_s
-      save(%w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_CADENCE WALK_INTENSITY])
+      @settings['SAMPLING_RATE_HZ'] = sampling_rate_hz.to_s
+      save(%w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_CADENCE WALK_INTENSITY SAMPLING_RATE_HZ])
     end
 
     def project_root

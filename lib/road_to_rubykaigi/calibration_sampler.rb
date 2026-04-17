@@ -7,12 +7,20 @@ module RoadToRubykaigi
     def tick
       Config.signal_source.drain do |data|
         sample = parse_sample(data)
-        @window.buffer_sample(sample) if sample
+        next unless sample
+        @window.buffer_sample(sample)
+        @sample_count += 1
       end
       return unless @window.full?
       @intensity = @window.motion_intensity
       @intensities << @intensity
       @cadences << @window.cadence_hz if @window.cadence_ready?
+    end
+
+    def sampling_rate_hz
+      duration = elapsed
+      return 0.0 if duration <= 0
+      @sample_count / duration
     end
 
     def finished?
@@ -35,6 +43,7 @@ module RoadToRubykaigi
       @cadences = []
       @intensity = 0.0
       @started_at = Time.now
+      @sample_count = 0
     end
 
     def elapsed

@@ -50,8 +50,8 @@ module RoadToRubykaigi
       @has_started = false
       @samples_since_last_continuation = 0
       @smoothed_speed_ratio = nil
-      @continuation_window_samples = (CONTINUATION_WINDOW_SECONDS * Config::SAMPLING_RATE_HZ).ceil
-      @continuation_timeout_samples = (CONTINUATION_TIMEOUT_SECONDS * Config::SAMPLING_RATE_HZ).ceil
+      @continuation_window_samples = (CONTINUATION_WINDOW_SECONDS * Config.sampling_rate_hz).ceil
+      @continuation_timeout_samples = (CONTINUATION_TIMEOUT_SECONDS * Config.sampling_rate_hz).ceil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence

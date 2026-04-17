@@ -1,7 +1,7 @@
 module RoadToRubykaigi
   class SignalWindow
     BUFFER_SECONDS = 0.5
-    SIZE = (BUFFER_SECONDS * Config::SAMPLING_RATE_HZ).ceil
+    SIZE = (BUFFER_SECONDS * Config.sampling_rate_hz).ceil
 
     StepCadence = Data.define(:recent_magnitudes) do
       WINDOW_SECONDS = 2.0

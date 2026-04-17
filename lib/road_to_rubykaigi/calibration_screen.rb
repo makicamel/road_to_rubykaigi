@@ -123,7 +123,11 @@ module RoadToRubykaigi
 
       return unless @sampler.finished?
 
-      @results[@current_key] = { intensities: @sampler.intensities, cadences: @sampler.cadences }
+      @results[@current_key] = {
+        intensities: @sampler.intensities,
+        cadences: @sampler.cadences,
+        sampling_rate_hz: @sampler.sampling_rate_hz,
+      }
       @remaining_keys.shift
 
       if @remaining_keys.empty?
@@ -159,11 +163,13 @@ module RoadToRubykaigi
       # lifts in-place running (elevated intensity, walk-level cadence).
       sorted_intensities = @results[:walk][:intensities].sort
       median_intensity = sorted_intensities[sorted_intensities.size / 2] || 0.0
+      sampling_rate_hz = (@results[:static][:sampling_rate_hz] + @results[:walk][:sampling_rate_hz]) / 2.0
       Config.save_calibration(
         start_threshold: start_threshold.round(6),
         continuation_threshold: continuation_threshold.round(6),
         walk_cadence: median_cadence.round(6),
         walk_intensity: median_intensity.round(6),
+        sampling_rate_hz: sampling_rate_hz.round(3),
       )
       [continuation_threshold, median_cadence, sorted_cadences.size]
     end
