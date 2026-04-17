@@ -21,18 +21,31 @@ require 'uart'
 require 'ble'
 require 'ble-uart'
 
-class Accelerometer
-  VDD = 3.3
-  ZERO = VDD / 2.0 # zero-g output voltage
-  SENSITIVITY = VDD / 5.0 # output voltage per 1g
+# Switch this to match the target board before flashing.
+BOARD = :ble  # :ble or :serial
 
+if BOARD == :ble
+  # Sensor IC damaged: internal reference acts as ~2.3V despite VDD=3.3V.
+  # Calibrated from x-axis ±1g voltages (1.47V / 0.65V).
+  # Chip X/Y physically swapped on this board, so swap X/Y ADC pins.
+  ZERO = 1.06
+  SENSITIVITY = 0.41
+  X_PIN, Y_PIN, Z_PIN = 27, 26, 28
+else # :serial
+  # Healthy sensor, datasheet values.
+  ZERO = 3.3 / 2.0
+  SENSITIVITY = 3.3 / 5.0
+  X_PIN, Y_PIN, Z_PIN = 26, 27, 28
+end
+
+class Accelerometer
   def initialize
     GPIO.new(19, GPIO::OUT).write(1)
     sleep 0.5
 
-    @ax = ADC.new(26)
-    @ay = ADC.new(27)
-    @az = ADC.new(28)
+    @ax = ADC.new(X_PIN)
+    @ay = ADC.new(Y_PIN)
+    @az = ADC.new(Z_PIN)
   end
 
   def read
