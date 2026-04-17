@@ -104,13 +104,21 @@ SAMPLES_PER_BLOCK = 5
 SAMPLE_INTERVAL_MS = 5
 
 ble_uart.start do
-  SAMPLES_PER_BLOCK.times do |i|
-    data = accelerometer.read
-    ble_uart.puts(data) if ble_uart.connected?
-    serial.puts(data)
-    # puts("#{Time.now} #{data}")
-    next if i == SAMPLES_PER_BLOCK - 1
-    sleep_ms SAMPLE_INTERVAL_MS
+  if ble_uart.connected?
+    SAMPLES_PER_BLOCK.times do |i|
+      data = accelerometer.read
+      ble_uart.puts(data)
+      serial.puts(data)
+      next if i == SAMPLES_PER_BLOCK - 1
+      sleep_ms SAMPLE_INTERVAL_MS
+    end
+  else
+    # Skip sleep_ms during pre-connection: it appears to delay BLE setup,
+    # making BLE::UART.new on the JS side take longer to return.
+    SAMPLES_PER_BLOCK.times do
+      data = accelerometer.read
+      serial.puts(data)
+    end
   end
 
   blinker.mode = ble_uart.connected? ? :slow : :fast
