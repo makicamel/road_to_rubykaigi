@@ -47,6 +47,10 @@ module RoadToRubykaigi
           EventDispatcher.publish(:input, action)
         end
       end
+      if walk_expired?
+        stop
+        EventDispatcher.publish(:input, :stop)
+      end
     end
 
     private
@@ -157,6 +161,13 @@ module RoadToRubykaigi
       return false if @last_continuation_time.nil?
       (Time.now - @last_continuation_time) > CONTINUATION_TIMEOUT_SECONDS
     end
+
+    # True when a walk is in progress but the continuation timeout has elapsed.
+    # The normal PAUSED -> STOPPED transition lives inside interpret(), so it
+    # only fires while samples are flowing. When the stream dries up mid-walk
+    # (device off, BLE buffer drained, stale-drop skipping every sample), this
+    # predicate lets the caller emit :stop on a pure tick basis instead.
+    def walk_expired? = !stopped? && continuation_timed_out?
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake walk start.
