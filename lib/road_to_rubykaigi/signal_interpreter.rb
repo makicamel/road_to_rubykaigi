@@ -21,14 +21,13 @@ module RoadToRubykaigi
     INTENSITY_PIVOT = 1.1   # intensity must clearly exceed walking before contributing
     INTENSITY_WEIGHT = 1.6  # additive boost weight for in-place run
     SPEED_SMOOTHING_ALPHA = 0.4 # EMA weight on the newest sample; lower = smoother, laggier
-    JUMP_SMOOTHING_ALPHA = 0.3 # EMA weight on the newest sample; lower = more suppression of running footstrike spikes
 
     # Walk states
     STOPPED = :stopped # no walk in progress; next start flips direction
     WALKING = :walking # continuation events arriving
     PAUSED = :paused   # continuation briefly absent; next event -> WALKING (same direction), timeout -> STOPPED
 
-    Walk = Data.define(:direction, :speed_ratio, :jump_ratio) do
+    Walk = Data.define(:direction, :speed_ratio) do
       def right? = direction == :right
     end
 
@@ -62,13 +61,11 @@ module RoadToRubykaigi
       @has_started = false
       @last_continuation_time = nil
       @smoothed_speed_ratio = nil
-      @smoothed_jump_ratio = nil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
-      @gravity_vector = Config.gravity_vector
-      @jump_v_max = Config.jump_v_max
+      @jump_detector = JumpDetector.new(gravity: Config.gravity_vector)
     end
 
     def interpret(data)
@@ -80,17 +77,16 @@ module RoadToRubykaigi
       was_walking = walking?
       track_continuation
       update_speed_ratio
-      update_jump_ratio
       update_walking_state
       log_signal
+
+      if jump_detected?
+        EventDispatcher.publish(:input, :jump)
+      end
       if was_walking && !walking?
         :stop
       elsif walking?
-        Walk.new(
-          direction: @direction,
-          speed_ratio: @smoothed_speed_ratio,
-          jump_ratio: @smoothed_jump_ratio,
-        )
+        Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
       end
     end
 
@@ -120,19 +116,8 @@ module RoadToRubykaigi
       (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
-    # EMA-smoothed vertical acceleration normalized by calibrated jump max.
-    # Without smoothing, running footstrikes produce brief upward spikes that
-    # would look like jumps.
-    def update_jump_ratio
-      instant = instantaneous_jump_ratio
-      @smoothed_jump_ratio ||= instant
-      @smoothed_jump_ratio = @smoothed_jump_ratio * (1 - JUMP_SMOOTHING_ALPHA) + instant * JUMP_SMOOTHING_ALPHA
-    end
-
-    def instantaneous_jump_ratio
-      return 0.0 unless @gravity_vector && @jump_v_max && @jump_v_max > 0
-
-      (@window.last_vertical_acceleration(@gravity_vector) / @jump_v_max).clamp(0.0, 1.0)
+    def jump_detected?
+      @jump_detector.detect(sample: @window.last_sample)
     end
 
     def update_walking_state
@@ -182,7 +167,7 @@ module RoadToRubykaigi
       return unless ENV['SIG_LOG'] == '1'
 
       unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,jump_instant,jump,state,mag,jerk,raw_x,raw_y,raw_z"
+        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,x,y,z"
         @log_header_printed = true
       end
 
@@ -195,12 +180,10 @@ module RoadToRubykaigi
       cadence = @window.cadence_hz.round(4)
       instant = instantaneous_speed_ratio.round(4)
       speed = @smoothed_speed_ratio.round(4)
-      jump_instant = instantaneous_jump_ratio.round(4)
-      jump = (@smoothed_jump_ratio || 0.0).round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
-      rx, ry, rz = @window.last_sample.map { |value| value.round(6) }
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{jump_instant},#{jump},#{@state},#{mag},#{jerk},#{rx},#{ry},#{rz}"
+      x, y, z = @window.last_sample.map { |value| value.round(6) }
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{x},#{y},#{z}"
     end
   end
 end
