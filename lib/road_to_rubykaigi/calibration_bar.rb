@@ -1,7 +1,7 @@
 module RoadToRubykaigi
   class CalibrationBar
     BAR_WIDTH = 100
-    BAR_MAX = 1.0
+    BAR_MAX = 2.5
     EMOJI_WIDTH = 2
     BOUNCE_HZ = 4
 
@@ -21,6 +21,14 @@ module RoadToRubykaigi
     }.freeze
 
     def self.states = LABELS.keys.dup
+
+    def self.clear_emoji
+      blank = ' ' * (BAR_WIDTH + EMOJI_WIDTH)
+      [
+        [BASE_X + 1, EMOJI_BOUNCE_Y, blank],
+        [BASE_X + 1, EMOJI_BASE_Y, blank],
+      ]
+    end
 
     def render
       result = [

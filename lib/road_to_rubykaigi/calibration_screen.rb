@@ -115,7 +115,7 @@ module RoadToRubykaigi
       @current_key = @remaining_keys.first
       @sampler = CalibrationSampler.new
       @bar = CalibrationBar.new(@sampler, state: @current_key)
-      draw *MESSAGES[:clear_instructions]
+      draw *MESSAGES[:clear_instructions], *CalibrationBar.clear_emoji
     end
 
     def tick_collect
