@@ -116,9 +116,11 @@ module RoadToRubykaigi
       self
     end
 
-    # Sub-window of the most recent n samples, for continuation detection.
-    def tail(n)
-      SignalWindow.new(@samples.last(n))
+    # Sub-window containing samples from the last `seconds`, for continuation detection.
+    def tail(seconds:)
+      return SignalWindow.new([]) if @samples.empty?
+      cutoff = @samples.last[:time] - seconds
+      SignalWindow.new(@samples.select { |entry| entry[:time] >= cutoff })
     end
 
     private

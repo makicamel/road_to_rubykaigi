@@ -56,11 +56,9 @@ module RoadToRubykaigi
       @direction = :right
       @state = STOPPED
       @has_started = false
-      @samples_since_last_continuation = 0
+      @last_continuation_time = nil
       @smoothed_speed_ratio = nil
       @smoothed_jump_ratio = nil
-      @continuation_window_samples = (CONTINUATION_WINDOW_SECONDS * Config.sampling_rate_hz).ceil
-      @continuation_timeout_samples = (CONTINUATION_TIMEOUT_SECONDS * Config.sampling_rate_hz).ceil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
@@ -76,7 +74,7 @@ module RoadToRubykaigi
       return unless window_full?
 
       was_walking = walking?
-      track_samples_since_last_continuation
+      track_continuation
       update_speed_ratio
       update_jump_ratio
       update_walking_state
@@ -96,12 +94,8 @@ module RoadToRubykaigi
       @window.buffer_sample([data['x'].to_f, data['y'].to_f, data['z'].to_f])
     end
 
-    def track_samples_since_last_continuation
-      if continuing?
-        @samples_since_last_continuation = 0
-      else
-        @samples_since_last_continuation += 1
-      end
+    def track_continuation
+      @last_continuation_time = Time.now if continuing?
     end
 
     # EMA-smoothed mapping of motion strength to output speed. Without
@@ -159,7 +153,10 @@ module RoadToRubykaigi
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
-    def continuation_timed_out? = @samples_since_last_continuation > @continuation_timeout_samples
+    def continuation_timed_out?
+      return false if @last_continuation_time.nil?
+      (Time.now - @last_continuation_time) > CONTINUATION_TIMEOUT_SECONDS
+    end
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake walk start.
@@ -168,7 +165,7 @@ module RoadToRubykaigi
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def continuing? = @window.tail(@continuation_window_samples).motion_intensity > @continuation_threshold
+    def continuing? = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity > @continuation_threshold
 
     def log_signal
       return unless ENV['SIG_LOG'] == '1'
@@ -179,7 +176,7 @@ module RoadToRubykaigi
       end
 
       full = @window.motion_intensity
-      tail = @window.tail(@continuation_window_samples).motion_intensity
+      tail = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity
       axes = @window.axis_intensities
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
