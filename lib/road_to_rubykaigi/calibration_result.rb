@@ -13,14 +13,17 @@ module RoadToRubykaigi
   ) do
     # Derives calibrated values from per-phase collected samples.
     def self.from_samples(static:, walk:, jump:)
-      noise_max = static[:intensities].max
+      # Use p95 rather than max so a single stray spike during "still" doesn't
+      # inflate every downstream threshold.
+      sorted_static = static[:intensities].sort
+      noise_ceiling = sorted_static[(sorted_static.size * 0.95).floor] || 0.0
       # Noise ceiling * 2.5 as the threshold separating noise from walking.
       # Stays above noise even in short-window valleys between steps.
       #   2.5 is an empirical factor derived from real calibration data.
-      start_threshold = noise_max * 2.5
+      start_threshold = noise_ceiling * 2.5
       # Continuation uses a short window (fast stop detection) which is noise-sensitive,
       # so use a higher threshold for noise tolerance.
-      continuation_threshold = noise_max * 5.0
+      continuation_threshold = noise_ceiling * 5.0
       gravity_vector = mean_vector(static[:raw_samples])
       new(
         start_threshold:,
