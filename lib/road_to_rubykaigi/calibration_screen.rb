@@ -141,58 +141,14 @@ module RoadToRubykaigi
 
     def enter_done
       @state = :done
-      summary = save_calibration
+      result = CalibrationResult.from_samples(**@results)
+      result.save
       ANSI.clear
       draw MESSAGES[:title],
-           format_line(MESSAGES[:done_static], summary[:continuation_threshold], @results[:static][:intensities].size),
-           format_line(MESSAGES[:done_walk], summary[:walk_cadence], summary[:walk_cadence_samples_size]),
-           format_line(MESSAGES[:done_jump], summary[:jump_v_max], @results[:jump][:raw_samples].size),
+           format_line(MESSAGES[:done_static], result.continuation_threshold, result.static_sample_count),
+           format_line(MESSAGES[:done_walk], result.walk_cadence, result.walk_cadence_sample_count),
+           format_line(MESSAGES[:done_jump], result.jump_v_max, result.jump_sample_count),
            MESSAGES[:done_return]
-    end
-
-    def save_calibration
-      noise_max = @results[:static][:intensities].max
-      # Noise ceiling * 2.5 as the threshold separating noise from walking.
-      # Stays above noise even in short-window valleys between steps.
-      #   2.5 is an empirical factor derived from real calibration data.
-      start_threshold = noise_max * 2.5
-      # Continuation uses a short window (fast stop detection) which is noise-sensitive,
-      # so use a higher threshold for noise tolerance.
-      continuation_threshold = noise_max * 5.0
-      # Median walking step cadence in Hz, representing individual step frequency.
-      sorted_cadences = @results[:walk][:cadences].sort
-      median_cadence = sorted_cadences[sorted_cadences.size / 2] || 0.0
-      # Median walking motion_intensity, used by the intensity-boost path that
-      # lifts in-place running (elevated intensity, walk-level cadence).
-      sorted_intensities = @results[:walk][:intensities].sort
-      median_intensity = sorted_intensities[sorted_intensities.size / 2] || 0.0
-      sampling_rate_hz = (@results[:static][:sampling_rate_hz] + @results[:walk][:sampling_rate_hz] + @results[:jump][:sampling_rate_hz]) / 3.0
-      # Averaged [x, y, z] of the resting accelerometer, used as the gravity reference.
-      gravity_vector = @results[:static][:raw_samples].transpose.map { |values| values.sum / values.size }
-      jump_v_max = max_vertical_acceleration(@results[:jump][:raw_samples], gravity_vector)
-      Config.save_calibration(
-        start_threshold: start_threshold.round(6),
-        continuation_threshold: continuation_threshold.round(6),
-        walk_cadence: median_cadence.round(6),
-        walk_intensity: median_intensity.round(6),
-        sampling_rate_hz: sampling_rate_hz.round(3),
-        gravity_vector: gravity_vector.map { |value| value.round(6) },
-        jump_v_max: jump_v_max.round(6),
-      )
-      {
-        continuation_threshold: continuation_threshold,
-        walk_cadence: median_cadence,
-        walk_cadence_samples_size: sorted_cadences.size,
-        jump_v_max: jump_v_max,
-      }
-    end
-
-    # Max upward acceleration (in g, gravity subtracted) observed across jump samples.
-    def max_vertical_acceleration(samples, gravity)
-      gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
-      samples.map { |sample|
-        (sample[0] * gravity[0] + sample[1] * gravity[1] + sample[2] * gravity[2]) / gravity_magnitude - gravity_magnitude
-      }.max || 0.0
     end
 
     def format_line(line, *args)
