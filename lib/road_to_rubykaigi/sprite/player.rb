@@ -17,6 +17,7 @@ module RoadToRubykaigi
       BASE_HEIGHT = 3
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
+      JUMP_RATIO_THRESHOLD = 0.5
 
       ATTACK_COOLDOWN_SECOND = 0.1
       KEY_INPUT_THRESHOLD = 0.5
@@ -37,6 +38,9 @@ module RoadToRubykaigi
 
       # @param [SignalInterpreter::Walk] action
       def walk(action)
+        if action.jump_ratio >= JUMP_RATIO_THRESHOLD
+          jump
+        end
         action.right? ? right(action.speed_ratio) : left(action.speed_ratio)
       end
 
