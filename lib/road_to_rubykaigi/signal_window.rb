@@ -87,6 +87,19 @@ module RoadToRubykaigi
       @samples.last
     end
 
+    # Signed vertical acceleration of the latest sample after removing
+    # gravity. Positive = accelerating upward, negative = downward.
+    def last_vertical_acceleration(gravity)
+      sample = @samples.last
+      # Magnitude of the gravity reference vector (used to normalize the
+      # projection below and as the resting 1g offset).
+      gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
+      # Sample projected onto the vertical axis, normalized to g units.
+      projection = (sample[0] * gravity[0] + sample[1] * gravity[1] + sample[2] * gravity[2]) / gravity_magnitude
+      # Subtract the resting offset.
+      projection - gravity_magnitude
+    end
+
     # Average absolute change in magnitude between consecutive samples.
     # Walking/running produce sharp footstrike impacts (high jerk),
     # while jumping produces smoother acceleration curves (low jerk).
