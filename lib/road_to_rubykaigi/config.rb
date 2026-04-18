@@ -16,7 +16,7 @@ module RoadToRubykaigi
                      :serial_port, :detect_serial_port!,
                      :signal_source, :debug?, :bgm_off?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity,
-                     :sampling_rate_hz, :gravity_vector, :jump_v_peak, :save_calibration
+                     :sampling_rate_hz, :gravity_vector, :jump_v_max, :save_calibration
     end
 
     INPUT_SOURCES = %i[ble serial].freeze
@@ -101,12 +101,12 @@ module RoadToRubykaigi
       parts.size == 3 ? parts : nil
     end
 
-    def jump_v_peak
-      @settings['JUMP_V_PEAK']&.to_f
+    def jump_v_max
+      @settings['JUMP_V_MAX']&.to_f
     end
 
     def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:,
-                         sampling_rate_hz:, gravity_vector: nil, jump_v_peak: nil)
+                         sampling_rate_hz:, gravity_vector: nil, jump_v_max: nil)
       @settings['START_THRESHOLD'] = start_threshold.to_s
       @settings['CONTINUATION_THRESHOLD'] = continuation_threshold.to_s
       @settings['WALK_CADENCE'] = walk_cadence.to_s
@@ -117,9 +117,9 @@ module RoadToRubykaigi
         @settings['GRAVITY'] = gravity_vector.join(',')
         keys << 'GRAVITY'
       end
-      if jump_v_peak
-        @settings['JUMP_V_PEAK'] = jump_v_peak.to_s
-        keys << 'JUMP_V_PEAK'
+      if jump_v_max
+        @settings['JUMP_V_MAX'] = jump_v_max.to_s
+        keys << 'JUMP_V_MAX'
       end
       save(keys)
     end

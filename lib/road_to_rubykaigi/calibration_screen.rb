@@ -146,7 +146,7 @@ module RoadToRubykaigi
       draw MESSAGES[:title],
            format_line(MESSAGES[:done_static], summary[:continuation_threshold], @results[:static][:intensities].size),
            format_line(MESSAGES[:done_walk], summary[:walk_cadence], summary[:walk_cadence_samples_size]),
-           format_line(MESSAGES[:done_jump], summary[:jump_v_peak], @results[:jump][:raw_samples].size),
+           format_line(MESSAGES[:done_jump], summary[:jump_v_max], @results[:jump][:raw_samples].size),
            MESSAGES[:done_return]
     end
 
@@ -169,7 +169,7 @@ module RoadToRubykaigi
       sampling_rate_hz = (@results[:static][:sampling_rate_hz] + @results[:walk][:sampling_rate_hz] + @results[:jump][:sampling_rate_hz]) / 3.0
       # Averaged [x, y, z] of the resting accelerometer, used as the gravity reference.
       gravity_vector = @results[:static][:raw_samples].transpose.map { |values| values.sum / values.size }
-      jump_v_peak = peak_vertical_acceleration(@results[:jump][:raw_samples], gravity_vector)
+      jump_v_max = max_vertical_acceleration(@results[:jump][:raw_samples], gravity_vector)
       Config.save_calibration(
         start_threshold: start_threshold.round(6),
         continuation_threshold: continuation_threshold.round(6),
@@ -177,18 +177,18 @@ module RoadToRubykaigi
         walk_intensity: median_intensity.round(6),
         sampling_rate_hz: sampling_rate_hz.round(3),
         gravity_vector: gravity_vector.map { |value| value.round(6) },
-        jump_v_peak: jump_v_peak.round(6),
+        jump_v_max: jump_v_max.round(6),
       )
       {
         continuation_threshold: continuation_threshold,
         walk_cadence: median_cadence,
         walk_cadence_samples_size: sorted_cadences.size,
-        jump_v_peak: jump_v_peak,
+        jump_v_max: jump_v_max,
       }
     end
 
     # Max upward acceleration (in g, gravity subtracted) observed across jump samples.
-    def peak_vertical_acceleration(samples, gravity)
+    def max_vertical_acceleration(samples, gravity)
       gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
       samples.map { |sample|
         (sample[0] * gravity[0] + sample[1] * gravity[1] + sample[2] * gravity[2]) / gravity_magnitude - gravity_magnitude

@@ -66,7 +66,7 @@ module RoadToRubykaigi
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
       @gravity_vector = Config.gravity_vector
-      @jump_v_peak = Config.jump_v_peak
+      @jump_v_max = Config.jump_v_max
     end
 
     def interpret(data)
@@ -122,7 +122,7 @@ module RoadToRubykaigi
       (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
-    # EMA-smoothed vertical acceleration normalized by calibrated jump peak.
+    # EMA-smoothed vertical acceleration normalized by calibrated jump max.
     # Without smoothing, running footstrikes produce brief upward spikes that
     # would look like jumps.
     def update_jump_ratio
@@ -132,9 +132,9 @@ module RoadToRubykaigi
     end
 
     def instantaneous_jump_ratio
-      return 0.0 unless @gravity_vector && @jump_v_peak && @jump_v_peak > 0
+      return 0.0 unless @gravity_vector && @jump_v_max && @jump_v_max > 0
 
-      (@window.last_vertical_acceleration(@gravity_vector) / @jump_v_peak).clamp(0.0, 1.0)
+      (@window.last_vertical_acceleration(@gravity_vector) / @jump_v_max).clamp(0.0, 1.0)
     end
 
     def update_walking_state
