@@ -112,8 +112,9 @@ class Controller
   end
 
   def send_data(line)
+    t = JS.global[:Date].now.to_i
     query = line.gsub(',', '&')
-    url = "#{LOCAL_ENDPOINT}?#{query}"
+    url = "#{LOCAL_ENDPOINT}?#{query}&t=#{t}"
 
     JS.global.fetch(url) do |response|
       log("[HTTP] GET #{response.status}")

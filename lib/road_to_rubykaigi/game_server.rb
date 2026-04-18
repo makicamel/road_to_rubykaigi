@@ -8,6 +8,7 @@ module RoadToRubykaigi
     HOST = 'http://127.0.0.1'
     PORT = 2026
     ENDPOINT = '/road_to_rubykaigi'
+    MAX_AGE_SECONDS = 0.5
 
     class << self
       extend Forwardable
@@ -17,8 +18,12 @@ module RoadToRubykaigi
     attr_reader :queue
 
     def drain
+      now = Time.now.to_f
       until @queue.empty?
-        yield @queue.pop(true)
+        data = @queue.pop(true)
+        t_ms = data['t']
+        next if t_ms && now - t_ms.to_f / 1000.0 > MAX_AGE_SECONDS
+        yield data
       end
     rescue ThreadError
       # pop(true) raises if the queue empties mid-drain
