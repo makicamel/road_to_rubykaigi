@@ -5,7 +5,6 @@ module RoadToRubykaigi
     :walk_cadence,
     :walk_cadence_sample_count,
     :walk_intensity,
-    :sampling_rate_hz,
     :gravity_vector,
     :jump_v_max,
     :static_sample_count,
@@ -30,7 +29,6 @@ module RoadToRubykaigi
         continuation_threshold:,
         walk_cadence:     median(walk[:cadences]), # Median walking step cadence in Hz, representing individual step frequency.
         walk_intensity:   median(walk[:intensities]), # Used by the intensity-boost path that lifts in-place running (elevated intensity, walk-level cadence).
-        sampling_rate_hz: mean_sampling_rate(static, walk, jump),
         gravity_vector:,
         jump_v_max:       max_vertical_acceleration(jump[:raw_samples], gravity_vector),
 
@@ -38,10 +36,6 @@ module RoadToRubykaigi
         walk_cadence_sample_count: walk[:cadences].size,
         jump_sample_count: jump[:raw_samples].size,
       )
-    end
-
-    def self.mean_sampling_rate(*phases)
-      phases.sum { |phase| phase[:sampling_rate_hz] } / phases.size.to_f
     end
 
     def self.median(values)
@@ -68,7 +62,6 @@ module RoadToRubykaigi
         continuation_threshold: continuation_threshold.round(6),
         walk_cadence: walk_cadence.round(6),
         walk_intensity: walk_intensity.round(6),
-        sampling_rate_hz: sampling_rate_hz.round(3),
         gravity_vector: gravity_vector.map { |value| value.round(6) },
         jump_v_max: jump_v_max.round(6),
       )

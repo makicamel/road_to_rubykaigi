@@ -8,7 +8,6 @@ module RoadToRubykaigi
     CONFIG_FILE = '.road_to_rubykaigi'
     DEFAULT_START_THRESHOLD = 0.025
     DEFAULT_CONTINUATION_THRESHOLD = 0.05
-    DEFAULT_SAMPLING_RATE_HZ = 30
 
     class << self
       extend Forwardable
@@ -16,7 +15,7 @@ module RoadToRubykaigi
                      :serial_port, :detect_serial_port!,
                      :signal_source, :debug?, :bgm_off?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity,
-                     :sampling_rate_hz, :gravity_vector, :jump_v_max, :save_calibration
+                     :gravity_vector, :jump_v_max, :save_calibration
     end
 
     INPUT_SOURCES = %i[ble serial].freeze
@@ -89,10 +88,6 @@ module RoadToRubykaigi
       @settings['WALK_INTENSITY']&.to_f
     end
 
-    def sampling_rate_hz
-      (@settings['SAMPLING_RATE_HZ'] || DEFAULT_SAMPLING_RATE_HZ).to_f
-    end
-
     def gravity_vector
       value = @settings['GRAVITY']
       return nil unless value
@@ -106,13 +101,12 @@ module RoadToRubykaigi
     end
 
     def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:,
-                         sampling_rate_hz:, gravity_vector: nil, jump_v_max: nil)
+                         gravity_vector: nil, jump_v_max: nil)
       @settings['START_THRESHOLD'] = start_threshold.to_s
       @settings['CONTINUATION_THRESHOLD'] = continuation_threshold.to_s
       @settings['WALK_CADENCE'] = walk_cadence.to_s
       @settings['WALK_INTENSITY'] = walk_intensity.to_s
-      @settings['SAMPLING_RATE_HZ'] = sampling_rate_hz.to_s
-      keys = %w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_CADENCE WALK_INTENSITY SAMPLING_RATE_HZ]
+      keys = %w[START_THRESHOLD CONTINUATION_THRESHOLD WALK_CADENCE WALK_INTENSITY]
       if gravity_vector
         @settings['GRAVITY'] = gravity_vector.join(',')
         keys << 'GRAVITY'

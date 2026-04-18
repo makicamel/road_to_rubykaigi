@@ -128,7 +128,6 @@ module RoadToRubykaigi
         intensities: @sampler.intensities,
         cadences: @sampler.cadences,
         raw_samples: @sampler.raw_samples,
-        sampling_rate_hz: @sampler.sampling_rate_hz,
       }
       @remaining_keys.shift
 
