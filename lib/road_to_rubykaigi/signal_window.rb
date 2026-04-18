@@ -82,6 +82,11 @@ module RoadToRubykaigi
       Math.sqrt(s[0] ** 2 + s[1] ** 2 + s[2] ** 2)
     end
 
+    # Raw [x, y, z] of the latest sample (before variance/intensity).
+    def last_sample
+      @samples.last
+    end
+
     # Average absolute change in magnitude between consecutive samples.
     # Walking/running produce sharp footstrike impacts (high jerk),
     # while jumping produces smoother acceleration curves (low jerk).

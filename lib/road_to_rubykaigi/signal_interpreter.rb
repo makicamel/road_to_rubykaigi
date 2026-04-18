@@ -146,7 +146,7 @@ module RoadToRubykaigi
       return unless ENV['SIG_LOG'] == '1'
 
       unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,x,y,z,cadence,instant,speed,state,mag,jerk"
+        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,raw_x,raw_y,raw_z"
         @log_header_printed = true
       end
 
@@ -155,13 +155,14 @@ module RoadToRubykaigi
       axes = @window.axis_intensities
       sum = axes.sum
       ratio = sum.zero? ? 0.0 : axes.max / sum
-      ax, ay, az = axes.map { |value| value.round(6) }
+      vx, vy, vz = axes.map { |value| value.round(6) }
       cadence = @window.cadence_hz.round(4)
       instant = instantaneous_speed_ratio.round(4)
       speed = @smoothed_speed_ratio.round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{ax},#{ay},#{az},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk}"
+      rx, ry, rz = @window.last_sample.map { |value| value.round(6) }
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{rx},#{ry},#{rz}"
     end
   end
 end

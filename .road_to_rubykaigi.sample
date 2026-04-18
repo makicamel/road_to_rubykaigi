@@ -16,5 +16,9 @@
 # WALK_CADENCE=2.6
 # Walking motion intensity median (set by calibration)
 # WALK_INTENSITY=0.6
+# Gravity vector (x,y,z, set by calibration, used to project vertical axis)
+# GRAVITY=0.0,0.0,1.0
+# Peak vertical acceleration at a committed jump (set by calibration)
+# JUMP_V_PEAK=2.0
 # Serial port device path (default: /dev/tty.usbmodem0001)
 # SERIAL_PORT=/dev/tty.usbmodem0001
