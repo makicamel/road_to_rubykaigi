@@ -51,14 +51,15 @@ module RoadToRubykaigi
     def handle_input(action)
       return if @player.stunned?
 
-      action, *args = Array(action)
       case action
+      when SignalInterpreter::Walk
+        @player.walk(action)
       when :jump; @player.jump
       when :crouch
         @player.crouch
         Manager::AudioManager.instance.crouch
-      when :right; @player.right(*args.first(1))
-      when :left; @player.left(*args.first(1))
+      when :right; @player.right
+      when :left; @player.left
       when :stop; @player.stop
       when :attack
         if @player.can_attack?(@attacks)

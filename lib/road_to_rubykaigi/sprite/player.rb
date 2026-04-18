@@ -35,6 +35,11 @@ module RoadToRubykaigi
         move(in_warmup? ? RIGHT : LEFT, speed_ratio)
       end
 
+      # @param [SignalInterpreter::Walk] action
+      def walk(action)
+        action.right? ? right(action.speed_ratio) : left(action.speed_ratio)
+      end
+
       def stop
         @vx = 0
         @last_speed_ratio = 1.0

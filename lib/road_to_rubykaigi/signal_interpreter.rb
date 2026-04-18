@@ -28,6 +28,10 @@ module RoadToRubykaigi
     WALKING = :walking # continuation events arriving
     PAUSED = :paused   # continuation briefly absent; next event -> WALKING (same direction), timeout -> STOPPED
 
+    Walk = Data.define(:direction, :speed_ratio, :jump_ratio) do
+      def right? = direction == :right
+    end
+
     class << self
       extend Forwardable
       def_delegators :instance, :process
@@ -80,7 +84,11 @@ module RoadToRubykaigi
       if was_walking && !walking?
         :stop
       elsif walking?
-        [@direction, @smoothed_speed_ratio, @smoothed_jump_ratio]
+        Walk.new(
+          direction: @direction,
+          speed_ratio: @smoothed_speed_ratio,
+          jump_ratio: @smoothed_jump_ratio,
+        )
       end
     end
 
