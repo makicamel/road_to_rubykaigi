@@ -17,6 +17,7 @@ module RoadToRubykaigi
     LABELS = {
       static: { text: 'Hold still', emoji: '🧍' },
       walk:   { text: 'Walk',       emoji: '🚶‍➡️', emoji_bounce: '🏃‍➡️' },
+      jump:   { text: 'Jump',       emoji: '🧍',    emoji_bounce: '🤸' },
     }.freeze
 
     def self.states = LABELS.keys.dup
@@ -27,7 +28,7 @@ module RoadToRubykaigi
         format_line(MESSAGES[:intensity], bar, @sampler.intensity),
       ]
 
-      if walking?
+      if bouncing_state?
         emoji_x = BASE_X + 1 + (@sampler.progress * BAR_WIDTH).to_i.clamp(0, BAR_WIDTH)
         # Clear previous emoji
         unless @prev_emoji_x == emoji_x
@@ -64,7 +65,7 @@ module RoadToRubykaigi
       '█' * filled + '░' * (BAR_WIDTH - filled)
     end
 
-    def walking? = @state == :walk
+    def bouncing_state? = @label.key?(:emoji_bounce)
     def bouncing? = (Time.now.to_f * BOUNCE_HZ).to_i.odd?
 
     def format_line(line, *args)

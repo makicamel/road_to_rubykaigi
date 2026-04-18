@@ -2,13 +2,14 @@ module RoadToRubykaigi
   class CalibrationSampler
     PHASE_SECONDS = 5
 
-    attr_reader :intensities, :cadences, :intensity
+    attr_reader :intensities, :cadences, :raw_samples, :intensity
 
     def tick
       Config.signal_source.drain do |data|
         sample = parse_sample(data)
         next unless sample
         @window.buffer_sample(sample)
+        @raw_samples << sample
         @sample_count += 1
       end
       return unless @window.full?
@@ -41,6 +42,7 @@ module RoadToRubykaigi
       @window = SignalWindow.new
       @intensities = []
       @cadences = []
+      @raw_samples = []
       @intensity = 0.0
       @started_at = Time.now
       @sample_count = 0
