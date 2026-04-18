@@ -1,11 +1,10 @@
 module RoadToRubykaigi
   class SignalWindow
     BUFFER_SECONDS = 0.5
-    SIZE = (BUFFER_SECONDS * Config.sampling_rate_hz).ceil
+    READY_FILL_RATIO = 0.8 # window must be 80% filled (by time) before considered ready
 
     StepCadence = Data.define(:recent_magnitudes) do
       WINDOW_SECONDS = 2.0
-      READY_FILL_RATIO = 0.8 # window must be 80% filled before cadence is considered ready
       MIN_STEP_INTERVAL_SECONDS = 0.15 # min gap between steps (caps cadence at ~6.7Hz)
       MIN_SAMPLES_FOR_LOCAL_MAXIMUM = 3 # need prev/current/next to detect a local maximum
 
@@ -53,7 +52,10 @@ module RoadToRubykaigi
     end
 
     def buffer_sample(sample)
-      @samples = (@samples + [sample]).last(SIZE)
+      now = Time.now
+      @samples << { time: now, sample: sample }
+      window_start = now - BUFFER_SECONDS
+      @samples.shift while @samples.first[:time] < window_start
       @step_cadence.record(sample)
     end
 
@@ -61,7 +63,8 @@ module RoadToRubykaigi
     def cadence_ready? = @step_cadence.ready?
 
     def full?
-      @samples.size == SIZE
+      return false if @samples.size < 2
+      (@samples.last[:time] - @samples.first[:time]) >= BUFFER_SECONDS * READY_FILL_RATIO
     end
 
     # Returns how far samples in the window spread from their mean position
@@ -78,19 +81,19 @@ module RoadToRubykaigi
 
     # Raw acceleration magnitude of the latest sample: sqrt(x² + y² + z²).
     def last_magnitude
-      s = @samples.last
-      Math.sqrt(s[0] ** 2 + s[1] ** 2 + s[2] ** 2)
+      sample = @samples.last[:sample]
+      Math.sqrt(sample[0] ** 2 + sample[1] ** 2 + sample[2] ** 2)
     end
 
     # Raw [x, y, z] of the latest sample (before variance/intensity).
     def last_sample
-      @samples.last
+      @samples.last[:sample]
     end
 
     # Signed vertical acceleration of the latest sample after removing
     # gravity. Positive = accelerating upward, negative = downward.
     def last_vertical_acceleration(gravity)
-      sample = @samples.last
+      sample = @samples.last[:sample]
       # Magnitude of the gravity reference vector (used to normalize the
       # projection below and as the resting 1g offset).
       gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
@@ -104,7 +107,7 @@ module RoadToRubykaigi
     # Walking/running produce sharp footstrike impacts (high jerk),
     # while jumping produces smoother acceleration curves (low jerk).
     def mag_jerk
-      mags = @samples.map { |s| Math.sqrt(s[0] ** 2 + s[1] ** 2 + s[2] ** 2) }
+      mags = @samples.map { |entry| s = entry[:sample]; Math.sqrt(s[0] ** 2 + s[1] ** 2 + s[2] ** 2) }
       deltas = mags.each_cons(2).map { |a, b| (b - a).abs }
       deltas.sum / deltas.size
     end
@@ -126,7 +129,7 @@ module RoadToRubykaigi
     end
 
     def axis_variance(index)
-      values = @samples.map { |sample| sample[index] }
+      values = @samples.map { |entry| entry[:sample][index] }
       mean = values.sum / values.size
       values.sum { |value| (value - mean) ** 2 } / values.size
     end
