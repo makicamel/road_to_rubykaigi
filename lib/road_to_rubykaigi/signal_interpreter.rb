@@ -21,6 +21,7 @@ module RoadToRubykaigi
     INTENSITY_PIVOT = 1.1   # intensity must clearly exceed walking before contributing
     INTENSITY_WEIGHT = 1.6  # additive boost weight for in-place run
     SPEED_SMOOTHING_ALPHA = 0.4 # EMA weight on the newest sample; lower = smoother, laggier
+    JUMP_SMOOTHING_ALPHA = 0.3 # EMA weight on the newest sample; lower = more suppression of running footstrike spikes
 
     # Walk states
     STOPPED = :stopped # no walk in progress; next start flips direction
@@ -53,12 +54,15 @@ module RoadToRubykaigi
       @has_started = false
       @samples_since_last_continuation = 0
       @smoothed_speed_ratio = nil
+      @smoothed_jump_ratio = nil
       @continuation_window_samples = (CONTINUATION_WINDOW_SECONDS * Config.sampling_rate_hz).ceil
       @continuation_timeout_samples = (CONTINUATION_TIMEOUT_SECONDS * Config.sampling_rate_hz).ceil
       @start_threshold = Config.start_threshold
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
+      @gravity_vector = Config.gravity_vector
+      @jump_v_peak = Config.jump_v_peak
     end
 
     def interpret(data)
@@ -70,12 +74,13 @@ module RoadToRubykaigi
       was_walking = walking?
       track_samples_since_last_continuation
       update_speed_ratio
+      update_jump_ratio
       update_walking_state
       log_signal
       if was_walking && !walking?
         :stop
       elsif walking?
-        [@direction, @smoothed_speed_ratio]
+        [@direction, @smoothed_speed_ratio, @smoothed_jump_ratio]
       end
     end
 
@@ -107,6 +112,21 @@ module RoadToRubykaigi
       intensity_ratio = @window.motion_intensity / @walk_intensity
       intensity_boost = [intensity_ratio - INTENSITY_PIVOT, 0].max * INTENSITY_WEIGHT
       (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
+    end
+
+    # EMA-smoothed vertical acceleration normalized by calibrated jump peak.
+    # Without smoothing, running footstrikes produce brief upward spikes that
+    # would look like jumps.
+    def update_jump_ratio
+      instant = instantaneous_jump_ratio
+      @smoothed_jump_ratio ||= instant
+      @smoothed_jump_ratio = @smoothed_jump_ratio * (1 - JUMP_SMOOTHING_ALPHA) + instant * JUMP_SMOOTHING_ALPHA
+    end
+
+    def instantaneous_jump_ratio
+      return 0.0 unless @gravity_vector && @jump_v_peak && @jump_v_peak > 0
+
+      (@window.last_vertical_acceleration(@gravity_vector) / @jump_v_peak).clamp(0.0, 1.0)
     end
 
     def update_walking_state
@@ -146,7 +166,7 @@ module RoadToRubykaigi
       return unless ENV['SIG_LOG'] == '1'
 
       unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,raw_x,raw_y,raw_z"
+        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,jump_instant,jump,state,mag,jerk,raw_x,raw_y,raw_z"
         @log_header_printed = true
       end
 
@@ -159,10 +179,12 @@ module RoadToRubykaigi
       cadence = @window.cadence_hz.round(4)
       instant = instantaneous_speed_ratio.round(4)
       speed = @smoothed_speed_ratio.round(4)
+      jump_instant = instantaneous_jump_ratio.round(4)
+      jump = (@smoothed_jump_ratio || 0.0).round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
       rx, ry, rz = @window.last_sample.map { |value| value.round(6) }
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{rx},#{ry},#{rz}"
+      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{jump_instant},#{jump},#{@state},#{mag},#{jerk},#{rx},#{ry},#{rz}"
     end
   end
 end
