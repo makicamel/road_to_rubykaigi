@@ -166,11 +166,7 @@ module RoadToRubykaigi
     def log_signal
       return unless ENV['SIG_LOG'] == '1'
 
-      unless @log_header_printed
-        $stderr.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,x,y,z"
-        @log_header_printed = true
-      end
-
+      @sig_log_io ||= open_sig_log_io
       full = @window.motion_intensity
       tail = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity
       axes = @window.axis_intensities
@@ -183,7 +179,16 @@ module RoadToRubykaigi
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
       x, y, z = @window.last_sample.map { |value| value.round(6) }
-      $stderr.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{x},#{y},#{z}"
+      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{x},#{y},#{z}"
+    end
+
+    def open_sig_log_io
+      path = File.join(File.expand_path('../../tmp', __dir__), "sig_#{Time.now.strftime('%Y%m%d_%H%M')}.log")
+      file = File.open(path, 'w')
+      file.sync = true
+      file.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,x,y,z"
+      $stderr.puts "[SIG_LOG] writing to #{path}"
+      file
     end
   end
 end
