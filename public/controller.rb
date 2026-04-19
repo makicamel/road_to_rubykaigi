@@ -120,7 +120,7 @@ class Controller
 
     while (idx = @line_buffer.index("\n"))
       line = @line_buffer.slice!(0..idx).strip
-      log("[DATA] #{line}")
+      JS.global.console.log("[DATA] #{line}")
       line.split(SAMPLE_SEPARATOR).each { |sample| send_data(sample) }
     end
   end
@@ -130,9 +130,7 @@ class Controller
     query = line.gsub(',', '&')
     url = "#{LOCAL_ENDPOINT}?#{query}&t=#{t}"
 
-    JS.global.fetch(url) do |response|
-      log("[HTTP] GET #{response.status}")
-    end
+    JS.global.fetch(url) { |response| JS.global.console.log("[HTTP] GET #{response[:status]}") }
   end
 end
 
