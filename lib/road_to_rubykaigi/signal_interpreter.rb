@@ -114,13 +114,9 @@ module RoadToRubykaigi
     end
 
     def instantaneous_speed_ratio
-      return 1.0 unless @walk_cadence && @walk_cadence > 0 && @walk_intensity && @walk_intensity > 0
+      return 1.0 unless @walk_intensity && @walk_intensity > 0
 
-      cadence_ratio = @window.cadence_hz / @walk_cadence
-      cadence_amp = cadence_ratio > CADENCE_PIVOT ? CADENCE_PIVOT + (cadence_ratio - CADENCE_PIVOT) * CADENCE_GAIN : cadence_ratio
-      intensity_ratio = @window.motion_intensity / @walk_intensity
-      intensity_boost = [intensity_ratio - INTENSITY_PIVOT, 0].max * INTENSITY_WEIGHT
-      (cadence_amp + intensity_boost).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
+      (@window.motion_intensity / @walk_intensity).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
     end
 
     def jump_detected?
