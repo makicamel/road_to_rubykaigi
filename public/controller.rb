@@ -97,12 +97,16 @@ class Controller
     end
   end
 
+  # Drain the UART buffer completely each tick.
+  # Looping until empty prevents buffered samples from compounding
+  # into seconds of latency.
   def poll_uart
-    data = @uart.read_nonblock(256)
-    return if data.nil? || data.empty?
-
     @line_buffer ||= ''
-    @line_buffer << data
+    loop do
+      data = @uart.read_nonblock(256)
+      break if data.nil? || data.empty?
+      @line_buffer << data
+    end
 
     while (idx = @line_buffer.index("\n"))
       line = @line_buffer.slice!(0..idx).strip
