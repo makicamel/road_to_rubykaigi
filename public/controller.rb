@@ -41,12 +41,21 @@ class Controller
     log("[*] Connecting UART (svc=#{svc} tx=#{tx} rx=#{rx} prefix=#{prefix})...")
     begin
       @uart = JS::BLE::UART.new(service_uuid: svc, tx_uuid: tx, rx_uuid: rx, name_prefix: prefix)
+      @uart.device.js_device.addEventListener('gattserverdisconnected') { |_event| handle_gatt_disconnect }
       log("[+] Connected to: #{@uart.device.name}")
       set_ui(true)
       start_auto_read
     rescue => e
       log("[-] Error: #{e.message}")
     end
+  end
+
+  def handle_gatt_disconnect
+    stop_auto_read
+    @line_buffer = ''
+    @uart = nil
+    log('[!] Device disconnected (GATT)')
+    set_ui(false)
   end
 
   def disconnect
