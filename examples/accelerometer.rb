@@ -102,13 +102,25 @@ ble_uart = BLE::UART.new(name: 'RtR')
 ble_uart.debug = true
 blinker = Blinker.new
 
+# The BLE connection interval (negotiated by the central) caps the notification rate,
+# the sensor produces faster than a single-sample-per-notify stream can be delivered.
+# Batching keeps the effective sample rate while staying under the notification throughput ceiling.
+BLE_BATCH_SIZE = 2
+SAMPLE_SEPARATOR = '|'
+
+ble_batch = []
+
 # BLE::UART#start calls this block USER_BLOCK_CALL_COUNT_PER_POLL times per BLE
 # polling cycle (every POLLING_UNIT_MS / USER_BLOCK_CALL_COUNT_PER_POLL ≈ 20ms).
 # Send one sample per call — no inner loop, no sleep_ms here.
 ble_uart.start do
   data = accelerometer.read
   if ble_uart.connected?
-    ble_uart.puts(data)
+    ble_batch << data
+    if ble_batch.size >= BLE_BATCH_SIZE
+      ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
+      ble_batch.clear
+    end
   else
     serial.puts(data)
   end

@@ -3,6 +3,7 @@ require 'js'
 class Controller
   LOCAL_ENDPOINT = 'http://127.0.0.1:2026/road_to_rubykaigi'
   POLL_INTERVAL_MS = 1000 / 60 # Manager::GameManager::FRAME_RATE
+  SAMPLE_SEPARATOR = '|'
 
   def initialize
     bind_events
@@ -120,7 +121,7 @@ class Controller
     while (idx = @line_buffer.index("\n"))
       line = @line_buffer.slice!(0..idx).strip
       log("[DATA] #{line}")
-      send_data(line)
+      line.split(SAMPLE_SEPARATOR).each { |sample| send_data(sample) }
     end
   end
 
