@@ -31,8 +31,7 @@ module RoadToRubykaigi
     MIN_SAMPLES_FOR_ANALYSIS = 5    # slope + hold both need a few samples to be meaningful
 
     def initialize(gravity:)
-      # sensor mounted head-down so raw +x points down; flip to internal +x = up convention
-      @gravity = [-gravity[0], gravity[1], gravity[2]]
+      @gravity = gravity
       @gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
       @last_samples = [] # [{time:, vertical_acceleration:}] sliding window
       @last_jump_time = nil
@@ -56,7 +55,7 @@ module RoadToRubykaigi
     private
 
     def vertical_acceleration(sample)
-      projection = (-sample[0] * @gravity[0] + sample[1] * @gravity[1] + sample[2] * @gravity[2]) / @gravity_magnitude
+      projection = (sample[0] * @gravity[0] + sample[1] * @gravity[1] + sample[2] * @gravity[2]) / @gravity_magnitude
       projection - @gravity_magnitude
     end
 

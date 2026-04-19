@@ -26,12 +26,22 @@ BOARD = :ble  # :ble or :serial
 
 ZERO = 3.3 / 2.0
 SENSITIVITY = 3.3 / 5.0
+# Sensor axes in chip-native frame (both boards mount the chip the same way
+# relative to the body):
+#   chip X = vertical (up/down along gravity)
+#   chip Y = horizontal (lateral)
+#   chip Z = body front-back
+# Emitted stream uses a rotated frame where Z = up, so at rest both boards
+# emit (x=0, y=0, z=+1). Chip X reads -1g at rest, so Z_SIGN=-1 flips it.
 if BOARD == :ble
-  # Chip X/Y physically swapped on this board, so swap X/Y ADC pins.
-  X_PIN, Y_PIN, Z_PIN = 27, 26, 28
+  # Chip X/Y physically swapped on this board: pin 26 reads chip Y, pin 27
+  # reads chip X.
+  X_PIN, Y_PIN, Z_PIN = 26, 28, 27
 else # :serial
-  X_PIN, Y_PIN, Z_PIN = 26, 27, 28
+  # Straight pin-to-chip mapping: pin 26=chip X, 27=chip Y, 28=chip Z.
+  X_PIN, Y_PIN, Z_PIN = 27, 28, 26
 end
+X_SIGN, Y_SIGN, Z_SIGN = 1, 1, -1
 
 class Accelerometer
   def initialize
@@ -44,9 +54,9 @@ class Accelerometer
   end
 
   def read
-    x = to_g(@ax.read_voltage)
-    y = to_g(@ay.read_voltage)
-    z = to_g(@az.read_voltage)
+    x = to_g(@ax.read_voltage) * X_SIGN
+    y = to_g(@ay.read_voltage) * Y_SIGN
+    z = to_g(@az.read_voltage) * Z_SIGN
     "x=#{x.round(5)},y=#{y.round(5)},z=#{z.round(5)}"
   end
 
