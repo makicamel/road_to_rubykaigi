@@ -33,7 +33,7 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :process
+      def_delegators :instance, :process, :log_cue
     end
 
     # Drain every queued sample per tick so the pipeline rate matches the
@@ -50,6 +50,13 @@ module RoadToRubykaigi
         stop
         EventDispatcher.publish(:input, :stop)
       end
+    end
+
+    def log_cue(phase, text)
+      return unless ENV['SIG_LOG'] == '1'
+
+      @sig_log_io ||= open_sig_log_io
+      @sig_log_io.puts "[cue] t=#{Time.now.to_f} phase=#{phase} #{text}"
     end
 
     private
