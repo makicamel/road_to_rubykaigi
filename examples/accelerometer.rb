@@ -24,17 +24,12 @@ require 'ble-uart'
 # Switch this to match the target board before flashing.
 BOARD = :ble  # :ble or :serial
 
+ZERO = 3.3 / 2.0
+SENSITIVITY = 3.3 / 5.0
 if BOARD == :ble
-  # Sensor IC damaged: internal reference acts as ~2.3V despite VDD=3.3V.
-  # Calibrated from x-axis ±1g voltages (1.47V / 0.65V).
   # Chip X/Y physically swapped on this board, so swap X/Y ADC pins.
-  ZERO = 1.06
-  SENSITIVITY = 0.41
   X_PIN, Y_PIN, Z_PIN = 27, 26, 28
 else # :serial
-  # Healthy sensor, datasheet values.
-  ZERO = 3.3 / 2.0
-  SENSITIVITY = 3.3 / 5.0
   X_PIN, Y_PIN, Z_PIN = 26, 27, 28
 end
 
