@@ -66,9 +66,10 @@ class Blinker
   LED_PIN = CYW43::GPIO::LED_PIN
   FAST_INTERVAL_MS = 200
   SLOW_INTERVAL_MS = 500
+  TICK_INTERVAL_MS = BLE::POLLING_UNIT_MS / BLE::UART::USER_BLOCK_CALL_COUNT_PER_POLL
   INTERVALS = {
-    fast: FAST_INTERVAL_MS / BLE::POLLING_UNIT_MS,
-    slow: SLOW_INTERVAL_MS / BLE::POLLING_UNIT_MS,
+    fast: FAST_INTERVAL_MS / TICK_INTERVAL_MS,
+    slow: SLOW_INTERVAL_MS / TICK_INTERVAL_MS,
   }
 
   attr_writer :mode
@@ -96,29 +97,15 @@ ble_uart = BLE::UART.new(name: 'RtR')
 ble_uart.debug = true
 blinker = Blinker.new
 
-# BLE::UART#start loop period = user_block duration + BLE::POLLING_UNIT_MS (100ms).
-# Measured per-sample processing ≈ 4-5ms; packing 5 samples per block hits ~30Hz:
-#   user_block ≈ 4 * 5ms (inter-sample sleep) + 5 * ~4.5ms ≈ 42ms
-#   loop period ≈ 42 + 100 = 142ms → 5 / 0.142 ≈ 35Hz nominal, ~30Hz realistic
-SAMPLES_PER_BLOCK = 5
-SAMPLE_INTERVAL_MS = 5
-
+# BLE::UART#start calls this block USER_BLOCK_CALL_COUNT_PER_POLL times per BLE
+# polling cycle (every POLLING_UNIT_MS / USER_BLOCK_CALL_COUNT_PER_POLL ≈ 20ms).
+# Send one sample per call — no inner loop, no sleep_ms here.
 ble_uart.start do
+  data = accelerometer.read
   if ble_uart.connected?
-    SAMPLES_PER_BLOCK.times do |i|
-      data = accelerometer.read
-      ble_uart.puts(data)
-      serial.puts(data)
-      next if i == SAMPLES_PER_BLOCK - 1
-      sleep_ms SAMPLE_INTERVAL_MS
-    end
+    ble_uart.puts(data)
   else
-    # Skip sleep_ms during pre-connection: it appears to delay BLE setup,
-    # making BLE::UART.new on the JS side take longer to return.
-    SAMPLES_PER_BLOCK.times do
-      data = accelerometer.read
-      serial.puts(data)
-    end
+    serial.puts(data)
   end
 
   blinker.mode = ble_uart.connected? ? :slow : :fast
