@@ -43,6 +43,9 @@ module RoadToRubykaigi
               Config.cycle_input_source
               @menu_items = nil
               @menu_index = menu_items.index(:input_source) || 0
+            when :open_controller
+              GameServer.start
+              GameServer.open_controller
             else
               return item
             end
@@ -65,7 +68,7 @@ module RoadToRubykaigi
     def menu_items
       return @menu_items if @menu_items
       @menu_items = RoadToRubykaigi::VERSIONS + [:input_source]
-      @menu_items = @menu_items + [:calibrate] if Config.external_input?
+      @menu_items = @menu_items + [:calibrate, :open_controller] if Config.external_input?
       @menu_items
     end
 
@@ -84,12 +87,13 @@ module RoadToRubykaigi
       menu_items.each_with_index do |item, i|
         cursor = i == @menu_index ? " -> " : "    "
         row_offset = case item
-                     when :input_source, :calibrate then 1
+                     when :input_source, :calibrate, :open_controller then 1
                      else 0
                      end
         label =
           case item
           when :calibrate then 'Calibrate sensor'
+          when :open_controller then 'Open Controller'
           when :input_source then "Input: #{INPUT_SOURCE_LABELS[Config.input_source]}"
           else "ver. #{RoadToRubykaigi::VERSIONS[i]}"
           end

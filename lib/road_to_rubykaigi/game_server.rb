@@ -12,7 +12,7 @@ module RoadToRubykaigi
 
     class << self
       extend Forwardable
-      def_delegators :instance, :start, :queue, :drain
+      def_delegators :instance, :start, :queue, :drain, :open_controller
     end
 
     attr_reader :queue
@@ -42,8 +42,6 @@ module RoadToRubykaigi
       open_controller
     end
 
-    private
-
     def open_controller
       url = "#{HOST}:#{PORT}/controller.html"
       command =
@@ -57,6 +55,8 @@ module RoadToRubykaigi
     rescue
       # best effort: don't crash the server if the browser can't be opened
     end
+
+    private
 
     def initialize
       @queue = Thread::Queue.new
