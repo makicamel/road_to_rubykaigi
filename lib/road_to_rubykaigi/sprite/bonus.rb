@@ -53,7 +53,37 @@ module RoadToRubykaigi
           ],
         },
         2026 => {
-          Basic: [],
+          Basic: [
+            { x: 60, y: 25, character: :ruby },
+            { x: 67, y: 25, character: :ruby },
+            { x: 74, y: 25, character: :ruby },
+            { x: 107, y: 23, character: :coffee },
+            { x: 110, y: 23, character: :book },
+            { x: 140, y: 13, character: :ruby },
+            { x: 167, y: 13, character: :ruby },
+            { x: 182, y: 13, character: :ruby },
+
+            { x: 240, y: 20, character: :money },
+            { x: 260, y: 18, character: :money },
+            { x: 279, y: 16, character: :money },
+
+            { x: 315, y: 18, character: :sushi },
+            { x: 320, y: 18, character: :meat },
+            { x: 325, y: 18, character: :fish },
+            { x: 330, y: 18, character: :sushi },
+            { x: 335, y: 18, character: :meat },
+
+            { x: 390, y: 13, character: :money },
+            { x: 399, y: 14, character: :money },
+            { x: 406, y: 14, character: :money },
+            { x: 415, y: 14, character: :money },
+
+            { x: 600, y: 15, character: :sakura },
+            { x: 613, y: 13, character: :sakura },
+            { x: 626, y: 11, character: :sakura },
+            { x: 713, y: 11, character: :sakura },
+
+          ],
           Alcohol: [],
           Laptop: [],
         },
@@ -101,6 +131,7 @@ module RoadToRubykaigi
         sushi: "🍣",
         meat: "🍖",
         fish: "🐟",
+        sakura: "🌸",
         beer: "🍺",
         sake: "🍶",
         laptop: "💻",

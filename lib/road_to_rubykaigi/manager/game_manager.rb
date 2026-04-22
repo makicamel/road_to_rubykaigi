@@ -3,7 +3,7 @@ module RoadToRubykaigi
     class GameManager
       UPDATE_RATE = 1.0 / 10
       FRAME_RATE = 1.0 / 60
-      GOAL_X = { 2025 => 650, 2026 => 650 }
+      GOAL_X = { 2025 => 650, 2026 => 800 }
       DEMO_GOAL_X = 540
       STATE = {
         playing: 0,
@@ -25,7 +25,7 @@ module RoadToRubykaigi
       def update
         @deadline.activate(player_x: @player.x)
         @enemies.activate if player_moved?
-        @score_board.start_timer if @player.x > Sprite::Player::WARMUP_END_X
+        @score_board.start_timer if @player.x > Sprite::Player::WARMUP_END_X[RoadToRubykaigi.version]
         if @player.x >= GameManager.goal_x && playing?
           EventDispatcher.publish(:ending)
         end

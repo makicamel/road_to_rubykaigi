@@ -1,6 +1,6 @@
 module RoadToRubykaigi
   class Fireworks
-    START_X = { 2025 => 632 }
+    START_X = { 2025 => 632, 2026 => 782 }
     DEMO_START_X = 524
     DURATION_SECOND = 0.1
 

@@ -2,7 +2,7 @@ module RoadToRubykaigi
   module Sprite
     class Deadline < Sprite
       DEADLINE_SPEED = 0.3
-      DEADLINE_START_X = 18
+      DEADLINE_START_X = { 2025 => 18, 2026 => 48 }
 
       attr_reader :x, :y, :width, :height
 
@@ -35,7 +35,7 @@ module RoadToRubykaigi
       end
 
       def activate(player_x:)
-        @waiting = false if player_x > DEADLINE_START_X
+        @waiting = false if player_x > DEADLINE_START_X[RoadToRubykaigi.version]
       end
 
       private

@@ -10,10 +10,11 @@ module RoadToRubykaigi
       RUNNING_SPEED_THRESHOLD = 1.3
       RUNNING_SUSTAIN_SECOND = 0.3
 
-      INITIAL_X = 10
-      WARMUP_END_X = 18
+      INITIAL_X = { 2025 => 10, 2026 => 40 }
+      WARMUP_END_X = { 2025 => 18, 2026 => 48 }
       WARMUP_SPEED_RATIO_CAP = 1.0
       BASE_Y = 26
+      INITIAL_Y = { 2025 => BASE_Y, 2026 => 15 }
       BASE_HEIGHT = 3
       JUMP_INITIAL_VELOCITY = -40.0
       JUMP_GRAVITY = 80.0
@@ -197,8 +198,8 @@ module RoadToRubykaigi
       private
 
       def initialize
-        @x = INITIAL_X
-        @y = BASE_Y
+        @x = INITIAL_X[RoadToRubykaigi.version]
+        @y = INITIAL_Y[RoadToRubykaigi.version]
         @vx = 0.0
         @vy = 0.0
         @width ||= {}
@@ -273,7 +274,7 @@ module RoadToRubykaigi
       def in_warmup?
         if @warmed_up || !Config.external_input?
           false
-        elsif @x > WARMUP_END_X
+        elsif @x > WARMUP_END_X[RoadToRubykaigi.version]
           @warmed_up = true
           false
         else
