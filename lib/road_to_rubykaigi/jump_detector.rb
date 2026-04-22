@@ -55,7 +55,7 @@ module RoadToRubykaigi
     private
 
     def vertical_acceleration(sample)
-      projection = (sample[0] * @gravity[0] + sample[1] * @gravity[1] + sample[2] * @gravity[2]) / @gravity_magnitude
+      projection = (-sample[0] * @gravity[0] + sample[1] * @gravity[1] + sample[2] * @gravity[2]) / @gravity_magnitude
       projection - @gravity_magnitude
     end
 
