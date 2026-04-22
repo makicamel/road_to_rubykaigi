@@ -21,8 +21,8 @@ module RoadToRubykaigi
   # "loaded hold" that passes the duration gate on its own.
   class JumpDetector
     LOADED_THRESHOLD = 0.20         # vertical_acceleration above this counts as "loaded" (body under extra g-load)
-    LOADED_MIN_SECONDS = 0.30       # loaded span qualifying as squat hold
-    TAKEOFF_SLOPE_MAX = -5.0        # g/s — fall slope indicating takeoff turnover
+    LOADED_MIN_SECONDS = 0.2       # loaded span qualifying as squat hold
+    TAKEOFF_SLOPE_MAX = -1.0        # g/s — fall slope indicating takeoff turnover
     SLOPE_WINDOW_SECONDS = 0.08
     LOADED_END_GRACE_SECONDS = 0.15 # allow fire shortly past the span's last above-threshold point
 
