@@ -8,6 +8,8 @@
 # DEBUG=1
 # Mute BGM (sound effects play)
 # BGM_OFF=1
+# Skip auto-opening the controller browser on game start
+# DEMO=1
 # Start threshold for run start detection (set by calibration)
 # START_THRESHOLD=0.025
 # Continuation threshold for step detection (set by calibration)

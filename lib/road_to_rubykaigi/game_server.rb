@@ -39,7 +39,7 @@ module RoadToRubykaigi
         @server.shutdown rescue nil
         @thread.kill
       end
-      open_controller
+      open_controller unless Config.demo?
     end
 
     def open_controller

@@ -13,7 +13,7 @@ module RoadToRubykaigi
       extend Forwardable
       def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :cycle_input_source,
                      :serial_port, :detect_serial_port!,
-                     :signal_source, :debug?, :bgm_off?, :project_root,
+                     :signal_source, :debug?, :bgm_off?, :demo?, :project_root,
                      :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity,
                      :gravity_vector, :jump_v_max, :save_calibration
     end
@@ -70,6 +70,10 @@ module RoadToRubykaigi
 
     def bgm_off?
       @settings['BGM_OFF']
+    end
+
+    def demo?
+      @settings['DEMO']
     end
 
     def start_threshold
