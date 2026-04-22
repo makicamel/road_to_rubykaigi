@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module RoadToRubykaigi
-  VERSION = "0.2.1"
+  VERSION = "2026.0.1"
 end
