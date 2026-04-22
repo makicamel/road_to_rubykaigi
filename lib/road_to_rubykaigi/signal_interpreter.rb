@@ -85,6 +85,7 @@ module RoadToRubykaigi
       track_continuation
       update_speed_ratio
       update_walking_state
+      @direction = data['b'] == '1' ? :left : :right
       log_signal
 
       if jump_detected?
@@ -133,7 +134,7 @@ module RoadToRubykaigi
     end
 
     def start
-      @direction = (@direction == :right ? :left : :right) if @has_started
+      # @direction = (@direction == :right ? :left : :right) if @has_started
       @has_started = true
       @state = WALKING
     end
@@ -181,15 +182,16 @@ module RoadToRubykaigi
       speed = @smoothed_speed_ratio.round(4)
       mag = @window.last_magnitude.round(6)
       jerk = @window.mag_jerk.round(6)
+      vertical_acceleration = @window.last_vertical_acceleration(Config.gravity_vector).round(6)
       x, y, z = @window.last_sample.map { |value| value.round(6) }
-      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{x},#{y},#{z}"
+      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{vertical_acceleration},#{x},#{y},#{z}"
     end
 
     def open_sig_log_io
       path = File.join(File.expand_path('../../tmp', __dir__), "sig_#{Time.now.strftime('%Y%m%d_%H%M')}.log")
       file = File.open(path, 'w')
       file.sync = true
-      file.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,x,y,z"
+      file.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,vertical_acceleration,x,y,z"
       $stderr.puts "[SIG_LOG] writing to #{path}"
       file
     end

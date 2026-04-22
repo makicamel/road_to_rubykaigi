@@ -57,7 +57,8 @@ class Accelerometer
     x = to_g(@ax.read_voltage) * X_SIGN
     y = to_g(@ay.read_voltage) * Y_SIGN
     z = to_g(@az.read_voltage) * Z_SIGN
-    "x=#{x.round(5)},y=#{y.round(5)},z=#{z.round(5)}"
+    bootsel = Machine.bootsel_pressed? ? 1 : 0
+    "x=#{x.round(5)},y=#{y.round(5)},z=#{z.round(5)},b=#{bootsel}"
   end
 
   # private
