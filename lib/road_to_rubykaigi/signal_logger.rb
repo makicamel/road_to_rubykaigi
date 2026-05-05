@@ -12,12 +12,6 @@ module RoadToRubykaigi
       @sig_log_io.puts "#{Time.now.to_f},#{full_motion_intensity.round(6)},#{tail_motion_intensity.round(6)},#{cadence_hz.round(4)},#{instant_speed_ratio.round(4)},#{smoothed_speed_ratio.round(4)},#{state},#{x},#{y},#{z}"
     end
 
-    def log_cue(phase, text)
-      return unless @sig_log_io
-
-      @sig_log_io.puts "[cue] t=#{Time.now.to_f} phase=#{phase} #{text}"
-    end
-
     def log_jump(message)
       return unless ENV['JUMP_LOG'] == '1'
 
