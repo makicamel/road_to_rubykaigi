@@ -73,43 +73,9 @@ module RoadToRubykaigi
       Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
     end
 
-    # Per-axis RMS spread. Same unit as motion_intensity but kept separate so
-    # callers can compare how energy is distributed across axes.
-    def axis_intensities
-      [0, 1, 2].map { |index| Math.sqrt(axis_variance(index)) }
-    end
-
-    # Raw acceleration magnitude of the latest sample: sqrt(x² + y² + z²).
-    def last_magnitude
-      sample = @samples.last[:sample]
-      Math.sqrt(sample[0] ** 2 + sample[1] ** 2 + sample[2] ** 2)
-    end
-
     # Raw [x, y, z] of the latest sample (before variance/intensity).
     def last_sample
       @samples.last[:sample]
-    end
-
-    # Signed vertical acceleration of the latest sample after removing
-    # gravity. Positive = accelerating upward, negative = downward.
-    def last_vertical_acceleration(gravity)
-      sample = @samples.last[:sample]
-      # Magnitude of the gravity reference vector (used to normalize the
-      # projection below and as the resting 1g offset).
-      gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
-      # Sample projected onto the vertical axis, normalized to g units.
-      projection = (sample[0] * gravity[0] + sample[1] * gravity[1] + sample[2] * gravity[2]) / gravity_magnitude
-      # Subtract the resting offset.
-      projection - gravity_magnitude
-    end
-
-    # Average absolute change in magnitude between consecutive samples.
-    # Walking/running produce sharp footstrike impacts (high jerk),
-    # while jumping produces smoother acceleration curves (low jerk).
-    def mag_jerk
-      mags = @samples.map { |entry| s = entry[:sample]; Math.sqrt(s[0] ** 2 + s[1] ** 2 + s[2] ** 2) }
-      deltas = mags.each_cons(2).map { |a, b| (b - a).abs }
-      deltas.sum / deltas.size
     end
 
     def full

@@ -173,25 +173,18 @@ module RoadToRubykaigi
       @sig_log_io ||= open_sig_log_io
       full = @window.motion_intensity
       tail = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity
-      axes = @window.axis_intensities
-      sum = axes.sum
-      ratio = sum.zero? ? 0.0 : axes.max / sum
-      vx, vy, vz = axes.map { |value| value.round(6) }
       cadence = @window.cadence_hz.round(4)
       instant = instantaneous_speed_ratio.round(4)
       speed = @smoothed_speed_ratio.round(4)
-      mag = @window.last_magnitude.round(6)
-      jerk = @window.mag_jerk.round(6)
-      vertical_acceleration = @window.last_vertical_acceleration(Config.gravity_vector).round(6)
       x, y, z = @window.last_sample.map { |value| value.round(6) }
-      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{ratio.round(4)},#{vx},#{vy},#{vz},#{cadence},#{instant},#{speed},#{@state},#{mag},#{jerk},#{vertical_acceleration},#{x},#{y},#{z}"
+      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{cadence},#{instant},#{speed},#{@state},#{x},#{y},#{z}"
     end
 
     def open_sig_log_io
       path = File.join(File.expand_path('../../tmp', __dir__), "sig_#{Time.now.strftime('%Y%m%d_%H%M')}.log")
       file = File.open(path, 'w')
       file.sync = true
-      file.puts "t,full,tail,ratio,var_x,var_y,var_z,cadence,instant,speed,state,mag,jerk,vertical_acceleration,x,y,z"
+      file.puts "t,full,tail,cadence,instant,speed,state,x,y,z"
       $stderr.puts "[SIG_LOG] writing to #{path}"
       file
     end
