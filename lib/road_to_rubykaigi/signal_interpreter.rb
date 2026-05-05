@@ -66,7 +66,7 @@ module RoadToRubykaigi
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
       @logger = SignalLogger.new
-      @jump_detector = JumpDetector.new(gravity: Config.gravity_vector, logger: @logger)
+      @jump_detector = JumpDetector.new(gravity: Config.gravity_vector)
     end
 
     def interpret(data)
@@ -80,17 +80,24 @@ module RoadToRubykaigi
       update_speed_ratio
       update_walking_state
       @direction = data['b'] == '1' ? :left : :right
-      @logger.log(
-        state: @state,
-        full_motion_intensity: @window.motion_intensity,
-        tail_motion_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
-        cadence_hz: @window.cadence_hz,
-        instant_speed_ratio: instantaneous_speed_ratio,
-        smoothed_speed_ratio: @smoothed_speed_ratio,
-        last_sample: @window.last_sample,
-      )
 
-      if jump_detected?
+      jump_fired = jump_detected?
+
+      @logger.log(SignalLogger::Snapshot.new(
+        sample: @window.last_sample,
+        state: @state,
+        motion_intensity: @window.motion_intensity,
+        tail_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
+        cadence_hz: @window.cadence_hz,
+        vertical_acceleration: @jump_detector.latest_vertical_acceleration,
+        hold_seconds: @jump_detector.latest_hold_seconds,
+        slope: @jump_detector.latest_slope,
+        instant_speed: instantaneous_speed_ratio,
+        smoothed_speed: @smoothed_speed_ratio,
+        jump_fired: jump_fired,
+      ))
+
+      if jump_fired
         EventDispatcher.publish(:input, :jump)
       end
       if was_walking && !walking?
