@@ -18,10 +18,10 @@ module RoadToRubykaigi
       end
     end
 
-    def log(snapshot)
+    def log
       return unless @sig_log_io
 
-      @sig_log_io.puts "#{Time.now.to_f},#{snapshot}"
+      @sig_log_io.puts "#{Time.now.to_f},#{yield}"
     end
 
     private

@@ -83,19 +83,21 @@ module RoadToRubykaigi
 
       jump_fired = jump_detected?
 
-      @logger.log(SignalLogger::Snapshot.new(
-        sample: @window.last_sample,
-        state: @state,
-        motion_intensity: @window.motion_intensity,
-        tail_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
-        cadence_hz: @window.cadence_hz,
-        vertical_acceleration: @jump_detector.latest_vertical_acceleration,
-        hold_seconds: @jump_detector.latest_hold_seconds,
-        slope: @jump_detector.latest_slope,
-        instant_speed: instantaneous_speed_ratio,
-        smoothed_speed: @smoothed_speed_ratio,
-        jump_fired: jump_fired,
-      ))
+      @logger.log do
+        SignalLogger::Snapshot.new(
+          sample: @window.last_sample,
+          state: @state,
+          motion_intensity: @window.motion_intensity,
+          tail_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
+          cadence_hz: @window.cadence_hz,
+          vertical_acceleration: @jump_detector.latest_vertical_acceleration,
+          hold_seconds: @jump_detector.latest_hold_seconds,
+          slope: @jump_detector.latest_slope,
+          instant_speed: instantaneous_speed_ratio,
+          smoothed_speed: @smoothed_speed_ratio,
+          jump_fired: jump_fired,
+        )
+      end
 
       if jump_fired
         EventDispatcher.publish(:input, :jump)
