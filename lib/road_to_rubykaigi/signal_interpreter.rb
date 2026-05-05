@@ -53,10 +53,7 @@ module RoadToRubykaigi
     end
 
     def log_cue(phase, text)
-      return unless ENV['SIG_LOG'] == '1'
-
-      @sig_log_io ||= open_sig_log_io
-      @sig_log_io.puts "[cue] t=#{Time.now.to_f} phase=#{phase} #{text}"
+      @logger.log_cue(phase, text)
     end
 
     private
@@ -72,7 +69,8 @@ module RoadToRubykaigi
       @continuation_threshold = Config.continuation_threshold
       @walk_cadence = Config.walk_cadence
       @walk_intensity = Config.walk_intensity
-      @jump_detector = JumpDetector.new(gravity: Config.gravity_vector)
+      @logger = SignalLogger.new
+      @jump_detector = JumpDetector.new(gravity: Config.gravity_vector, logger: @logger)
     end
 
     def interpret(data)
@@ -86,7 +84,15 @@ module RoadToRubykaigi
       update_speed_ratio
       update_walking_state
       @direction = data['b'] == '1' ? :left : :right
-      log_signal
+      @logger.log(
+        state: @state,
+        full_motion_intensity: @window.motion_intensity,
+        tail_motion_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
+        cadence_hz: @window.cadence_hz,
+        instant_speed_ratio: instantaneous_speed_ratio,
+        smoothed_speed_ratio: @smoothed_speed_ratio,
+        last_sample: @window.last_sample,
+      )
 
       if jump_detected?
         EventDispatcher.publish(:input, :jump)
@@ -167,26 +173,5 @@ module RoadToRubykaigi
     # stop detection responsive.
     def continuing? = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity > @continuation_threshold
 
-    def log_signal
-      return unless ENV['SIG_LOG'] == '1'
-
-      @sig_log_io ||= open_sig_log_io
-      full = @window.motion_intensity
-      tail = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity
-      cadence = @window.cadence_hz.round(4)
-      instant = instantaneous_speed_ratio.round(4)
-      speed = @smoothed_speed_ratio.round(4)
-      x, y, z = @window.last_sample.map { |value| value.round(6) }
-      @sig_log_io.puts "#{Time.now.to_f},#{full.round(6)},#{tail.round(6)},#{cadence},#{instant},#{speed},#{@state},#{x},#{y},#{z}"
-    end
-
-    def open_sig_log_io
-      path = File.join(File.expand_path('../../tmp', __dir__), "sig_#{Time.now.strftime('%Y%m%d_%H%M')}.log")
-      file = File.open(path, 'w')
-      file.sync = true
-      file.puts "t,full,tail,cadence,instant,speed,state,x,y,z"
-      $stderr.puts "[SIG_LOG] writing to #{path}"
-      file
-    end
   end
 end

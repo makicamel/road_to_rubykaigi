@@ -30,11 +30,12 @@ module RoadToRubykaigi
     SAMPLE_BUFFER_SECONDS = 1.2     # retain samples long enough to cover an elongated squat hold
     MIN_SAMPLES_FOR_ANALYSIS = 5    # slope + hold both need a few samples to be meaningful
 
-    def initialize(gravity:)
+    def initialize(gravity:, logger:)
       @gravity = gravity
       @gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
       @last_samples = [] # [{time:, vertical_acceleration:}] sliding window
       @last_jump_time = nil
+      @logger = logger
     end
 
     def detect(sample:)
@@ -47,7 +48,6 @@ module RoadToRubykaigi
         false
       else
         @last_jump_time = now
-        debug_log('JUMP_FIRED')
         true
       end
     end
@@ -65,7 +65,9 @@ module RoadToRubykaigi
     def squat_takeoff?
       hold_seconds = last_loaded_hold_seconds
       slope = last_slope
-      debug_log(format('vertical_acceleration=%+.2f hold=%.3f slope=%+.2f', @last_samples.last[:vertical_acceleration], hold_seconds, slope)) if hold_seconds > 0
+      if hold_seconds > 0
+        @logger.log_jump(format('vertical_acceleration=%+.2f hold=%.3f slope=%+.2f', @last_samples.last[:vertical_acceleration], hold_seconds, slope))
+      end
 
       if hold_seconds < LOADED_MIN_SECONDS
         false
@@ -117,9 +119,5 @@ module RoadToRubykaigi
       end
     end
 
-    def debug_log(message)
-      return unless ENV['JUMP_LOG'] == '1'
-      $stderr.puts "[JumpDetector] #{Time.now.to_f} #{message}"
-    end
   end
 end
