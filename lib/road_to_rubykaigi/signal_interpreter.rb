@@ -1,9 +1,5 @@
-require 'singleton'
-
 module RoadToRubykaigi
   class SignalInterpreter
-    include Singleton
-
     CONTINUATION_WINDOW_SECONDS = 0.2 # short window used for continuation detection to avoid tail smoothing
     CONTINUATION_TIMEOUT_SECONDS = 0.8 # time without a continuation event before declaring a stop
     SPEED_RATIO_MIN = 0.7
@@ -31,9 +27,9 @@ module RoadToRubykaigi
       def right? = direction == :right
     end
 
-    class << self
-      extend Forwardable
-      def_delegators :instance, :process
+    def self.process(&block)
+      @instance ||= new
+      @instance.process(&block)
     end
 
     # Drain every queued sample per tick so the pipeline rate matches the
