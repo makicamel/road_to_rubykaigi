@@ -27,24 +27,35 @@ module RoadToRubykaigi
       def right? = direction == :right
     end
 
-    def self.process(&block)
+    def self.process(data, &block)
       @instance ||= new
-      @instance.process(&block)
+      @instance.process(data, &block)
     end
 
-    # Drain every queued sample per tick so the pipeline rate matches the
-    # sensor rate instead of being capped at frame rate. NOTE: events may
-    # fire multiple times per tick — handlers passed to the block must be
-    # safe under repeated same-tick calls (idempotent or self-gated).
-    def process
-      Config.signal_source.drain do |data|
-        jump_fired, action = interpret(data)
-        yield :jump if jump_fired
-        yield action if action
-      end
+    def self.stop_walk_if_expired
+      @instance ||= new
+      @instance.stop_walk_if_expired
+    end
+
+    # NOTE: events may fire multiple times per tick — handlers passed to
+    # the block must be safe under repeated same-tick calls (idempotent
+    # or self-gated).
+    def process(data)
+      jump_fired, action = interpret(data)
+      yield :jump if jump_fired
+      yield action if action
+    end
+
+    # Catch the case where the sample stream dries up mid-walk
+    # (device off, BLE buffer drained, stale-drop skipping every sample).
+    # The normal PAUSED -> STOPPED transition lives inside `interpret`,
+    # so it only fires while samples are flowing.
+    def stop_walk_if_expired
       if walk_expired?
         stop
-        yield :stop
+        true
+      else
+        false
       end
     end
 
