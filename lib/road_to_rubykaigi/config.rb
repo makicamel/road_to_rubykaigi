@@ -6,16 +6,13 @@ module RoadToRubykaigi
     include Singleton
 
     CONFIG_FILE = '.road_to_rubykaigi'
-    DEFAULT_START_THRESHOLD = 0.025
-    DEFAULT_CONTINUATION_THRESHOLD = 0.05
 
     class << self
       extend Forwardable
       def_delegators :instance, :input_source, :ble?, :serial?, :external_input?, :cycle_input_source,
                      :serial_port, :detect_serial_port!,
                      :signal_source, :debug?, :bgm_off?, :demo?, :project_root,
-                     :start_threshold, :continuation_threshold, :walk_cadence, :walk_intensity,
-                     :gravity_vector, :jump_v_max, :save_calibration
+                     :save_calibration
     end
 
     INPUT_SOURCES = %i[ble serial].freeze
@@ -76,34 +73,6 @@ module RoadToRubykaigi
       @settings['DEMO']
     end
 
-    def start_threshold
-      (@settings['START_THRESHOLD'] || DEFAULT_START_THRESHOLD).to_f
-    end
-
-    def continuation_threshold
-      (@settings['CONTINUATION_THRESHOLD'] || DEFAULT_CONTINUATION_THRESHOLD).to_f
-    end
-
-    def walk_cadence
-      @settings['WALK_CADENCE']&.to_f
-    end
-
-    def walk_intensity
-      @settings['WALK_INTENSITY']&.to_f
-    end
-
-    def gravity_vector
-      value = @settings['GRAVITY']
-      return nil unless value
-
-      parts = value.split(',').map(&:to_f)
-      parts.size == 3 ? parts : nil
-    end
-
-    def jump_v_max
-      @settings['JUMP_V_MAX']&.to_f
-    end
-
     def save_calibration(start_threshold:, continuation_threshold:, walk_cadence:, walk_intensity:,
                          gravity_vector: nil, jump_v_max: nil)
       @settings['START_THRESHOLD'] = start_threshold.to_s
@@ -119,6 +88,7 @@ module RoadToRubykaigi
         @settings['JUMP_V_MAX'] = jump_v_max.to_s
         keys << 'JUMP_V_MAX'
       end
+      SignalConfig.invalidate
       save(keys)
     end
 
