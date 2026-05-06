@@ -8,7 +8,7 @@ module RoadToRubykaigi
         loop do
           RoadToRubykaigi.debug.clear
           process_input($stdin.read_nonblock(4, exception: false))
-          SignalInterpreter.process
+          SignalInterpreter.process { |event| EventDispatcher.publish(:input, event) }
 
           if @game_manager.result?
             print(@game_manager.render_result)

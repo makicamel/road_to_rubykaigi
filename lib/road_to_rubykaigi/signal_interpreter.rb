@@ -37,18 +37,18 @@ module RoadToRubykaigi
     end
 
     # Drain every queued sample per tick so the pipeline rate matches the
-    # sensor rate instead of being capped at frame rate. NOTE: :input events
-    # may fire multiple times per tick — action handlers must be safe under
-    # repeated same-tick calls (idempotent or self-gated).
+    # sensor rate instead of being capped at frame rate. NOTE: events may
+    # fire multiple times per tick — handlers passed to the block must be
+    # safe under repeated same-tick calls (idempotent or self-gated).
     def process
       Config.signal_source.drain do |data|
-        if (action = interpret(data))
-          EventDispatcher.publish(:input, action)
-        end
+        jump_fired, action = interpret(data)
+        yield :jump if jump_fired
+        yield action if action
       end
       if walk_expired?
         stop
-        EventDispatcher.publish(:input, :stop)
+        yield :stop
       end
     end
 
@@ -99,14 +99,13 @@ module RoadToRubykaigi
         )
       end
 
-      if jump_fired
-        EventDispatcher.publish(:input, :jump)
-      end
+      action = nil
       if was_walking && !walking?
-        :stop
+        action = :stop
       elsif walking?
-        Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
+        action = Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
       end
+      [jump_fired, action]
     end
 
     def buffer_sample(data)
