@@ -54,11 +54,12 @@ class Accelerometer
   end
 
   def read
-    x = to_g(@ax.read_voltage) * X_SIGN
-    y = to_g(@ay.read_voltage) * Y_SIGN
-    z = to_g(@az.read_voltage) * Z_SIGN
-    bootsel = Machine.bootsel_pressed? ? 1 : 0
-    "x=#{x.round(5)},y=#{y.round(5)},z=#{z.round(5)},b=#{bootsel}"
+    {
+      'x' => (to_g(@ax.read_voltage) * X_SIGN).round(5),
+      'y' => (to_g(@ay.read_voltage) * Y_SIGN).round(5),
+      'z' => (to_g(@az.read_voltage) * Z_SIGN).round(5),
+      'b' => Machine.bootsel_pressed? ? '1' : '0',
+    }
   end
 
   # private
@@ -116,14 +117,16 @@ ble_batch = []
 # Send one sample per call — no inner loop, no sleep_ms here.
 ble_uart.start do
   data = accelerometer.read
+  line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}"
+
   if ble_uart.connected?
-    ble_batch << data
+    ble_batch << line
     if ble_batch.size >= BLE_BATCH_SIZE
       ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
       ble_batch.clear
     end
   else
-    serial.puts(data)
+    serial.puts(line)
   end
 
   blinker.mode = ble_uart.connected? ? :slow : :fast
