@@ -72,7 +72,6 @@ module RoadToRubykaigi
       @continuation_threshold = SignalConfig.continuation_threshold
       @walk_cadence = SignalConfig.walk_cadence
       @walk_intensity = SignalConfig.walk_intensity
-      @logger = SignalLogger.new
       @jump_detector = JumpDetector.new(gravity: SignalConfig.gravity_vector)
     end
 
@@ -89,22 +88,6 @@ module RoadToRubykaigi
       @direction = data['b'] == '1' ? :left : :right
 
       jump_fired = jump_detected?
-
-      @logger.log do
-        SignalLogger::Snapshot.new(
-          sample: @window.last_sample,
-          state: @state,
-          motion_intensity: @window.motion_intensity,
-          tail_intensity: @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity,
-          cadence_hz: @window.cadence_hz,
-          vertical_acceleration: @jump_detector.latest_vertical_acceleration,
-          hold_seconds: @jump_detector.latest_hold_seconds,
-          slope: @jump_detector.latest_slope,
-          instant_speed: instantaneous_speed_ratio,
-          smoothed_speed: @smoothed_speed_ratio,
-          jump_fired: jump_fired,
-        )
-      end
 
       action = nil
       if was_walking && !walking?
