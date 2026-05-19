@@ -116,19 +116,23 @@ ble_batch = []
 # polling cycle (every POLLING_UNIT_MS / USER_BLOCK_CALL_COUNT_PER_POLL ≈ 20ms).
 # Send one sample per call — no inner loop, no sleep_ms here.
 ble_uart.start do
-  data = accelerometer.read
-  line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}"
+  begin
+    data = accelerometer.read
+    line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}"
 
-  if ble_uart.connected?
-    ble_batch << line
-    if ble_batch.size >= BLE_BATCH_SIZE
-      ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
-      ble_batch.clear
+    if ble_uart.connected?
+      ble_batch << line
+      if ble_batch.size >= BLE_BATCH_SIZE
+        ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
+        ble_batch.clear
+      end
+    else
+      serial.puts(line)
     end
-  else
-    serial.puts(line)
-  end
 
-  blinker.mode = ble_uart.connected? ? :slow : :fast
-  blinker.tick
+    blinker.mode = ble_uart.connected? ? :slow : :fast
+    blinker.tick
+  rescue => e
+    puts "[BLOCK ERROR] #{e.message} (#{e.class})"
+  end
 end
