@@ -52,7 +52,7 @@ module RoadToRubykaigi
       return if @player.stunned?
 
       case action
-      when SignalInterpreter::Walk
+      when Walk
         @player.walk(action)
       when :jump; @player.jump
       when :crouch

@@ -1,4 +1,15 @@
 module RoadToRubykaigi
+  class Walk
+    attr_reader :direction, :speed_ratio
+
+    def initialize(direction:, speed_ratio:)
+      @direction = direction
+      @speed_ratio = speed_ratio
+    end
+
+    def right? = direction == :right
+  end
+
   class SignalInterpreter
     CONTINUATION_WINDOW_SECONDS = 0.2 # short window used for continuation detection to avoid tail smoothing
     CONTINUATION_TIMEOUT_SECONDS = 0.8 # time without a continuation event before declaring a stop
@@ -22,10 +33,6 @@ module RoadToRubykaigi
     STOPPED = :stopped # no walk in progress; next start flips direction
     WALKING = :walking # continuation events arriving
     PAUSED = :paused   # continuation briefly absent; next event -> WALKING (same direction), timeout -> STOPPED
-
-    Walk = Data.define(:direction, :speed_ratio) do
-      def right? = direction == :right
-    end
 
     def self.process(data, &block)
       @instance ||= new

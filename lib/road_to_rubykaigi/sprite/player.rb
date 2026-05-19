@@ -36,7 +36,7 @@ module RoadToRubykaigi
         move(in_warmup? ? RIGHT : LEFT, speed_ratio)
       end
 
-      # @param [SignalInterpreter::Walk] action
+      # @param [Walk] action
       def walk(action)
         action.right? ? right(action.speed_ratio) : left(action.speed_ratio)
       end
