@@ -125,7 +125,14 @@ module RoadToRubykaigi
     def instantaneous_speed_ratio
       return 1.0 unless @walk_intensity && @walk_intensity > 0
 
-      (@window.motion_intensity / @walk_intensity).clamp(SPEED_RATIO_MIN, SPEED_RATIO_MAX)
+      ratio = @window.motion_intensity / @walk_intensity
+      if ratio < SPEED_RATIO_MIN
+        SPEED_RATIO_MIN
+      elsif ratio > SPEED_RATIO_MAX
+        SPEED_RATIO_MAX
+      else
+        ratio
+      end
     end
 
     def jump_detected?
