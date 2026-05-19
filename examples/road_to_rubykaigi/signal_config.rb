@@ -9,21 +9,6 @@ module RoadToRubykaigi
                 :walk_cadence, :walk_intensity,
                 :gravity_vector, :jump_v_max
 
-    def self.instance
-      @instance ||= new
-    end
-
-    def self.invalidate
-      @instance = nil
-    end
-
-    def self.start_threshold = instance.start_threshold
-    def self.continuation_threshold = instance.continuation_threshold
-    def self.walk_cadence = instance.walk_cadence
-    def self.walk_intensity = instance.walk_intensity
-    def self.gravity_vector = instance.gravity_vector
-    def self.jump_v_max = instance.jump_v_max
-
     private
 
     def initialize

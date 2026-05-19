@@ -68,11 +68,12 @@ module RoadToRubykaigi
       @has_started = false
       @last_continuation_time = nil
       @smoothed_speed_ratio = nil
-      @start_threshold = SignalConfig.start_threshold
-      @continuation_threshold = SignalConfig.continuation_threshold
-      @walk_cadence = SignalConfig.walk_cadence
-      @walk_intensity = SignalConfig.walk_intensity
-      @jump_detector = JumpDetector.new(gravity: SignalConfig.gravity_vector)
+      config = SignalConfig.new
+      @start_threshold = config.start_threshold
+      @continuation_threshold = config.continuation_threshold
+      @walk_cadence = config.walk_cadence
+      @walk_intensity = config.walk_intensity
+      @jump_detector = JumpDetector.new(gravity: config.gravity_vector)
     end
 
     def interpret(data)

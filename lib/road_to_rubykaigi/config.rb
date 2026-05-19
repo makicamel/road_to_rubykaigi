@@ -88,7 +88,6 @@ module RoadToRubykaigi
         @settings['JUMP_V_MAX'] = jump_v_max.to_s
         keys << 'JUMP_V_MAX'
       end
-      SignalConfig.invalidate
       save(keys)
     end
 
