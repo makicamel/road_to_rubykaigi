@@ -1,7 +1,6 @@
 module RoadToRubykaigi
   class SignalConfig
     CONFIG_FILE = '.road_to_rubykaigi'
-    DEFAULT_PATH = File.expand_path("../../#{CONFIG_FILE}", __dir__)
     DEFAULT_START_THRESHOLD = 0.025
     DEFAULT_CONTINUATION_THRESHOLD = 0.05
 
@@ -22,14 +21,19 @@ module RoadToRubykaigi
     end
 
     def load
-      return {} unless File.exist?(DEFAULT_PATH)
+      path = ["#{ENV['HOME']}/#{CONFIG_FILE}", "./#{CONFIG_FILE}"].find { |p| File.exist?(p) }
+      return {} unless path
 
-      File.readlines(DEFAULT_PATH, chomp: true)
-        .reject { |line| line.strip.empty? || line.strip.start_with?('#') }
-        .each_with_object({}) do |line, hash|
-          key, value = line.split('=', 2)
-          hash[key.strip] = value.strip if value
+      result = {}
+      File.open(path, "r") do |file|
+        file.read.split("\n").each do |line|
+          stripped = line.strip
+          next if stripped.empty? || stripped.start_with?('#')
+          key, value = stripped.split('=', 2)
+          result[key.strip] = value.strip if value
         end
+      end
+      result
     end
 
     def parse_gravity_vector(value)
