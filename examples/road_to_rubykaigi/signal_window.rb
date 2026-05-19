@@ -23,7 +23,9 @@ module RoadToRubykaigi
       return 0.0 if @recent_magnitudes.size < MIN_SAMPLES_FOR_LOCAL_MAXIMUM
 
       magnitudes = @recent_magnitudes.map { |entry| entry[:magnitude] }
-      mean = magnitudes.sum / magnitudes.size
+      magnitudes_total = 0.0
+      magnitudes.each { |magnitude| magnitudes_total += magnitude }
+      mean = magnitudes_total / magnitudes.size
       step_count = 0
       last_step_time = nil
       (1...(@recent_magnitudes.size - 1)).each do |i|
@@ -103,8 +105,12 @@ module RoadToRubykaigi
 
     def axis_variance(index)
       values = @samples.map { |entry| entry[:sample][index] }
-      mean = values.sum / values.size
-      values.sum { |value| (value - mean) ** 2 } / values.size
+      values_total = 0.0
+      values.each { |value| values_total += value }
+      mean = values_total / values.size
+      squared_diff_total = 0.0
+      values.each { |value| squared_diff_total += (value - mean) ** 2 }
+      squared_diff_total / values.size
     end
   end
 end
