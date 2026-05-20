@@ -125,7 +125,7 @@ module RoadToRubykaigi
     def instantaneous_speed_ratio
       return 1.0 unless @walk_intensity && @walk_intensity > 0
 
-      ratio = @window.motion_intensity / @walk_intensity
+      ratio = @window.full_motion_intensity / @walk_intensity
       if ratio < SPEED_RATIO_MIN
         SPEED_RATIO_MIN
       elsif ratio > SPEED_RATIO_MAX
@@ -175,7 +175,7 @@ module RoadToRubykaigi
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake walk start.
-    def walk_started? = @window.full.motion_intensity > @start_threshold
+    def walk_started? = @window.full_motion_intensity > @start_threshold
 
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making

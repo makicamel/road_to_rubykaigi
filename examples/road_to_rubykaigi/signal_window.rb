@@ -64,6 +64,7 @@ module RoadToRubykaigi
       window_start = now - BUFFER_SECONDS
       @samples.shift while @samples.first[:time] < window_start
       @step_cadence.record(sample)
+      @full_motion_intensity = nil
     end
 
     def cadence_hz = @step_cadence.hz
@@ -75,18 +76,15 @@ module RoadToRubykaigi
     end
 
     # Returns how far samples in the window spread from their mean position
-    # (RMS distance across all 3 axes).
-    def motion_intensity
-      Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
+    # (RMS distance across all 3 axes), computed over the whole @samples.
+    # Cached until @samples changes.
+    def full_motion_intensity
+      @full_motion_intensity ||= Math.sqrt(axis_variance(0) + axis_variance(1) + axis_variance(2))
     end
 
     # Raw [x, y, z] of the latest sample (before variance/intensity).
     def last_sample
       @samples.last[:sample]
-    end
-
-    def full
-      self
     end
 
     # Sub-window containing samples from the last `seconds`, for continuation detection.

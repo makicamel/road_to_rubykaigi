@@ -12,7 +12,7 @@ module RoadToRubykaigi
         @raw_samples << sample
       end
       return unless @window.full?
-      @intensity = @window.motion_intensity
+      @intensity = @window.full_motion_intensity
       @intensities << @intensity
       @cadences << @window.cadence_hz if @window.cadence_ready?
     end
