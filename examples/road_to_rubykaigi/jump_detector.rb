@@ -33,7 +33,8 @@ module RoadToRubykaigi
     def initialize(gravity:)
       @gravity = gravity
       @gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
-      @last_samples = [] # [{time:, vertical_acceleration:}] sliding window
+      @times = []
+      @vertical_accelerations = []
       @last_jump_time = nil
       @last_hold_seconds = 0.0
       @last_slope = 0.0
@@ -41,9 +42,13 @@ module RoadToRubykaigi
 
     def detect(sample:)
       now = Time.now
-      @last_samples << { time: now, vertical_acceleration: vertical_acceleration(sample) }
+      @times << now
+      @vertical_accelerations << vertical_acceleration(sample)
       cutoff = now - SAMPLE_BUFFER_SECONDS
-      @last_samples.shift while !@last_samples.empty? && @last_samples.first[:time] < cutoff
+      while !@times.empty? && @times.first < cutoff
+        @times.shift
+        @vertical_accelerations.shift
+      end
 
       if !buffer_ready? || !squat_takeoff? || cooling_down?(now)
         false
@@ -53,7 +58,7 @@ module RoadToRubykaigi
       end
     end
 
-    def latest_vertical_acceleration = @last_samples.empty? ? 0.0 : @last_samples.last[:vertical_acceleration]
+    def latest_vertical_acceleration = @vertical_accelerations.empty? ? 0.0 : @vertical_accelerations.last
     def latest_hold_seconds = @last_hold_seconds
     def latest_slope = @last_slope
 
@@ -64,7 +69,7 @@ module RoadToRubykaigi
       projection - @gravity_magnitude
     end
 
-    def buffer_ready? = @last_samples.size >= MIN_SAMPLES_FOR_ANALYSIS
+    def buffer_ready? = @times.size >= MIN_SAMPLES_FOR_ANALYSIS
     def cooling_down?(now) = @last_jump_time && (now - @last_jump_time) < COOLDOWN_SECONDS
 
     def squat_takeoff?
@@ -87,16 +92,32 @@ module RoadToRubykaigi
     # just ended within the last sample — jumps launch fast enough that the
     # signal can skip from +1g to below threshold between consecutive samples.
     def last_loaded_hold_seconds
-      loaded_end_idx = @last_samples.rindex { |sample| sample[:vertical_acceleration] > LOADED_THRESHOLD }
+      loaded_end_idx = nil
+      i = @vertical_accelerations.size - 1
+      while i >= 0
+        if @vertical_accelerations[i] > LOADED_THRESHOLD
+          loaded_end_idx = i
+          break
+        end
+        i -= 1
+      end
       return 0.0 unless loaded_end_idx
-      loaded_end_time = @last_samples[loaded_end_idx][:time]
+      loaded_end_time = @times[loaded_end_idx]
       # Too long past the span's end — no longer just after the turnover
-      return 0.0 if @last_samples.last[:time] - loaded_end_time > LOADED_END_GRACE_SECONDS
+      return 0.0 if @times.last - loaded_end_time > LOADED_END_GRACE_SECONDS
 
-      pre_load_idx = @last_samples[0...loaded_end_idx].rindex { |sample| sample[:vertical_acceleration] <= LOADED_THRESHOLD }
+      pre_load_idx = nil
+      i = loaded_end_idx - 1
+      while i >= 0
+        if @vertical_accelerations[i] <= LOADED_THRESHOLD
+          pre_load_idx = i
+          break
+        end
+        i -= 1
+      end
       if pre_load_idx
         loaded_begin_idx = pre_load_idx + 1
-        loaded_begin_time = @last_samples[loaded_begin_idx][:time]
+        loaded_begin_time = @times[loaded_begin_idx]
         loaded_end_time - loaded_begin_time
       else
         0.0
@@ -108,16 +129,25 @@ module RoadToRubykaigi
     # sample at or before the window cutoff. A clearly negative value means
     # the signal has peaked and started falling — the takeoff turnover.
     def last_slope
-      window_end_sample = @last_samples.last
-      cutoff = window_end_sample[:time] - SLOPE_WINDOW_SECONDS
-      window_begin_sample = @last_samples.reverse_each.find { |sample| sample[:time] <= cutoff }
-      return 0.0 unless window_begin_sample
+      end_time = @times.last
+      end_vertical_acceleration = @vertical_accelerations.last
+      cutoff = end_time - SLOPE_WINDOW_SECONDS
+      begin_idx = nil
+      i = @times.size - 1
+      while i >= 0
+        if @times[i] <= cutoff
+          begin_idx = i
+          break
+        end
+        i -= 1
+      end
+      return 0.0 unless begin_idx
 
-      elapsed_seconds = window_end_sample[:time] - window_begin_sample[:time]
+      elapsed_seconds = end_time - @times[begin_idx]
       if elapsed_seconds <= 0
         0.0
       else
-        (window_end_sample[:vertical_acceleration] - window_begin_sample[:vertical_acceleration]) / elapsed_seconds
+        (end_vertical_acceleration - @vertical_accelerations[begin_idx]) / elapsed_seconds
       end
     end
 
