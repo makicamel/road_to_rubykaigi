@@ -20,26 +20,33 @@ module RoadToRubykaigi
     # Step cadence in Hz: count of local maxima in the recent magnitudes divided
     # by the window duration. Walking produce one peak per footstrike, so cadence tracks step frequency.
     def hz
-      return 0.0 if @recent_magnitudes.size < MIN_SAMPLES_FOR_LOCAL_MAXIMUM
+      size = @recent_magnitudes.size
+      return 0.0 if size < MIN_SAMPLES_FOR_LOCAL_MAXIMUM
 
-      magnitudes = @recent_magnitudes.map { |entry| entry[:magnitude] }
       magnitudes_total = 0.0
-      magnitudes.each { |magnitude| magnitudes_total += magnitude }
-      mean = magnitudes_total / magnitudes.size
+      i = 0
+      while i < size
+        magnitudes_total += @recent_magnitudes[i][:magnitude]
+        i += 1
+      end
+      mean = magnitudes_total / size
+
       step_count = 0
       last_step_time = nil
-      (1...(@recent_magnitudes.size - 1)).each do |i|
-        time = @recent_magnitudes[i][:time]
+      i = 1
+      while i < size - 1
         magnitude = @recent_magnitudes[i][:magnitude]
         prev_magnitude = @recent_magnitudes[i - 1][:magnitude]
         next_magnitude = @recent_magnitudes[i + 1][:magnitude]
         is_local_maximum = magnitude > prev_magnitude && magnitude > next_magnitude
         above_mean = magnitude > mean # only count bumps stronger than the average
+        time = @recent_magnitudes[i][:time]
         enough_gap_from_last_step = last_step_time.nil? || (time - last_step_time) >= MIN_STEP_INTERVAL_SECONDS
         if is_local_maximum && above_mean && enough_gap_from_last_step
           step_count += 1
           last_step_time = time
         end
+        i += 1
       end
 
       duration = @recent_magnitudes.last[:time] - @recent_magnitudes.first[:time]
@@ -113,13 +120,27 @@ module RoadToRubykaigi
     end
 
     def axis_variance(index)
-      values = @samples.map { |entry| entry[:sample][index] }
+      sub_axis_variance(index, 0, @samples.size)
+    end
+
+    def sub_axis_variance(index, start_idx, end_idx)
+      count = end_idx - start_idx
+      return 0.0 if count <= 0
       values_total = 0.0
-      values.each { |value| values_total += value }
-      mean = values_total / values.size
+      i = start_idx
+      while i < end_idx
+        values_total += @samples[i][:sample][index]
+        i += 1
+      end
+      mean = values_total / count
       squared_diff_total = 0.0
-      values.each { |value| squared_diff_total += (value - mean) ** 2 }
-      squared_diff_total / values.size
+      i = start_idx
+      while i < end_idx
+        diff = @samples[i][:sample][index] - mean
+        squared_diff_total += diff * diff
+        i += 1
+      end
+      squared_diff_total / count
     end
   end
 end
