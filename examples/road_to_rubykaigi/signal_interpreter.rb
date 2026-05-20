@@ -84,7 +84,7 @@ module RoadToRubykaigi
     end
 
     def interpret(data)
-      return unless %w[x y z].all? { |key| data.key?(key) }
+      return unless data.key?('x') && data.key?('y') && data.key?('z')
 
       buffer_sample(data)
       return unless window_full?
