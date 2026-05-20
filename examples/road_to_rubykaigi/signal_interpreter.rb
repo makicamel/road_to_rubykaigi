@@ -89,6 +89,7 @@ module RoadToRubykaigi
       buffer_sample(data)
       return unless window_full?
 
+      @continuing = nil
       was_walking = walking?
       track_continuation
       update_speed_ratio
@@ -179,7 +180,10 @@ module RoadToRubykaigi
 
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making
-    # stop detection responsive.
-    def continuing? = @window.tail_motion_intensity(seconds: CONTINUATION_WINDOW_SECONDS) > @continuation_threshold
+    # stop detection responsive. Cached per-tick: process invalidates @continuing.
+    def continuing?
+      return @continuing unless @continuing.nil?
+      @continuing = @window.tail_motion_intensity(seconds: CONTINUATION_WINDOW_SECONDS) > @continuation_threshold
+    end
   end
 end
