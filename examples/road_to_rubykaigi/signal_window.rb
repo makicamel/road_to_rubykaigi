@@ -57,13 +57,14 @@ module RoadToRubykaigi
   class SignalWindow
     BUFFER_SECONDS = 0.5
     READY_FILL_RATIO = 0.8 # window must be 80% filled (by time) before considered ready
+    CADENCE_TRACKING_ENABLED = RUBY_ENGINE != "mruby/c"
 
     def buffer_sample(sample)
       now = Time.now
       @samples << { time: now, sample: sample }
       window_start = now - BUFFER_SECONDS
       @samples.shift while @samples.first[:time] < window_start
-      @step_cadence.record(sample)
+      @step_cadence.record(sample) if CADENCE_TRACKING_ENABLED
       @full_motion_intensity = nil
     end
 
