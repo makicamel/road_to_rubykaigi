@@ -87,11 +87,21 @@ module RoadToRubykaigi
       @samples.last[:sample]
     end
 
-    # Sub-window containing samples from the last `seconds`, for continuation detection.
-    def tail(seconds:)
-      return SignalWindow.new([]) if @samples.empty?
+    # Computes motion intensity over the subset of @samples newer than
+    # (last_sample_time - seconds).
+    def tail_motion_intensity(seconds:)
+      return 0.0 if @samples.empty?
       cutoff = @samples.last[:time] - seconds
-      SignalWindow.new(@samples.select { |entry| entry[:time] >= cutoff })
+      start_idx = 0
+      size = @samples.size
+      while start_idx < size && @samples[start_idx][:time] < cutoff
+        start_idx += 1
+      end
+      Math.sqrt(
+        sub_axis_variance(0, start_idx, size) +
+        sub_axis_variance(1, start_idx, size) +
+        sub_axis_variance(2, start_idx, size)
+      )
     end
 
     private

@@ -180,7 +180,6 @@ module RoadToRubykaigi
     # Short-window intensity used for continuation detection. Shorter than the
     # main window so that the signal drops quickly after motion stops, making
     # stop detection responsive.
-    def continuing? = @window.tail(seconds: CONTINUATION_WINDOW_SECONDS).motion_intensity > @continuation_threshold
-
+    def continuing? = @window.tail_motion_intensity(seconds: CONTINUATION_WINDOW_SECONDS) > @continuation_threshold
   end
 end
