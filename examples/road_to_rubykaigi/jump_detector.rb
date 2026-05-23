@@ -19,6 +19,9 @@ module RoadToRubykaigi
   # below the threshold) inside the buffer. Otherwise a stationary sensor
   # reading near 0 could drift above threshold and accumulate an unbounded
   # "loaded hold" that passes the duration gate on its own.
+  #
+  # Sliding window is stored in a pre-allocated RingBuffer of [time,
+  # vertical_acceleration] slots, to avoid per-tick Hash/Array allocations.
   class JumpDetector
     LOADED_THRESHOLD = 0.20         # vertical_acceleration above this counts as "loaded" (body under extra g-load)
     LOADED_MIN_SECONDS = 0.2       # loaded span qualifying as squat hold
@@ -30,24 +33,28 @@ module RoadToRubykaigi
     SAMPLE_BUFFER_SECONDS = 1.2     # retain samples long enough to cover an elongated squat hold
     MIN_SAMPLES_FOR_ANALYSIS = 5    # slope + hold both need a few samples to be meaningful
 
+    CAPACITY = 80 # SAMPLE_BUFFER_SECONDS × 50Hz = 60 plus safety margin
+    # Slot layout: [time, vertical_acceleration]
+    TIME_INDEX = 0
+    VERTICAL_ACCELERATION_INDEX = 1
+
     def initialize(gravity:)
       @gravity = gravity
       @gravity_magnitude = Math.sqrt(gravity[0] ** 2 + gravity[1] ** 2 + gravity[2] ** 2)
-      @times = []
-      @vertical_accelerations = []
+      @samples = RingBuffer.new(CAPACITY) { [nil, 0.0] }
       @last_jump_time = nil
       @last_hold_seconds = 0.0
       @last_slope = 0.0
     end
 
-    def detect(sample:)
+    def detect(x, y, z)
+      slot = @samples.write
       now = Time.now
-      @times << now
-      @vertical_accelerations << vertical_acceleration(sample)
+      slot[TIME_INDEX] = now
+      slot[VERTICAL_ACCELERATION_INDEX] = vertical_acceleration(x, y, z)
       cutoff = now - SAMPLE_BUFFER_SECONDS
-      while !@times.empty? && @times.first < cutoff
-        @times.shift
-        @vertical_accelerations.shift
+      while !@samples.empty? && @samples.first[TIME_INDEX] < cutoff
+        @samples.shift
       end
 
       if !buffer_ready? || !squat_takeoff? || cooling_down?(now)
@@ -58,18 +65,20 @@ module RoadToRubykaigi
       end
     end
 
-    def latest_vertical_acceleration = @vertical_accelerations.empty? ? 0.0 : @vertical_accelerations.last
+    def latest_vertical_acceleration
+      @samples.empty? ? 0.0 : @samples.last[VERTICAL_ACCELERATION_INDEX]
+    end
     def latest_hold_seconds = @last_hold_seconds
     def latest_slope = @last_slope
 
     private
 
-    def vertical_acceleration(sample)
-      projection = (-sample[0] * @gravity[0] + sample[1] * @gravity[1] + sample[2] * @gravity[2]) / @gravity_magnitude
+    def vertical_acceleration(x, y, z)
+      projection = (-x * @gravity[0] + y * @gravity[1] + z * @gravity[2]) / @gravity_magnitude
       projection - @gravity_magnitude
     end
 
-    def buffer_ready? = @times.size >= MIN_SAMPLES_FOR_ANALYSIS
+    def buffer_ready? = @samples.size >= MIN_SAMPLES_FOR_ANALYSIS
     def cooling_down?(now) = @last_jump_time && (now - @last_jump_time) < COOLDOWN_SECONDS
 
     def squat_takeoff?
@@ -92,32 +101,33 @@ module RoadToRubykaigi
     # just ended within the last sample — jumps launch fast enough that the
     # signal can skip from +1g to below threshold between consecutive samples.
     def last_loaded_hold_seconds
-      loaded_end_idx = nil
-      i = @vertical_accelerations.size - 1
+      size = @samples.size
+      loaded_end_offset = nil
+      i = size - 1
       while i >= 0
-        if @vertical_accelerations[i] > LOADED_THRESHOLD
-          loaded_end_idx = i
+        if @samples.at(i)[VERTICAL_ACCELERATION_INDEX] > LOADED_THRESHOLD
+          loaded_end_offset = i
           break
         end
         i -= 1
       end
-      return 0.0 unless loaded_end_idx
-      loaded_end_time = @times[loaded_end_idx]
+      return 0.0 unless loaded_end_offset
+      loaded_end_time = @samples.at(loaded_end_offset)[TIME_INDEX]
       # Too long past the span's end — no longer just after the turnover
-      return 0.0 if @times.last - loaded_end_time > LOADED_END_GRACE_SECONDS
+      return 0.0 if @samples.last[TIME_INDEX] - loaded_end_time > LOADED_END_GRACE_SECONDS
 
-      pre_load_idx = nil
-      i = loaded_end_idx - 1
+      pre_load_offset = nil
+      i = loaded_end_offset - 1
       while i >= 0
-        if @vertical_accelerations[i] <= LOADED_THRESHOLD
-          pre_load_idx = i
+        if @samples.at(i)[VERTICAL_ACCELERATION_INDEX] <= LOADED_THRESHOLD
+          pre_load_offset = i
           break
         end
         i -= 1
       end
-      if pre_load_idx
-        loaded_begin_idx = pre_load_idx + 1
-        loaded_begin_time = @times[loaded_begin_idx]
+      if pre_load_offset
+        loaded_begin_offset = pre_load_offset + 1
+        loaded_begin_time = @samples.at(loaded_begin_offset)[TIME_INDEX]
         loaded_end_time - loaded_begin_time
       else
         0.0
@@ -129,25 +139,26 @@ module RoadToRubykaigi
     # sample at or before the window cutoff. A clearly negative value means
     # the signal has peaked and started falling — the takeoff turnover.
     def last_slope
-      end_time = @times.last
-      end_vertical_acceleration = @vertical_accelerations.last
+      end_slot = @samples.last
+      end_time = end_slot[TIME_INDEX]
+      end_vertical_acceleration = end_slot[VERTICAL_ACCELERATION_INDEX]
       cutoff = end_time - SLOPE_WINDOW_SECONDS
-      begin_idx = nil
-      i = @times.size - 1
+      begin_slot = nil
+      i = @samples.size - 1
       while i >= 0
-        if @times[i] <= cutoff
-          begin_idx = i
+        if @samples.at(i)[TIME_INDEX] <= cutoff
+          begin_slot = @samples.at(i)
           break
         end
         i -= 1
       end
-      return 0.0 unless begin_idx
+      return 0.0 unless begin_slot
 
-      elapsed_seconds = end_time - @times[begin_idx]
+      elapsed_seconds = end_time - begin_slot[TIME_INDEX]
       if elapsed_seconds <= 0
         0.0
       else
-        (end_vertical_acceleration - @vertical_accelerations[begin_idx]) / elapsed_seconds
+        (end_vertical_acceleration - begin_slot[VERTICAL_ACCELERATION_INDEX]) / elapsed_seconds
       end
     end
 

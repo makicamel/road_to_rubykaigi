@@ -2,6 +2,7 @@ require 'rake'
 
 namespace :pico do
   ROAD_FILES = %w[
+    ring_buffer
     signal_window
     jump_detector
     signal_config

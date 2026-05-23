@@ -108,7 +108,7 @@ module RoadToRubykaigi
     end
 
     def buffer_sample(data)
-      @window.buffer_sample([data['x'].to_f, data['y'].to_f, data['z'].to_f])
+      @window.buffer_sample(data['x'].to_f, data['y'].to_f, data['z'].to_f)
     end
 
     def track_continuation
@@ -137,7 +137,7 @@ module RoadToRubykaigi
     end
 
     def jump_detected?
-      @jump_detector.detect(sample: @window.last_sample)
+      @jump_detector.detect(@window.last_x, @window.last_y, @window.last_z)
     end
 
     def update_walking_state
