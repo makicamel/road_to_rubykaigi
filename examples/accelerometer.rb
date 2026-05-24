@@ -51,15 +51,15 @@ class Accelerometer
     @ax = ADC.new(X_PIN)
     @ay = ADC.new(Y_PIN)
     @az = ADC.new(Z_PIN)
+    @data = { 'x' => 0.0, 'y' => 0.0, 'z' => 0.0, 'b' => '0' }
   end
 
   def read
-    {
-      'x' => (to_g(@ax.read_voltage) * X_SIGN).round(5),
-      'y' => (to_g(@ay.read_voltage) * Y_SIGN).round(5),
-      'z' => (to_g(@az.read_voltage) * Z_SIGN).round(5),
-      'b' => Machine.bootsel_pressed? ? '1' : '0',
-    }
+    @data['x'] = (to_g(@ax.read_voltage) * X_SIGN).round(5)
+    @data['y'] = (to_g(@ay.read_voltage) * Y_SIGN).round(5)
+    @data['z'] = (to_g(@az.read_voltage) * Z_SIGN).round(5)
+    @data['b'] = Machine.bootsel_pressed? ? '1' : '0'
+    @data
   end
 
   # private
