@@ -71,16 +71,20 @@ class Controller
 
   def set_ui(connected)
     if connected
-      element('status').textContent = 'Connected'
+      set_status('Connected')
       element('status').className = 'connected'
       element('btn-connect').setAttribute('disabled', 'true')
       element('btn-disconnect').removeAttribute('disabled')
     else
-      element('status').textContent = 'Disconnected'
+      set_status('Disconnected')
       element('status').className = 'disconnected'
       element('btn-connect').removeAttribute('disabled')
       element('btn-disconnect').setAttribute('disabled', 'true')
     end
+  end
+
+  def set_status(text)
+    element('status').textContent = text
   end
 
   def start_auto_read
