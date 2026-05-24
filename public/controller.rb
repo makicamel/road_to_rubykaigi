@@ -4,6 +4,8 @@ class Controller
   LOCAL_ENDPOINT = 'http://127.0.0.1:2026/road_to_rubykaigi'
   POLL_INTERVAL_MS = 1000 / 60 # Manager::GameManager::FRAME_RATE
   SAMPLE_SEPARATOR = '|'
+  MAX_RECONNECT_ATTEMPTS = 5
+  RECONNECT_DELAY_MS = 1500
 
   def initialize
     bind_events
@@ -17,8 +19,8 @@ class Controller
   end
 
   def force_disconnect
-    return unless @uart
-    @uart.device.js_device[:gatt].disconnect
+    return unless @device
+    @device.js_device[:gatt].disconnect
   rescue
     # best effort: ignore any errors during page unload
   end
@@ -36,35 +38,85 @@ class Controller
 
   def connect
     prefix = element('device-name-prefix').value
-    svc = element('svc-uuid').value.to_s
-    tx = element('tx-uuid').value.to_s
-    rx = element('rx-uuid').value.to_s
-    log("[*] Connecting UART (svc=#{svc} tx=#{tx} rx=#{rx} prefix=#{prefix})...")
+    @svc_uuid = element('svc-uuid').value.to_s
+    @tx_uuid = element('tx-uuid').value.to_s
+    @rx_uuid = element('rx-uuid').value.to_s
+    log("[*] Connecting (svc=#{@svc_uuid} rx=#{@rx_uuid} prefix=#{prefix})...")
     begin
-      @uart = JS::BLE::UART.new(service_uuid: svc, tx_uuid: tx, rx_uuid: rx, name_prefix: prefix)
-      @uart.device.js_device.addEventListener('gattserverdisconnected') { |_event| handle_gatt_disconnect }
-      log("[+] Connected to: #{@uart.device.name}")
+      @device = JS::BLE::GATT.request_device(
+        name_prefix: prefix,
+        optional_services: [@svc_uuid]
+      )
+      @device.js_device.addEventListener('gattserverdisconnected') { |_event| handle_gatt_disconnect }
+      open_rx_characteristic
+      log("[+] Connected to: #{@device.name}")
+      @user_initiated_disconnect = false
       set_ui(true)
       start_auto_read
     rescue => e
       log("[-] Error: #{e.message}")
+      @device = nil
     end
+  end
+
+  def open_rx_characteristic
+    @line_buffer = ''
+    server = @device.connect
+    service = server.service(@svc_uuid)
+    @rx_char = service.characteristic(@rx_uuid)
+    @rx_char.on_change { |data| @line_buffer << data }
+    @rx_char.start_notify
   end
 
   def handle_gatt_disconnect
     stop_auto_read
-    @line_buffer = ''
-    @uart = nil
-    log('[!] Device disconnected (GATT)')
-    set_ui(false)
+    @rx_char = nil
+
+    if @user_initiated_disconnect || @device.nil?
+      log('[!] Device disconnected (GATT)')
+      set_ui(false)
+    else
+      log('[!] Device disconnected (GATT) -- will try to reconnect')
+      schedule_reconnect(1)
+    end
+  end
+
+  def schedule_reconnect(attempt)
+    set_status("Reconnecting... (attempt #{attempt}/#{MAX_RECONNECT_ATTEMPTS})")
+    JS.global.setTimeout(RECONNECT_DELAY_MS) { attempt_reconnect(attempt) }
+  end
+
+  def attempt_reconnect(attempt)
+    return unless @device
+    return if @user_initiated_disconnect
+
+    log("[*] Reconnect attempt #{attempt}/#{MAX_RECONNECT_ATTEMPTS}...")
+    begin
+      open_rx_characteristic
+      log("[+] Reconnected to: #{@device.name}")
+      set_ui(true)
+      start_auto_read
+    rescue => e
+      log("[-] Reconnect attempt #{attempt} failed: #{e.message}")
+      if attempt < MAX_RECONNECT_ATTEMPTS
+        schedule_reconnect(attempt + 1)
+      else
+        log('[-] Reached max reconnect attempts. Click Connect to retry.')
+        @device = nil
+        set_ui(false)
+      end
+    end
   end
 
   def disconnect
+    @user_initiated_disconnect = true
     stop_auto_read
 
-    return unless @uart
-    @uart.close
-    @uart = nil
+    return unless @device
+    @rx_char.stop_notify if @rx_char
+    @device.disconnect
+    @device = nil
+    @rx_char = nil
     log('[*] Disconnected')
     set_ui(false)
   end
@@ -111,17 +163,10 @@ class Controller
     end
   end
 
-  # Drain the UART buffer completely each tick.
-  # Looping until empty prevents buffered samples from compounding
-  # into seconds of latency.
+  # Notifications from rx_char fill @line_buffer directly via on_change.
+  # Each tick we drain any complete lines and forward each sample.
   def poll_uart
     @line_buffer ||= ''
-    loop do
-      data = @uart.read_nonblock(256)
-      break if data.nil? || data.empty?
-      @line_buffer << data
-    end
-
     while (idx = @line_buffer.index("\n"))
       line = @line_buffer.slice!(0..idx).strip
       JS.global.console.log("[DATA] #{line}")
