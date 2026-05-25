@@ -115,11 +115,12 @@ ble_batch = []
 # BLE::UART#start calls this block USER_BLOCK_CALL_COUNT_PER_POLL times per BLE
 # polling cycle (every POLLING_UNIT_MS / USER_BLOCK_CALL_COUNT_PER_POLL ≈ 20ms).
 # Send one sample per call — no inner loop, no sleep_ms here.
-ble_uart.start do
+# ble_uart.start do
+loop do
   begin
     data = accelerometer.read
 
-    if ble_uart.connected?
+    # if ble_uart.connected?
       # Interpreter yields :jump before walk/stop on the same tick;
       # first-wins keeps jump prioritized over a coincident walk frame.
       event_suffix = nil
@@ -137,18 +138,20 @@ ble_uart.start do
 
       line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}#{event_suffix}"
 
-      ble_batch << line
-      if ble_batch.size >= BLE_BATCH_SIZE
-        ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
-        ble_batch.clear
-      end
-    else
+      # ble_batch << line
+      # if ble_batch.size >= BLE_BATCH_SIZE
+      #   ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
+      #   ble_batch.clear
+      # end
+    # else
       # BLE pre-connect: send raw sample (no interpreter) to the
       # USB-TTL serial line so the host can still observe / calibrate.
-      serial.puts("x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}")
-    end
+      serial.puts(line)
+      puts(line)
+      sleep 0.02
+    # end
 
-    blinker.mode = ble_uart.connected? ? :slow : :fast
+    # blinker.mode = ble_uart.connected? ? :slow : :fast
     blinker.tick
   rescue => e
     puts "[BLOCK ERROR] #{e.message} (#{e.class})"
