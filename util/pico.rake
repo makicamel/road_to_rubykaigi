@@ -38,10 +38,20 @@ namespace :pico do
     puts "Bundled #{APP_BUNDLED_PATH} (#{File.size(APP_BUNDLED_PATH)} bytes)"
   end
 
-  desc 'Send the bundled app to /home/app.mrb'
+  CONFIG_PATH = '.road_to_rubykaigi'
+  REMOTE_CONFIG_PATH = '/home/.road_to_rubykaigi'
+
+  desc 'Send the bundled app to /home/app.mrb (and .road_to_rubykaigi if present)'
   task send_app: :bundle_app do
     port = Dir.glob('/dev/cu.usbmodem*').sort.first
     raise 'No /dev/cu.usbmodem* device found' if port.nil?
-    sh "ruby bin/send_file.rb --mrb #{port} #{APP_BUNDLED_PATH} /home/app.mrb"
+    pairs = []
+    if File.exist?(CONFIG_PATH)
+      pairs << "#{CONFIG_PATH} #{REMOTE_CONFIG_PATH}"
+    else
+      warn "[!] #{CONFIG_PATH} not found; skipping config upload"
+    end
+    pairs << "#{APP_BUNDLED_PATH} /home/app.mrb"
+    sh "ruby bin/send_file.rb --mrb #{port} #{pairs.join(' ')}"
   end
 end
