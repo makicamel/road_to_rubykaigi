@@ -48,7 +48,27 @@ module RoadToRubykaigi
     # the block must be safe under repeated same-tick calls (idempotent
     # or self-gated).
     def process(data)
-      jump_fired, action = interpret(data)
+      return unless data.key?('x') && data.key?('y') && data.key?('z')
+
+      buffer_sample(data)
+      return unless window_full?
+
+      @continuing = nil
+      was_walking = walking?
+      track_continuation
+      update_speed_ratio
+      update_walking_state
+      @direction = data['b'] == '1' ? :left : :right
+
+      jump_fired = jump_detected?
+
+      action = nil
+      if was_walking && !walking?
+        action = :stop
+      elsif walking?
+        action = Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
+      end
+
       yield :jump if jump_fired
       yield action if action
     end
@@ -81,30 +101,6 @@ module RoadToRubykaigi
       @walk_cadence = config.walk_cadence
       @walk_intensity = config.walk_intensity
       @jump_detector = JumpDetector.new(gravity: config.gravity_vector)
-    end
-
-    def interpret(data)
-      return unless data.key?('x') && data.key?('y') && data.key?('z')
-
-      buffer_sample(data)
-      return unless window_full?
-
-      @continuing = nil
-      was_walking = walking?
-      track_continuation
-      update_speed_ratio
-      update_walking_state
-      @direction = data['b'] == '1' ? :left : :right
-
-      jump_fired = jump_detected?
-
-      action = nil
-      if was_walking && !walking?
-        action = :stop
-      elsif walking?
-        action = Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
-      end
-      [jump_fired, action]
     end
 
     def buffer_sample(data)
