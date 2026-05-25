@@ -64,7 +64,7 @@ module RoadToRubykaigi
   class SignalWindow
     BUFFER_SECONDS = 0.5
     READY_FILL_RATIO = 0.8 # window must be 80% filled (by time) before considered ready
-    CADENCE_TRACKING_ENABLED = RUBY_ENGINE != "mruby/c"
+    CADENCE_TRACKING_ENABLED = RUBY_ENGINE != "mruby"
 
     def buffer_sample(sample)
       now = Time.now
