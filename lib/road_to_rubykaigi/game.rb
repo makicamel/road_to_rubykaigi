@@ -9,7 +9,8 @@ module RoadToRubykaigi
           RoadToRubykaigi.debug.clear
           process_input($stdin.read_nonblock(4, exception: false))
           Config.signal_source.drain do |data|
-            SignalInterpreter.process(data) { |event| EventDispatcher.publish(:input, event) }
+            event = EventDecoder.decode(data)
+            EventDispatcher.publish(:input, event) if event
           end
           if SignalInterpreter.stop_walk_if_expired
             EventDispatcher.publish(:input, :stop)
