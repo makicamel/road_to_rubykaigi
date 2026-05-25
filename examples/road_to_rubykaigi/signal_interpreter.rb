@@ -34,9 +34,9 @@ module RoadToRubykaigi
     WALKING = :walking # continuation events arriving
     PAUSED = :paused   # continuation briefly absent; next event -> WALKING (same direction), timeout -> STOPPED
 
-    def self.process(data, &block)
+    def self.process(data)
       @instance ||= new
-      @instance.process(data, &block)
+      @instance.process(data)
     end
 
     def self.stop_walk_if_expired
@@ -44,9 +44,10 @@ module RoadToRubykaigi
       @instance.stop_walk_if_expired
     end
 
-    # NOTE: events may fire multiple times per tick — handlers passed to
-    # the block must be safe under repeated same-tick calls (idempotent
-    # or self-gated).
+    # Returns the prioritized event for this tick (jump > walk/stop),
+    # or nil if no event fired. Same-tick jump wins over walk/stop;
+    # the walk/stop is dropped (next tick resumes). Inlined to avoid
+    # per-tick block + tuple allocation on the Pico.
     def process(data)
       return unless data.key?('x') && data.key?('y') && data.key?('z')
 
@@ -60,17 +61,15 @@ module RoadToRubykaigi
       update_walking_state
       @direction = data['b'] == '1' ? :left : :right
 
-      jump_fired = jump_detected?
-
-      action = nil
-      if was_walking && !walking?
-        action = :stop
+      if jump_detected?
+        :jump
+      elsif was_walking && !walking?
+        :stop
       elsif walking?
-        action = Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
+        Walk.new(direction: @direction, speed_ratio: @smoothed_speed_ratio)
+      else
+        nil
       end
-
-      yield :jump if jump_fired
-      yield action if action
     end
 
     # Catch the case where the sample stream dries up mid-walk

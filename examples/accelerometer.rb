@@ -121,20 +121,16 @@ loop do
     data = accelerometer.read
 
     # if ble_uart.connected?
-      # Interpreter yields :jump before walk/stop on the same tick;
-      # first-wins keeps jump prioritized over a coincident walk frame.
-      event_suffix = nil
-      RoadToRubykaigi::SignalInterpreter.process(data) do |event|
-        next if event_suffix
-        event_suffix =
-          case event
-          when :jump then ",e=j"
-          when :stop then ",e=s"
-          when RoadToRubykaigi::Walk
-            ",e=w,d=#{event.right? ? 'R' : 'L'},s=#{event.speed_ratio.round(2)}"
-          end
-      end
-      event_suffix ||= ",e=h" # heartbeat
+      # process returns the prioritized event (jump > walk/stop) or nil.
+      event = RoadToRubykaigi::SignalInterpreter.process(data)
+      event_suffix =
+        case event
+        when :jump then ",e=j"
+        when :stop then ",e=s"
+        when RoadToRubykaigi::Walk
+          ",e=w,d=#{event.right? ? 'R' : 'L'},s=#{event.speed_ratio.round(2)}"
+        else ",e=h" # heartbeat
+        end
 
       line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}#{event_suffix}"
 
