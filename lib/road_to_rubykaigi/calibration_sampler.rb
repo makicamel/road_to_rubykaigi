@@ -8,7 +8,7 @@ module RoadToRubykaigi
       Config.signal_source.drain do |data|
         sample = parse_sample(data)
         next unless sample
-        @window.buffer_sample(sample[0], sample[1], sample[2])
+        @window.buffer_sample(sample[0], sample[1], sample[2], Time.now)
         @raw_samples << sample
       end
       return unless @window.full?

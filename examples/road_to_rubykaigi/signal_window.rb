@@ -72,9 +72,8 @@ module RoadToRubykaigi
     Y_INDEX = 2
     Z_INDEX = 3
 
-    def buffer_sample(x, y, z)
+    def buffer_sample(x, y, z, now)
       slot = @samples.write
-      now = Time.now
       slot[TIME_INDEX] = now
       slot[X_INDEX] = x
       slot[Y_INDEX] = y

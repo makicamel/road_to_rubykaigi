@@ -51,6 +51,7 @@ module RoadToRubykaigi
     def process(data)
       return unless data.key?('x') && data.key?('y') && data.key?('z')
 
+      @now = Time.now
       buffer_sample(data)
       return unless window_full?
 
@@ -103,11 +104,11 @@ module RoadToRubykaigi
     end
 
     def buffer_sample(data)
-      @window.buffer_sample(data['x'].to_f, data['y'].to_f, data['z'].to_f)
+      @window.buffer_sample(data['x'].to_f, data['y'].to_f, data['z'].to_f, @now)
     end
 
     def track_continuation
-      @last_continuation_time = Time.now if continuing?
+      @last_continuation_time = @now if continuing?
     end
 
     # EMA-smoothed mapping of motion strength to output speed. Without
@@ -132,15 +133,15 @@ module RoadToRubykaigi
     end
 
     def jump_detected?
-      @jump_detector.detect(@window.last_x, @window.last_y, @window.last_z)
+      @jump_detector.detect(@window.last_x, @window.last_y, @window.last_z, @now)
     end
 
     def update_walking_state
       case
-      when stopped? && walk_started?           then start
-      when walking? && !continuing?            then pause
-      when paused?  && continuing?             then unpause
-      when paused?  && continuation_timed_out? then stop
+      when stopped? && walk_started?                 then start
+      when walking? && !continuing?                  then pause
+      when paused?  && continuing?                   then unpause
+      when paused?  && continuation_timed_out?(@now) then stop
       end
     end
 
@@ -157,9 +158,9 @@ module RoadToRubykaigi
     def paused? = @state == PAUSED
     def pause = @state = PAUSED
     def stop = @state = STOPPED
-    def continuation_timed_out?
+    def continuation_timed_out?(now)
       return false if @last_continuation_time.nil?
-      (Time.now - @last_continuation_time) > CONTINUATION_TIMEOUT_SECONDS
+      (now - @last_continuation_time) > CONTINUATION_TIMEOUT_SECONDS
     end
 
     # True when a walk is in progress but the continuation timeout has elapsed.
@@ -167,7 +168,9 @@ module RoadToRubykaigi
     # only fires while samples are flowing. When the stream dries up mid-walk
     # (device off, BLE buffer drained, stale-drop skipping every sample), this
     # predicate lets the caller emit :stop on a pure tick basis instead.
-    def walk_expired? = !stopped? && continuation_timed_out?
+    # Called from outside the per-tick flow (stop_walk_if_expired) so it
+    # samples its own Time.now rather than reusing the process tick's.
+    def walk_expired? = !stopped? && continuation_timed_out?(Time.now)
 
     # Start detection uses the full window so that a single noisy sample
     # cannot trigger a fake walk start.

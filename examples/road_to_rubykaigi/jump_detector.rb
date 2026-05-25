@@ -47,9 +47,8 @@ module RoadToRubykaigi
       @last_slope = 0.0
     end
 
-    def detect(x, y, z)
+    def detect(x, y, z, now)
       slot = @samples.write
-      now = Time.now
       slot[TIME_INDEX] = now
       slot[VERTICAL_ACCELERATION_INDEX] = vertical_acceleration(x, y, z)
       cutoff = now - SAMPLE_BUFFER_SECONDS
