@@ -118,16 +118,34 @@ ble_batch = []
 ble_uart.start do
   begin
     data = accelerometer.read
-    line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}"
 
     if ble_uart.connected?
+      # Interpreter yields :jump before walk/stop on the same tick;
+      # first-wins keeps jump prioritized over a coincident walk frame.
+      event_suffix = nil
+      RoadToRubykaigi::SignalInterpreter.process(data) do |event|
+        next if event_suffix
+        event_suffix =
+          case event
+          when :jump then ",e=j"
+          when :stop then ",e=s"
+          when RoadToRubykaigi::Walk
+            ",e=w,d=#{event.right? ? 'R' : 'L'},s=#{event.speed_ratio.round(2)}"
+          end
+      end
+      event_suffix ||= ",e=h" # heartbeat
+
+      line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}#{event_suffix}"
+
       ble_batch << line
       if ble_batch.size >= BLE_BATCH_SIZE
         ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
         ble_batch.clear
       end
     else
-      serial.puts(line)
+      # BLE pre-connect: send raw sample (no interpreter) to the
+      # USB-TTL serial line so the host can still observe / calibrate.
+      serial.puts("x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}")
     end
 
     blinker.mode = ble_uart.connected? ? :slow : :fast
