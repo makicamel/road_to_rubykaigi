@@ -61,11 +61,17 @@ class Controller
 
   def open_rx_characteristic
     @line_buffer = ''
+    log("[debug] before connect!")
     server = @device.connect
+    log("[debug] before service")
     service = server.service(@svc_uuid)
+    log("[debug] before characteristic")
     @rx_char = service.characteristic(@rx_uuid)
+    log("[debug] before on_change")
     @rx_char.on_change { |data| @line_buffer << data }
+    log("[debug] before start_notify")
     @rx_char.start_notify
+    log("[debug] done")
   end
 
   def handle_gatt_disconnect
