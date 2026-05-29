@@ -18,11 +18,11 @@
 
 require 'adc'
 require 'uart'
-require 'ble'
-require 'ble-uart'
+# require 'ble'
+# require 'ble-uart'
 
 # Switch this to match the target board before flashing.
-BOARD = :ble  # :ble or :serial
+BOARD = :serial
 
 ZERO = 3.3 / 2.0
 SENSITIVITY = 3.3 / 5.0
@@ -33,7 +33,7 @@ SENSITIVITY = 3.3 / 5.0
 #   chip Z = body front-back
 # Emitted stream uses a rotated frame where Z = up, so at rest both boards
 # emit (x=0, y=0, z=+1). Chip X reads -1g at rest, so Z_SIGN=-1 flips it.
-if BOARD == :ble
+if BOARD == :serial
   # Chip X/Y physically swapped on this board: pin 26 reads chip Y, pin 27
   # reads chip X.
   X_PIN, Y_PIN, Z_PIN = 26, 28, 27
@@ -100,26 +100,26 @@ end
 
 accelerometer = Accelerometer.new
 serial = UART.new(unit: :RP2040_UART0, txd_pin: 0, baudrate: 115200)
-ble_uart = BLE::UART.new(name: 'RtR')
-ble_uart.debug = true
+# ble_uart = BLE::UART.new(name: 'RtR')
+# ble_uart.debug = true
 blinker = Blinker.new
 
 # The BLE connection interval (negotiated by the central) caps the notification rate,
 # the sensor produces faster than a single-sample-per-notify stream can be delivered.
 # Batching keeps the effective sample rate while staying under the notification throughput ceiling.
-BLE_BATCH_SIZE = 2
-SAMPLE_SEPARATOR = '|'
+# BLE_BATCH_SIZE = 2
+# SAMPLE_SEPARATOR = '|'
 
 ble_batch = []
 
 # BLE::UART#start calls this block USER_BLOCK_CALL_COUNT_PER_POLL times per BLE
 # polling cycle (every POLLING_UNIT_MS / USER_BLOCK_CALL_COUNT_PER_POLL ≈ 20ms).
 # Send one sample per call — no inner loop, no sleep_ms here.
-ble_uart.start do
+# ble_uart.start do
+loop do
   begin
     data = accelerometer.read
 
-    if ble_uart.connected?
       # process returns the prioritized event (jump > walk/stop) or nil.
       event = RoadToRubykaigi::SignalInterpreter.process(data)
       event_suffix =
@@ -133,6 +133,7 @@ ble_uart.start do
 
       line = "x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}#{event_suffix}"
 
+    if false # ble_uart.connected?
       ble_batch << line
       if ble_batch.size >= BLE_BATCH_SIZE
         ble_uart.puts(ble_batch.join(SAMPLE_SEPARATOR))
@@ -141,11 +142,13 @@ ble_uart.start do
     else
       # BLE pre-connect: send raw sample (no interpreter) to the
       # USB-TTL serial line so the host can still observe / calibrate.
-      serial.puts("x=#{data['x']},y=#{data['y']},z=#{data['z']},b=#{data['b']}")
+      serial.puts(line)
     end
+    puts line
 
-    blinker.mode = ble_uart.connected? ? :slow : :fast
+    blinker.mode = :slow
     blinker.tick
+    sleep_ms 20
   rescue => e
     puts "[BLOCK ERROR] #{e.message} (#{e.class})"
   end
